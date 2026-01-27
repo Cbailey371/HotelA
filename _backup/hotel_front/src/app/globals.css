@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --primary: #003366;
+  --secondary: #000000;
+
+  --font-questrial: "Questrial", sans-serif;
+  --font-inter: "Inter", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  scroll-behavior: smooth;
+  font-display: swap;
+  color: var(--foreground);
+  background: var(--background);
+  height: 100lvh;
+  font-family: var(--font-inter), sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-questrial);
+}
+
+
+@media (width <=512px) {
+  .home-layout-padding {
+    padding-right: 5%;
+    padding-left: 5%;
+    -webkit-padding-right: 5%;
+    -webkit-padding-left: 5%;
+  }
+}
+
+@media (width > 512px) {
+  .home-layout-padding {
+    padding-right: 5%;
+    padding-left: 5%;
+    -webkit-padding-right: 5%;
+    -webkit-padding-left: 5%;
+  }
+}
+
+@media (width > 1124px) {
+  .home-layout-padding {
+    padding-right: 7%;
+    padding-left: 7%;
+    -webkit-padding-right: 7%;
+    -webkit-padding-left: 7%;
+  }
+}
+
+@media (width >=1280px) {
+  .home-layout-padding {
+    padding-right: 10%;
+    padding-left: 10%;
+    -webkit-padding-right: 10%;
+    -webkit-padding-left: 10%;
+  }
+}
+
+@media (width >=1656px) {
+  .home-layout-padding {
+    padding-right: 17%;
+    padding-left: 17%;
+    -webkit-padding-right: 17%;
+    -webkit-padding-left: 17%;
+  }
+}
+
+.custom-select {
+  background: url(../assets/svgs/arrowBlack.svg) no-repeat;
+  width: 100%;
+  background-position: calc(100% - 0.75rem) center !important;
+  background-size: 0.6rem;
+  -moz-appearance: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  padding-right: 2rem !important;
+}

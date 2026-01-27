@@ -1,0 +1,38 @@
+use sea_orm::entity::prelude::*;
+use serde::{Serialize, Deserialize};
+
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+#[sea_orm(table_name = "mantenimiento_tipo")]
+pub struct Model {
+    #[sea_orm(primary_key)]
+    pub id_tipo_mantenimiento: i32,
+    pub nombre_tipo: String,
+    pub descripcion: Option<String>,
+    pub es_preventivo: Option<bool>,
+    pub es_correctivo: Option<bool>,
+    pub requiere_paro: Option<bool>,
+    pub created_at: Option<DateTimeWithTimeZone>,
+    pub updated_at: Option<DateTimeWithTimeZone>,
+}
+
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {
+    #[sea_orm(has_many = "super::mantenimiento_calendario::Entity")]
+    MantenimientoCalendario,
+    #[sea_orm(has_many = "super::mantenimiento_historial::Entity")]
+    MantenimientoHistorial,
+}
+
+impl Related<super::mantenimiento_calendario::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::MantenimientoCalendario.def()
+    }
+}
+
+impl Related<super::mantenimiento_historial::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::MantenimientoHistorial.def()
+    }
+}
+
+impl ActiveModelBehavior for ActiveModel {}

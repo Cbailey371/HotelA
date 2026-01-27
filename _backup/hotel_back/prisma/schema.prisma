@@ -1,0 +1,284 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Hotel {
+  id            String         @id @default(uuid())
+  name          String
+  address       String?
+  city          String?
+  country       String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  assets        Asset[]
+  locations     Location[]
+  notifications Notification[]
+  users         User[]
+}
+
+model User {
+  id              String            @id @default(uuid())
+  email           String            @unique
+  name            String
+  password        String
+  role            String
+  hotelId         String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  hotel           Hotel             @relation(fields: [hotelId], references: [id])
+  token_whitelist token_whitelist[]
+}
+
+model Provider {
+  id             String        @id @default(uuid())
+  name           String
+  taxId          String?
+  mainContact    String?
+  phone          String?
+  email          String?
+  address        String?
+  city           String?
+  country        String?
+  website        String?
+  providerType   String
+  paymentMethods String?
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  assets         Asset[]
+  maintenances   Maintenance[]
+  spareParts     SparePart[]
+  technicians    Technician[]
+}
+
+model Technician {
+  id           String        @id @default(uuid())
+  name         String
+  email        String
+  phone        String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  maintenances Maintenance[]
+  provider     Provider?     @relation(fields: [providerId], references: [id])
+  providerId   String?
+}
+
+model Location {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  hotelId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  assets      Asset[]
+  hotel       Hotel    @relation(fields: [hotelId], references: [id])
+}
+
+model Asset {
+  id               String           @id @default(uuid())
+  name             String
+  code             String           @default("10000") @db.VarChar(10)
+  category         String
+  assetType        String
+  model            String?
+  brand            String?
+  serialNumber     String?
+  year             Int?
+  color            String?
+  engineNumber     String?
+  chassisNumber    String?
+  photoUrl         String?
+  manualUrl        String?
+  quantity         Int
+  locationDetail   String?
+  responsible      String?
+  acquisitionDate  DateTime?
+  installationDate DateTime?
+  decommissionDate DateTime?
+  providerId       String?
+  value            Float
+  usefulLife       Int?
+  status           String
+  notes            String?
+  hotelId          String
+  locationId       String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  hotel            Hotel            @relation(fields: [hotelId], references: [id])
+  location         Location?        @relation(fields: [locationId], references: [id])
+  provider         Provider?        @relation(fields: [providerId], references: [id])
+  maintenances     Maintenance[]
+  maintenanceLogs  MaintenanceLog[]
+  spareParts       SparePart[]
+}
+
+model SparePart {
+  id                    String         @id @default(uuid())
+  assetId               String
+  name                  String
+  sparePartType         String
+  model                 String?
+  brand                 String?
+  year                  Int?
+  photoUrl              String?
+  availableQuantity     Int
+  minimumStock          Int
+  estimatedUsefulLife   Int?
+  lastPurchaseDate      DateTime?
+  installationDate      DateTime?
+  expirationDate        DateTime?
+  storageLocation       String?
+  exactPhysicalLocation String?
+  providerId            String?
+  unitCost              Float
+  compatibilityModels   String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  asset                 Asset          @relation(fields: [assetId], references: [id])
+  provider              Provider?      @relation(fields: [providerId], references: [id])
+  sparePartLogs         SparePartLog[]
+  Notification          Notification[]
+}
+
+model Maintenance {
+  id              String           @id @default(uuid())
+  assetId         String
+  maintenanceCode String?
+  maintenanceType String
+  description     String?
+  scheduledDate   DateTime
+  frequency       String?
+  priority        String
+  responsible     String?
+  status          String
+  estimatedCost   Float?
+  alertDaysBefore Int?
+  providerId      String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  asset           Asset            @relation(fields: [assetId], references: [id])
+  provider        Provider?        @relation(fields: [providerId], references: [id])
+  maintenanceLogs MaintenanceLog[]
+  technician      Technician?      @relation(fields: [technicianId], references: [id])
+  technicianId    String?
+  Notification    Notification[]
+}
+
+model MaintenanceLog {
+  id                     String         @id @default(uuid())
+  assetId                String
+  maintenanceId          String?
+  maintenanceType        String
+  description            String?
+  performedDate          DateTime
+  cost                   Float
+  responsible            String?
+  downtimeDays           Int?
+  maintenanceDurationHrs Float?
+  videoUrl               String?
+  result                 String?
+  notes                  String?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  asset                  Asset          @relation(fields: [assetId], references: [id])
+  maintenance            Maintenance?   @relation(fields: [maintenanceId], references: [id])
+  sparePartLogs          SparePartLog[]
+}
+
+model SparePartLog {
+  id               String         @id @default(uuid())
+  maintenanceLogId String
+  sparePartId      String
+  quantityUsed     Int
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  maintenanceLog   MaintenanceLog @relation(fields: [maintenanceLogId], references: [id])
+  sparePart        SparePart      @relation(fields: [sparePartId], references: [id])
+}
+
+model Notification {
+  id            String       @id @default(uuid())
+  hotelId       String
+  title         String
+  message       String
+  read          Boolean      @default(false)
+  maintenanceId String?
+  maintenance   Maintenance? @relation(fields: [maintenanceId], references: [id])
+  sparePartId   String?
+  sparePart     SparePart?   @relation(fields: [sparePartId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  hotel         Hotel        @relation(fields: [hotelId], references: [id])
+}
+
+model token_whitelist {
+  id               String    @id @default(uuid())
+  user_id          String?
+  access_token     String?
+  refresh_token    String?
+  refresh_token_id String?
+  createdAt        DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt        DateTime? @default(now()) @db.Timestamp(6)
+  user             User?     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+enum ProviderType {
+  assets
+  spare_parts
+  both
+}
+
+enum AssetType {
+  vehicle
+  machinery
+  furniture
+  electronic
+  other
+}
+
+enum AssetStatus {
+  active
+  inactive
+  under_maintenance
+  decommissioned
+}
+
+enum SparePartType {
+  part
+  consumable
+  electric
+  mechanic
+  electronic
+}
+
+enum MaintenanceType {
+  preventive
+  corrective
+}
+
+enum MaintenanceStatus {
+  pending
+  completed
+  cancelled
+}
+
+enum Frequency {
+  daily
+  weekly
+  monthly
+  quarterly
+  biannually
+  annually
+}
+
+enum Priority {
+  low
+  medium
+  high
+  critical
+}

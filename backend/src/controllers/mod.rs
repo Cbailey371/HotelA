@@ -1,0 +1,13 @@
+pub mod auth;
+pub mod user;
+pub mod assets;
+pub mod technicians;
+pub mod inventory;
+pub mod maintenance;
+pub mod audit;
+pub mod dashboard;
+pub mod reports;
+pub mod upload;
+pub mod providers;
+pub mod work_orders;
+pub mod purchases;

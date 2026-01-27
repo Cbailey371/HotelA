@@ -1,0 +1,20 @@
+pub mod prelude;
+
+pub mod activos_equipos;
+pub mod activos_repuestos;
+pub mod auditoria_acciones;
+pub mod empresas;
+pub mod historial_repuestos;
+pub mod mantenimiento_calendario;
+pub mod mantenimiento_historial;
+pub mod mantenimiento_tipo;
+pub mod orden_compra_detalle;
+pub mod orden_compra_repuesto;
+pub mod orden_trabajo;
+pub mod permisos;
+pub mod proveedores;
+pub mod rol_permisos;
+pub mod roles;
+pub mod tecnicos;
+pub mod usuario_roles;
+pub mod usuarios;

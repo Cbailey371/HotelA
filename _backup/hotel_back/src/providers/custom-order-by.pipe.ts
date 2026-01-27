@@ -1,0 +1,45 @@
+import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
+
+/**
+ * OrderByPipe is a PipeTransform implementation used to validate and parse
+ * the orderBy query parameter.
+ */
+@Injectable()
+export default class CustomOrderByPipe implements PipeTransform {
+  /**
+   * Validates and parses the orderBy query parameter.
+   * @param value The orderBy query parameter.
+   * @returns The parsed orderBy query parameter.
+   * @throws BadRequestException if the orderBy query parameter is invalid.
+   */
+  transform(value: string) {
+    if (value == null) return undefined;
+
+    try {
+      const rules = value.split(',').map((val) => val.trim());
+      const orderBy = [];
+      rules.forEach((rule) => {
+        const [key, order] = rule.split(':') as [string, 'asc' | 'desc'];
+        const orderLowerCase = order.trim().toLowerCase();
+      
+        if (!['asc', 'desc'].includes(orderLowerCase)) {
+          throw new BadRequestException(`Invalid order: ${orderLowerCase}`);
+        }
+      
+        const keyParts = key.split('.');
+        let nestedObject: any = { [keyParts.pop()!]: orderLowerCase };
+      
+        while (keyParts.length) {
+          nestedObject = { [keyParts.pop()!]: nestedObject };
+        }
+      
+        orderBy.push(nestedObject);
+      });
+
+      return orderBy;
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException('Invalid orderBy query parameter');
+    }
+  }
+}

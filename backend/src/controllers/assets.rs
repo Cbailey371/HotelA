@@ -1,0 +1,387 @@
+use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode, Extension};
+use axum_extra::extract::Multipart;
+use serde::{Deserialize, Serialize};
+use crate::entities::{activos_equipos, mantenimiento_historial, historial_repuestos, activos_repuestos, tecnicos};
+use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, RelationTrait};
+use crate::utils::{jwt, audit};
+
+#[derive(Deserialize)]
+pub struct CreateAssetRequest {
+    pub codigo_equipo: String,
+    pub nombre_equipo: String,
+    pub descripcion: Option<String>,
+    pub categoria: Option<String>,
+    pub marca: Option<String>,
+    pub modelo: Option<String>,
+    pub numero_serie: Option<String>,
+    pub ubicacion: Option<String>,
+    pub area_responsable: Option<String>,
+    pub estado: Option<String>,
+    pub imagen_url: Option<String>,
+    pub tipo_activo: Option<String>,
+    pub anio: Option<i32>,
+    pub color: Option<String>,
+    pub numero_motor: Option<String>,
+    pub numero_chasis: Option<String>,
+    pub manual_pdf: Option<String>,
+    pub cantidad: Option<i32>,
+    pub ubicacion_detallada: Option<String>,
+    pub fecha_instalacion: Option<String>,
+    pub fecha_adquisicion: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct UpdateAssetRequest {
+    pub nombre_equipo: Option<String>,
+    pub descripcion: Option<String>,
+    pub categoria: Option<String>,
+    pub marca: Option<String>,
+    pub modelo: Option<String>,
+    pub numero_serie: Option<String>,
+    pub ubicacion: Option<String>,
+    pub area_responsable: Option<String>,
+    pub estado: Option<String>,
+    pub imagen_url: Option<String>,
+    pub tipo_activo: Option<String>,
+    pub anio: Option<i32>,
+    pub color: Option<String>,
+    pub numero_motor: Option<String>,
+    pub numero_chasis: Option<String>,
+    pub manual_pdf: Option<String>,
+    pub cantidad: Option<i32>,
+    pub ubicacion_detallada: Option<String>,
+    pub fecha_instalacion: Option<String>,
+    pub fecha_adquisicion: Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct AssetDto {
+    pub id: i32,
+    pub codigo: String,
+    pub nombre: String,
+    pub descripcion: Option<String>,
+    pub categoria: Option<String>,
+    pub marca: Option<String>,
+    pub modelo: Option<String>,
+    pub serie: Option<String>,
+    pub ubicacion: Option<String>,
+    pub estado: Option<String>,
+    pub imagen_url: Option<String>,
+    pub tipo_activo: Option<String>,
+    pub anio: Option<i32>,
+    pub color: Option<String>,
+    pub numero_motor: Option<String>,
+    pub numero_chasis: Option<String>,
+    pub manual_pdf: Option<String>,
+    pub cantidad: Option<i32>,
+    pub ubicacion_detallada: Option<String>,
+    pub fecha_instalacion: Option<Option<String>>,
+    pub fecha_adquisicion: Option<Option<String>>,
+    pub historial: Vec<MaintenanceHistoryItem>,
+    pub repuestos: Vec<SparePartHistoryItem>,
+}
+
+#[derive(Serialize)]
+pub struct MaintenanceHistoryItem {
+    pub id: i32,
+    pub fecha: String,
+    pub tecnico: String,
+    pub tarea: String,
+    pub observaciones: Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct SparePartHistoryItem {
+    pub id: i32,
+    pub nombre: String,
+    pub cantidad: i32,
+    pub fecha: String,
+}
+
+pub async fn create_asset(
+    State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<jwt::Claims>,
+    Json(payload): Json<CreateAssetRequest>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let new_asset = activos_equipos::ActiveModel {
+        codigo_equipo: Set(payload.codigo_equipo),
+        nombre_equipo: Set(payload.nombre_equipo.clone()),
+        descripcion: Set(payload.descripcion),
+        categoria: Set(payload.categoria),
+        marca: Set(payload.marca),
+        modelo: Set(payload.modelo),
+        numero_serie: Set(payload.numero_serie),
+        ubicacion: Set(payload.ubicacion),
+        area_responsable: Set(payload.area_responsable),
+        estado: Set(payload.estado.or(Some("activo".to_string()))),
+        imagen_url: Set(payload.imagen_url),
+        tipo_activo: Set(payload.tipo_activo),
+        anio: Set(payload.anio),
+        color: Set(payload.color),
+        numero_motor: Set(payload.numero_motor),
+        numero_chasis: Set(payload.numero_chasis),
+        manual_pdf: Set(payload.manual_pdf),
+        cantidad: Set(payload.cantidad),
+        ubicacion_detallada: Set(payload.ubicacion_detallada),
+        fecha_instalacion: Set(payload.fecha_instalacion.and_then(|d| chrono::NaiveDate::parse_from_str(&d, "%Y-%m-%d").ok())),
+        fecha_adquisicion: Set(payload.fecha_adquisicion.and_then(|d| chrono::NaiveDate::parse_from_str(&d, "%Y-%m-%d").ok())),
+        ..Default::default()
+    };
+
+    let asset = new_asset.insert(&db).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    audit::log_action(
+        &db, 
+        claims.user_id, 
+        "CREATE", 
+        "activos_equipos", 
+        Some(asset.id_equipo), 
+        Some(format!("Creado activo: {}", payload.nombre_equipo)),
+        None
+    ).await;
+
+    Ok(Json(map_asset_to_dto(asset, vec![], vec![])))
+}
+
+fn map_asset_to_dto(a: activos_equipos::Model, historial: Vec<MaintenanceHistoryItem>, repuestos: Vec<SparePartHistoryItem>) -> AssetDto {
+    AssetDto {
+        id: a.id_equipo,
+        codigo: a.codigo_equipo,
+        nombre: a.nombre_equipo,
+        descripcion: a.descripcion,
+        categoria: a.categoria,
+        marca: a.marca,
+        modelo: a.modelo,
+        serie: a.numero_serie,
+        ubicacion: a.ubicacion,
+        estado: a.estado,
+        imagen_url: a.imagen_url,
+        tipo_activo: a.tipo_activo,
+        anio: a.anio,
+        color: a.color,
+        numero_motor: a.numero_motor,
+        numero_chasis: a.numero_chasis,
+        manual_pdf: a.manual_pdf,
+        cantidad: a.cantidad,
+        ubicacion_detallada: a.ubicacion_detallada,
+        fecha_instalacion: Some(a.fecha_instalacion.map(|d| d.to_string())),
+        fecha_adquisicion: Some(a.fecha_adquisicion.map(|d| d.to_string())),
+        historial,
+        repuestos,
+    }
+}
+
+pub async fn get_assets(
+    State(db): State<DatabaseConnection>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let assets = activos_equipos::Entity::find()
+        .filter(activos_equipos::Column::Estado.ne("baja"))
+        .all(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let dtos: Vec<AssetDto> = assets.into_iter().map(|a| map_asset_to_dto(a, vec![], vec![])).collect();
+
+    Ok(Json(dtos))
+}
+
+pub async fn get_asset_by_id(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let asset = activos_equipos::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Asset not found".to_string()))?;
+
+    let history_items = mantenimiento_historial::Entity::find()
+        .filter(mantenimiento_historial::Column::EquipoId.eq(id))
+        .find_also_related(tecnicos::Entity)
+        .all(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let historial = history_items.into_iter().map(|(h, t)| MaintenanceHistoryItem {
+        id: h.id_mantenimiento,
+        fecha: h.fecha_ejecucion.map(|d| d.to_string()).unwrap_or_default(),
+        tecnico: t.map(|v| format!("{} {}", v.nombre, v.apellido)).unwrap_or("N/A".to_string()),
+        tarea: h.observaciones.clone().unwrap_or_default(),
+        observaciones: h.observaciones,
+    }).collect();
+
+    let spare_items = historial_repuestos::Entity::find()
+        .filter(historial_repuestos::Column::EquipoId.eq(id))
+        .find_also_related(activos_repuestos::Entity)
+        .all(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let repuestos = spare_items.into_iter().map(|(h, r)| SparePartHistoryItem {
+        id: h.id_historial_repuesto,
+        nombre: r.map(|v| v.nombre_repuesto).unwrap_or("Desconocido".to_string()),
+        cantidad: h.cantidad_utilizada.unwrap_or(0),
+        fecha: h.fecha_uso.map(|d| d.to_string()).unwrap_or_default(),
+    }).collect();
+
+    Ok(Json(map_asset_to_dto(asset, historial, repuestos)))
+}
+
+pub async fn update_asset(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+    Json(payload): Json<UpdateAssetRequest>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let mut asset: activos_equipos::ActiveModel = activos_equipos::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Asset not found".to_string()))?
+        .into();
+
+    if let Some(v) = payload.nombre_equipo { asset.nombre_equipo = Set(v); }
+    if let Some(v) = payload.descripcion { asset.descripcion = Set(Some(v)); }
+    if let Some(v) = payload.categoria { asset.categoria = Set(Some(v)); }
+    if let Some(v) = payload.marca { asset.marca = Set(Some(v)); }
+    if let Some(v) = payload.modelo { asset.modelo = Set(Some(v)); }
+    if let Some(v) = payload.numero_serie { asset.numero_serie = Set(Some(v)); }
+    if let Some(v) = payload.ubicacion { asset.ubicacion = Set(Some(v)); }
+    if let Some(v) = payload.area_responsable { asset.area_responsable = Set(Some(v)); }
+    if let Some(v) = payload.estado { asset.estado = Set(Some(v)); }
+    if let Some(v) = payload.imagen_url { asset.imagen_url = Set(Some(v)); }
+
+    if let Some(v) = payload.tipo_activo { asset.tipo_activo = Set(Some(v)); }
+    if let Some(v) = payload.anio { asset.anio = Set(Some(v)); }
+    if let Some(v) = payload.color { asset.color = Set(Some(v)); }
+    if let Some(v) = payload.numero_motor { asset.numero_motor = Set(Some(v)); }
+    if let Some(v) = payload.numero_chasis { asset.numero_chasis = Set(Some(v)); }
+    if let Some(v) = payload.manual_pdf { asset.manual_pdf = Set(Some(v)); }
+    if let Some(v) = payload.cantidad { asset.cantidad = Set(Some(v)); }
+    if let Some(v) = payload.ubicacion_detallada { asset.ubicacion_detallada = Set(Some(v)); }
+    if let Some(v) = payload.fecha_instalacion { asset.fecha_instalacion = Set(chrono::NaiveDate::parse_from_str(&v, "%Y-%m-%d").ok()); }
+    if let Some(v) = payload.fecha_adquisicion { asset.fecha_adquisicion = Set(chrono::NaiveDate::parse_from_str(&v, "%Y-%m-%d").ok()); }
+
+    let updated = asset.update(&db).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(map_asset_to_dto(updated, vec![], vec![])))
+}
+
+pub async fn delete_asset(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+    Extension(claims): Extension<jwt::Claims>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let mut asset: activos_equipos::ActiveModel = activos_equipos::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Asset not found".to_string()))?
+        .into();
+
+    asset.estado = Set(Some("baja".to_string()));
+    let asset_nombre = asset.nombre_equipo.clone().unwrap();
+
+    asset.update(&db).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    audit::log_action(
+        &db, 
+        claims.user_id, 
+        "DELETE_SOFT", 
+        "activos_equipos", 
+        Some(id), 
+        Some(format!("Dado de baja activo: {}", asset_nombre)),
+        None
+    ).await;
+
+    Ok(Json("Asset deleted (soft)".to_string()))
+}
+
+pub async fn import_assets_csv(
+    State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<jwt::Claims>,
+    mut multipart: Multipart,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let mut count = 0;
+    
+    while let Some(field) = multipart.next_field().await.map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))? {
+        if field.name() == Some("file") {
+            let data = field.bytes().await.map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+            let mut reader = csv::Reader::from_reader(&data[..]);
+            
+            for result in reader.deserialize() {
+                let record: CreateAssetRequest = result.map_err(|e| (StatusCode::BAD_REQUEST, format!("CSV format error: {}", e)))?;
+                
+                // Buscar si existe por código para actualizar, o crear
+                let existing = activos_equipos::Entity::find()
+                    .filter(activos_equipos::Column::CodigoEquipo.eq(record.codigo_equipo.clone()))
+                    .one(&db)
+                    .await
+                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+                let mut active_model = if let Some(asset) = existing {
+                    asset.into()
+                } else {
+                    activos_equipos::ActiveModel {
+                        codigo_equipo: Set(record.codigo_equipo.clone()),
+                        ..Default::default()
+                    }
+                };
+
+                active_model.nombre_equipo = Set(record.nombre_equipo);
+                active_model.descripcion = Set(record.descripcion);
+                active_model.categoria = Set(record.categoria);
+                active_model.marca = Set(record.marca);
+                active_model.modelo = Set(record.modelo);
+                active_model.numero_serie = Set(record.numero_serie);
+                active_model.ubicacion = Set(record.ubicacion);
+                active_model.area_responsable = Set(record.area_responsable);
+                active_model.estado = Set(record.estado.or(Some("activo".to_string())));
+                active_model.imagen_url = Set(record.imagen_url);
+                active_model.tipo_activo = Set(record.tipo_activo);
+                active_model.anio = Set(record.anio);
+                active_model.color = Set(record.color);
+                active_model.numero_motor = Set(record.numero_motor);
+                active_model.numero_chasis = Set(record.numero_chasis);
+                active_model.manual_pdf = Set(record.manual_pdf);
+                active_model.cantidad = Set(record.cantidad);
+                active_model.ubicacion_detallada = Set(record.ubicacion_detallada);
+                active_model.fecha_instalacion = Set(record.fecha_instalacion.as_deref().and_then(|d| chrono::NaiveDate::parse_from_str(d, "%Y-%m-%d").ok()));
+                active_model.fecha_adquisicion = Set(record.fecha_adquisicion.as_deref().and_then(|d| chrono::NaiveDate::parse_from_str(d, "%Y-%m-%d").ok()));
+
+                if active_model.id_equipo.is_set() {
+                    active_model.update(&db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+                } else {
+                    active_model.insert(&db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+                }
+                count += 1;
+            }
+        }
+    }
+
+    audit::log_action(
+        &db, 
+        claims.user_id, 
+        "IMPORT", 
+        "activos_equipos", 
+        None, 
+        Some(format!("Importados {} activos vía CSV", count)),
+        None
+    ).await;
+
+    Ok(Json(format!("Successfully imported {} assets", count)))
+}
+
+pub async fn get_assets_template() -> impl IntoResponse {
+    let csv_content = "\
+codigo_equipo,nombre_equipo,descripcion,categoria,marca,modelo,numero_serie,ubicacion,area_responsable,estado,imagen_url,tipo_activo,anio,color,numero_motor,numero_chasis,manual_pdf,cantidad,ubicacion_detallada,fecha_instalacion,fecha_adquisicion
+AIR-001,Aire Acondicionado Central,Unidad de 5 toneladas,Climatización,Carrier,XJ-100,SN12345678,Piso 1,Mantenimiento,activo,,Equipo,2023,Blanco,,,651,1,Sala de Máquinas,2023-01-15,2023-01-10
+GEN-001,Generador Eléctrico,Generador diesel 500kva,Energía,Cummins,C500,GEN987654,Sótano 2,Electricidad,activo,,Maquinaria,2022,Azul,,,321,1,Exterior B,2022-06-20,2022-06-05
+";
+    (
+        [(axum::http::header::CONTENT_TYPE, "text/csv"), (axum::http::header::CONTENT_DISPOSITION, "attachment; filename=\"plantilla_activos.csv\"")],
+        csv_content,
+    )
+}
