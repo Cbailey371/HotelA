@@ -80,3 +80,60 @@ pub async fn get_users(
 
     Ok(Json(users_dto))
 }
+pub async fn update_user(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+    Json(payload): Json<CreateUserRequest>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let mut user: usuarios::ActiveModel = usuarios::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Usuario no encontrado".to_string()))?
+        .into();
+
+    user.nombre = Set(payload.nombre);
+    user.apellido = Set(payload.apellido);
+    user.email = Set(payload.email);
+    user.usuario = Set(payload.usuario);
+    user.cargo = Set(payload.cargo);
+    user.codigo_usuario = Set(payload.codigo_usuario);
+
+    if !payload.password.is_empty() {
+        let hashed_password = hash::hash_password(&payload.password)
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
+        user.password_hash = Set(hashed_password);
+    }
+
+    let updated = user.update(&db).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(UserDto {
+        id: updated.id_usuario,
+        nombre: updated.nombre,
+        apellido: updated.apellido,
+        email: updated.email,
+        usuario: updated.usuario,
+        cargo: updated.cargo,
+        estado: updated.estado,
+        codigo: updated.codigo_usuario,
+    }))
+}
+
+pub async fn delete_user(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let user = usuarios::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Usuario no encontrado".to_string()))?;
+
+    usuarios::Entity::delete_by_id(user.id_usuario)
+        .exec(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(StatusCode::NO_CONTENT)
+}

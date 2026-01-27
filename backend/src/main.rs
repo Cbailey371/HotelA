@@ -80,6 +80,9 @@ async fn main() {
                 .route("/users", get(controllers::user::get_users).post(controllers::user::create_user)
                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
                 )
+                .route("/users/{id}", put(controllers::user::update_user).delete(controllers::user::delete_user)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
+                )
                 
                 // Work Orders
                 .route("/work-orders", get(controllers::work_orders::get_work_orders).post(controllers::work_orders::create_work_order))

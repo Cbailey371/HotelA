@@ -18,6 +18,8 @@ const UsersPage = () => {
         cargo: ''
     });
 
+    const [editingId, setEditingId] = useState(null);
+
     useEffect(() => {
         fetchUsers();
     }, []);
@@ -41,16 +43,51 @@ const UsersPage = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleEdit = (user) => {
+        setEditingId(user.id);
+        setFormData({
+            codigo_usuario: user.codigo || '',
+            nombre: user.nombre,
+            apellido: user.apellido,
+            email: user.email,
+            usuario: user.usuario,
+            password: '', // Password stays empty unless changed
+            cargo: user.cargo || ''
+        });
+        setShowModal(true);
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("¿Estás seguro de que deseas eliminar este usuario?")) return;
+        try {
+            await axios.delete(`http://localhost:3000/api/users/${id}`);
+            fetchUsers();
+        } catch (error) {
+            console.error("Error deleting user", error);
+            alert("Error al eliminar usuario");
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3000/api/users', formData);
+            if (editingId) {
+                await axios.put(`http://localhost:3000/api/users/${editingId}`, formData);
+            } else {
+                await axios.post('http://localhost:3000/api/users', formData);
+            }
             setShowModal(false);
-            setFormData({ codigo_usuario: '', nombre: '', apellido: '', email: '', usuario: '', password: '', cargo: '' });
+            resetForm();
             fetchUsers();
         } catch (error) {
-            console.error("Error creating user", error);
+            console.error("Error saving user", error);
+            alert("Error al guardar usuario");
         }
+    };
+
+    const resetForm = () => {
+        setFormData({ codigo_usuario: '', nombre: '', apellido: '', email: '', usuario: '', password: '', cargo: '' });
+        setEditingId(null);
     };
 
     return (
@@ -62,7 +99,8 @@ const UsersPage = () => {
                 </div>
                 <button
                     onClick={() => {
-                        setFormData({ ...formData, codigo_usuario: generateCode('USR-') });
+                        resetForm();
+                        setFormData(prev => ({ ...prev, codigo_usuario: generateCode('USR-') }));
                         setShowModal(true);
                     }}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 shadow-lg shadow-blue-500/30"
@@ -117,10 +155,16 @@ const UsersPage = () => {
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex justify-end gap-2">
-                                        <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors">
+                                        <button
+                                            onClick={() => handleEdit(user)}
+                                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+                                        >
                                             <Edit2 className="w-4 h-4" />
                                         </button>
-                                        <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+                                        <button
+                                            onClick={() => handleDelete(user.id)}
+                                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                        >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
@@ -131,11 +175,13 @@ const UsersPage = () => {
                 </table>
             </div>
 
-            {/* Modal Crear Usuario */}
+            {/* Modal Crear/Editar Usuario */}
             {showModal && (
                 <div className="fixed inset-0 bg-slate-900/50 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
                     <div className="bg-white dark:bg-[#1e293b] p-6 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg shadow-2xl">
-                        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Crear Nuevo Usuario</h3>
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">
+                            {editingId ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
+                        </h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2">
@@ -163,8 +209,17 @@ const UsersPage = () => {
                                 <input required name="usuario" value={formData.usuario} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Contraseña</label>
-                                <input required type="password" name="password" value={formData.password} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">
+                                    Contraseña {editingId && "(Dejar en blanco para no cambiar)"}
+                                </label>
+                                <input
+                                    required={!editingId}
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleInputChange}
+                                    className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none"
+                                />
                             </div>
                             <div>
                                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Cargo</label>
@@ -172,7 +227,9 @@ const UsersPage = () => {
                             </div>
                             <div className="flex justify-end gap-3 pt-4">
                                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white text-sm">Cancelar</button>
-                                <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">Guardar Usuario</button>
+                                <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">
+                                    {editingId ? 'Guardar Cambios' : 'Guardar Usuario'}
+                                </button>
                             </div>
                         </form>
                     </div>
