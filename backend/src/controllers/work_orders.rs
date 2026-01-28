@@ -20,6 +20,10 @@ pub async fn create_work_order(
     State(db): State<DatabaseConnection>,
     Json(payload): Json<CreateWorkOrderRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
+    // Generate sequential code
+    let next_code = crate::utils::code_generator::generate_next_code(&db, "orden_trabajo", "codigo_ot", "OT-").await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
     let new_ot = orden_trabajo::ActiveModel {
         id_calendario: Set(payload.id_calendario),
         id_activo: Set(payload.id_activo),
@@ -28,7 +32,7 @@ pub async fn create_work_order(
         id_proveedor: Set(payload.id_proveedor),
         prioridad: Set(payload.prioridad),
         observaciones: Set(payload.observaciones),
-        codigo_ot: Set(payload.codigo_ot),
+        codigo_ot: Set(Some(next_code)),
         estado: Set(Some("abierta".to_string())),
         ..Default::default()
     };

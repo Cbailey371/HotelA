@@ -24,11 +24,15 @@ pub async fn create_purchase_order(
     State(db): State<DatabaseConnection>,
     Json(payload): Json<CreatePurchaseOrderRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
+    // Generate sequential code
+    let next_code = crate::utils::code_generator::generate_next_code(&db, "orden_compra_repuesto", "codigo_compra", "OC-").await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
     // Transaction ideally
     let new_order = orden_compra_repuesto::ActiveModel {
         id_ot: Set(payload.id_ot),
         id_proveedor: Set(payload.id_proveedor),
-        codigo_compra: Set(payload.codigo_compra),
+        codigo_compra: Set(Some(next_code)),
         estado: Set(Some("solicitado".to_string())),
         ..Default::default()
     };

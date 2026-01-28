@@ -54,6 +54,10 @@ pub async fn create_provider(
     State(db): State<DatabaseConnection>,
     Json(payload): Json<ProviderRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
+    // Generate sequential code
+    let next_code = crate::utils::code_generator::generate_next_code(&db, "proveedores", "codigo_proveedor", "POR-").await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
     let new_provider = proveedores::ActiveModel {
         nombre_proveedor: Set(payload.nombre_proveedor),
         tipo_proveedor: Set(payload.tipo_proveedor),
@@ -63,7 +67,7 @@ pub async fn create_provider(
         direccion: Set(payload.direccion),
         pais: Set(payload.pais),
         estado: Set(payload.estado.or(Some("activo".to_string()))),
-        codigo_proveedor: Set(payload.codigo_proveedor),
+        codigo_proveedor: Set(Some(next_code)),
         ..Default::default()
     };
 

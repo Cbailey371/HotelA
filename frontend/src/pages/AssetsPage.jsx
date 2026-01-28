@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Plus, Search, Edit2, Trash2, Box, MapPin, Tag, Hash, Activity, Image as ImageIcon, Upload, Filter, X, Download } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Box, MapPin, Tag, Hash, Activity, Image as ImageIcon, Upload, Filter, X, Download, ZoomIn, FileText } from 'lucide-react';
 import { assetService } from '../services/assetService';
-import { generateCode } from '../utils/codeGenerator';
 
 const AssetsPage = () => {
     const navigate = useNavigate();
@@ -13,15 +12,23 @@ const AssetsPage = () => {
     const [editingAsset, setEditingAsset] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [previewImage, setPreviewImage] = useState(null);
+
+    // Config Data
+    const [categoriesList, setCategoriesList] = useState([]);
+    const [typesList, setTypesList] = useState([]);
+    const [locationsList, setLocationsList] = useState([]);
 
     // Filters
     const [filterCategory, setFilterCategory] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [filterBrand, setFilterBrand] = useState('');
+    const [filterLocation, setFilterLocation] = useState('');
 
     // Form State
     const initialFormState = {
         codigo_equipo: '',
+        codigo_administrativo: '',
         nombre_equipo: '',
         marca: '',
         modelo: '',
@@ -29,13 +36,14 @@ const AssetsPage = () => {
         ubicacion: '',
         categoria: '',
         estado: 'activo',
-        imagen_url: '',
+        imagen_url: null, // Changed from '' to null
         tipo_activo: '',
         anio: '',
         color: '',
         numero_motor: '',
         numero_chasis: '',
-        manual_pdf: '',
+        manual_pdf: null, // Changed from '' to null
+        documentos: [], // New documents array
         cantidad: 1,
         ubicacion_detallada: '',
         fecha_instalacion: '',
@@ -45,6 +53,7 @@ const AssetsPage = () => {
 
     useEffect(() => {
         fetchAssets();
+        fetchConfig();
     }, []);
 
     const fetchAssets = async () => {
@@ -55,6 +64,21 @@ const AssetsPage = () => {
             console.error("Error fetching assets", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchConfig = async () => {
+        try {
+            const [catsRes, typesRes, locsRes] = await Promise.all([
+                axios.get('http://localhost:3000/api/asset-config/categories', { withCredentials: true }),
+                axios.get('http://localhost:3000/api/asset-config/types', { withCredentials: true }),
+                axios.get('http://localhost:3000/api/asset-config/locations', { withCredentials: true })
+            ]);
+            setCategoriesList(catsRes.data);
+            setTypesList(typesRes.data);
+            setLocationsList(locsRes.data);
+        } catch (error) {
+            console.error("Error fetching config", error);
         }
     };
 
@@ -121,10 +145,7 @@ const AssetsPage = () => {
 
     const openCreateModal = () => {
         setEditingAsset(null);
-        setFormData({
-            ...initialFormState,
-            codigo_equipo: generateCode('ACT-')
-        });
+        setFormData(initialFormState);
         setShowModal(true);
     };
 
@@ -135,64 +156,138 @@ const AssetsPage = () => {
         const uploadData = new FormData();
         uploadData.append('file', file);
 
-        setUploading(true);
         try {
             const res = await axios.post('http://localhost:3000/api/upload/manual', uploadData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setFormData(prev => ({
-                ...prev,
-                manual_pdf: res.data.url,
-                manual_name: res.data.original_name
-            }));
-            alert("Manual cargado correctamente");
+            const newDoc = {
+                nombre_archivo: res.data.original_name,
+                url_archivo: res.data.url
+            };
+
+            if (editingAsset) {
+                // If editing, save immediately to backend
+                const docRes = await axios.post(`http://localhost:3000/api/assets/${editingAsset.id}/documents`, newDoc);
+                setFormData(prev => ({
+                    ...prev,
+                    documentos: [...prev.documentos, docRes.data]
+                }));
+            } else {
+                // If creating, just add to local state
+                setFormData(prev => ({
+                    ...prev,
+                    documentos: [...prev.documentos, newDoc]
+                }));
+            }
         } catch (error) {
             console.error("Error uploading manual", error);
             alert("Error al subir el manual");
-        } finally {
-            setUploading(false);
+        }
+    };
+
+    const handleDeleteDocument = async (doc) => {
+        if (!window.confirm(`¿Eliminar el documento "${doc.nombre_archivo}"?`)) return;
+
+        try {
+            if (doc.id) {
+                // If it has an ID, it's already in DB
+                await axios.delete(`http://localhost:3000/api/assets/documents/${doc.id}`);
+            }
+            // Remove from local state
+            setFormData(prev => ({
+                ...prev,
+                documentos: prev.documentos.filter(d => d.url_archivo !== doc.url_archivo)
+            }));
+        } catch (error) {
+            console.error("Error deleting document", error);
+            alert("Error al eliminar el documento.");
+        }
+    };
+
+    const fetchAssetById = async (id) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/api/assets/${id}`);
+            const asset = response.data;
+            setFormData({
+                ...initialFormState, // Start with initial state to clear any previous form data
+                codigo_equipo: asset.codigo,
+                codigo_administrativo: asset.codigo_administrativo || '',
+                nombre_equipo: asset.nombre,
+                marca: asset.marca || '',
+                modelo: asset.modelo || '',
+                numero_serie: asset.serie || '',
+                ubicacion: asset.ubicacion || '',
+                categoria: asset.categoria || '',
+                estado: asset.estado || 'activo',
+                imagen_url: asset.imagen_url || null,
+                tipo_activo: asset.tipo_activo || '',
+                anio: asset.anio || '',
+                color: asset.color || '',
+                numero_motor: asset.numero_motor || '',
+                numero_chasis: asset.numero_chasis || '',
+                manual_pdf: asset.manual_pdf || null, // Keep manual_pdf for backward compatibility if needed, but documents array is primary
+                cantidad: asset.cantidad || 1,
+                ubicacion_detallada: asset.ubicacion_detallada || '',
+                fecha_instalacion: asset.fecha_instalacion ? asset.fecha_instalacion.split('T')[0] : '', // Format date for input
+                fecha_adquisicion: asset.fecha_adquisicion ? asset.fecha_adquisicion.split('T')[0] : '', // Format date for input
+                documentos: asset.documentos || []
+            });
+        } catch (error) {
+            console.error("Error fetching asset details", error);
+            if (error.response) {
+                console.error("Backend response error:", error.response.data);
+            }
+            alert("Error al cargar los detalles del activo.");
         }
     };
 
     const openEditModal = (asset) => {
         setEditingAsset(asset);
-        setFormData({
-            codigo_equipo: asset.codigo,
-            nombre_equipo: asset.nombre,
-            marca: asset.marca || '',
-            modelo: asset.modelo || '',
-            numero_serie: asset.serie || '',
-            ubicacion: asset.ubicacion || '',
-            categoria: asset.categoria || '',
-            estado: asset.estado || 'activo',
-            imagen_url: asset.imagen_url || '',
-            tipo_activo: asset.tipo_activo || '',
-            anio: asset.anio || '',
-            color: asset.color || '',
-            numero_motor: asset.numero_motor || '',
-            numero_chasis: asset.numero_chasis || '',
-            manual_pdf: asset.manual_pdf || '',
-            cantidad: asset.cantidad || 1,
-            ubicacion_detallada: asset.ubicacion_detallada || '',
-            fecha_instalacion: asset.fecha_instalacion || '',
-            fecha_adquisicion: asset.fecha_adquisicion || ''
-        });
+        fetchAssetById(asset.id); // Fetch full asset details including documents
         setShowModal(true);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Sanitize data: convert empty strings to null for optional fields, especially numeric/dates
+        const sanitizedData = { ...formData };
+
+        // Optional Fields that should be null if empty
+        const optionalFields = [
+            'codigo_administrativo', 'descripcion', 'categoria', 'marca', 'modelo',
+            'numero_serie', 'ubicacion', 'area_responsable', 'tipo_activo', 'color',
+            'numero_motor', 'numero_chasis', 'manual_pdf', 'ubicacion_detallada', 'imagen_url'
+        ];
+
+        optionalFields.forEach(field => {
+            if (sanitizedData[field] === '') sanitizedData[field] = null;
+        });
+
+        // Numeric fields (must be int/null)
+        if (sanitizedData.anio === '') sanitizedData.anio = null;
+        else if (sanitizedData.anio !== null) sanitizedData.anio = parseInt(sanitizedData.anio);
+
+        if (sanitizedData.cantidad === '') sanitizedData.cantidad = null;
+        else if (sanitizedData.cantidad !== null) sanitizedData.cantidad = parseInt(sanitizedData.cantidad);
+
+        // Date fields (must be string formatted YYYY-MM-DD or null)
+        if (sanitizedData.fecha_instalacion === '') sanitizedData.fecha_instalacion = null;
+        if (sanitizedData.fecha_adquisicion === '') sanitizedData.fecha_adquisicion = null;
+
         try {
             if (editingAsset) {
-                await axios.put(`http://localhost:3000/api/assets/${editingAsset.id}`, formData);
+                await axios.put(`http://localhost:3000/api/assets/${editingAsset.id}`, sanitizedData);
             } else {
-                await axios.post('http://localhost:3000/api/assets', formData);
+                await axios.post('http://localhost:3000/api/assets', sanitizedData);
             }
             setShowModal(false);
             fetchAssets();
         } catch (error) {
             console.error("Error saving asset", error);
-            alert("Error al guardar el activo. Verifique los datos.");
+            // Show more detail if available
+            const backendMsg = error.response?.data;
+            alert(`Error al guardar el activo: ${typeof backendMsg === 'string' ? backendMsg : 'Verifique los datos.'}`);
         }
     };
 
@@ -211,13 +306,15 @@ const AssetsPage = () => {
         const matchesSearch =
             asset.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
             asset.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (asset.codigo_administrativo && asset.codigo_administrativo.toLowerCase().includes(searchTerm.toLowerCase())) ||
             (asset.ubicacion && asset.ubicacion.toLowerCase().includes(searchTerm.toLowerCase()));
 
         const matchesCategory = filterCategory ? asset.categoria === filterCategory : true;
         const matchesStatus = filterStatus ? asset.estado === filterStatus : true;
         const matchesBrand = filterBrand ? asset.marca === filterBrand : true;
+        const matchesLocation = filterLocation ? asset.ubicacion === filterLocation : true;
 
-        return matchesSearch && matchesCategory && matchesStatus && matchesBrand;
+        return matchesSearch && matchesCategory && matchesStatus && matchesBrand && matchesLocation;
     });
 
     const uniqueBrands = [...new Set(assets.map(a => a.marca).filter(Boolean))].sort();
@@ -227,6 +324,7 @@ const AssetsPage = () => {
         setFilterCategory('');
         setFilterStatus('');
         setFilterBrand('');
+        setFilterLocation('');
     };
 
     return (
@@ -280,11 +378,20 @@ const AssetsPage = () => {
                     className="bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500"
                 >
                     <option value="">Todas las Categorías</option>
-                    <option value="HVAC">Climatización (HVAC)</option>
-                    <option value="ELECTRICO">Eléctrico</option>
-                    <option value="PLOMERIA">Plomería</option>
-                    <option value="MOBILIARIO">Mobiliario</option>
-                    <option value="COMPUTO">Cómputo</option>
+                    {categoriesList.map(cat => (
+                        <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
+                    ))}
+                </select>
+
+                <select
+                    value={filterLocation}
+                    onChange={(e) => setFilterLocation(e.target.value)}
+                    className="bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500"
+                >
+                    <option value="">Todas las Ubicaciones</option>
+                    {locationsList.map(loc => (
+                        <option key={loc.id} value={loc.nombre}>{loc.nombre}</option>
+                    ))}
                 </select>
 
                 <select
@@ -298,18 +405,7 @@ const AssetsPage = () => {
                     <option value="baja">De Baja</option>
                 </select>
 
-                <select
-                    value={filterBrand}
-                    onChange={(e) => setFilterBrand(e.target.value)}
-                    className="bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500"
-                >
-                    <option value="">Todas las Marcas</option>
-                    {uniqueBrands.map(brand => (
-                        <option key={brand} value={brand}>{brand}</option>
-                    ))}
-                </select>
-
-                {(filterCategory || filterStatus || filterBrand || searchTerm) && (
+                {(filterCategory || filterStatus || filterBrand || filterLocation || searchTerm) && (
                     <button
                         onClick={clearFilters}
                         className="ml-auto text-sm text-red-500 hover:text-red-600 font-medium flex items-center gap-1 transition-colors"
@@ -325,7 +421,9 @@ const AssetsPage = () => {
                     <table className="w-full text-left">
                         <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold">
                             <tr>
-                                <th className="px-6 py-4">Activo / Código</th>
+                                <th className="px-6 py-4">Activo</th>
+                                <th className="px-6 py-4">Cód. Admin</th>
+                                <th className="px-6 py-4">Cód. Interno</th>
                                 <th className="px-6 py-4">Detalles Técnicos</th>
                                 <th className="px-6 py-4">Ubicación</th>
                                 <th className="px-6 py-4">Estado</th>
@@ -334,9 +432,9 @@ const AssetsPage = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
-                                <tr><td colSpan="5" className="text-center py-8 text-slate-500">Cargando inventario...</td></tr>
+                                <tr><td colSpan="7" className="text-center py-8 text-slate-500">Cargando inventario...</td></tr>
                             ) : filteredAssets.length === 0 ? (
-                                <tr><td colSpan="5" className="text-center py-8 text-slate-500">No se encontraron activos.</td></tr>
+                                <tr><td colSpan="7" className="text-center py-8 text-slate-500">No se encontraron activos.</td></tr>
                             ) : filteredAssets.map((asset) => (
                                 <tr
                                     key={asset.id}
@@ -348,7 +446,13 @@ const AssetsPage = () => {
                                 >
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 flex-shrink-0 group-hover:border-blue-400 transition-colors">
+                                            <div
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (asset.imagen_url) setPreviewImage(`http://localhost:3000${asset.imagen_url}`);
+                                                }}
+                                                className={`w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 flex-shrink-0 group-hover:border-blue-400 transition-colors ${asset.imagen_url ? 'cursor-zoom-in' : ''}`}
+                                            >
                                                 {asset.imagen_url ? (
                                                     <img src={`http://localhost:3000${asset.imagen_url}`} alt={asset.nombre} className="w-full h-full object-cover" />
                                                 ) : (
@@ -357,11 +461,21 @@ const AssetsPage = () => {
                                             </div>
                                             <div>
                                                 <div className="font-semibold text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors underline decoration-transparent group-hover:decoration-blue-500/30">{asset.nombre}</div>
-                                                <div className="text-xs text-slate-500 font-mono flex items-center gap-1">
-                                                    <Hash className="w-3 h-3" /> {asset.codigo}
-                                                </div>
+                                                <div className="text-xs text-slate-500">{asset.tipo_activo || 'Activo'}</div>
                                             </div>
                                         </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {asset.codigo_administrativo ? (
+                                            <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{asset.codigo_administrativo}</span>
+                                        ) : (
+                                            <span className="text-slate-400 italic text-xs">--</span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                                            {asset.codigo}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="text-sm text-slate-600 dark:text-slate-300">
@@ -422,39 +536,73 @@ const AssetsPage = () => {
                             <div className="flex gap-6 flex-col md:flex-row">
                                 {/* Image Upload Section */}
                                 <div className="md:w-1/3 flex flex-col items-center">
-                                    <div className="w-full aspect-square bg-slate-100 dark:bg-[#0f172a] rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center overflow-hidden relative group cursor-pointer hover:border-blue-500 transition-colors">
+                                    <div
+                                        onClick={() => {
+                                            if (formData.imagen_url) setPreviewImage(`http://localhost:3000${formData.imagen_url}`);
+                                        }}
+                                        className={`w-full aspect-square bg-slate-100 dark:bg-[#0f172a] rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center overflow-hidden relative group transition-colors ${formData.imagen_url ? 'cursor-zoom-in border-solid hover:border-blue-500' : 'cursor-pointer hover:border-blue-500'}`}
+                                    >
                                         {formData.imagen_url ? (
-                                            <img src={`http://localhost:3000${formData.imagen_url}`} alt="Preview" className="w-full h-full object-cover" />
+                                            <>
+                                                <img src={`http://localhost:3000${formData.imagen_url}`} alt="Preview" className="w-full h-full object-cover" />
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all">
+                                                    <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100" />
+                                                </div>
+                                            </>
                                         ) : (
                                             <div className="text-center p-4">
                                                 <ImageIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
                                                 <span className="text-xs text-slate-500 block">Subir Imagen</span>
                                             </div>
                                         )}
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageUpload}
-                                            className="absolute inset-0 opacity-0 cursor-pointer"
-                                            disabled={uploading}
-                                        />
+                                        {!formData.imagen_url && (
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                                disabled={uploading}
+                                            />
+                                        )}
                                         {uploading && (
                                             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                                                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                                             </div>
                                         )}
                                     </div>
-                                    <p className="text-xs text-slate-500 mt-2 text-center">Click para subir foto (Max 5MB)</p>
+                                    {formData.imagen_url && (
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                // Trigger hidden file input
+                                                document.getElementById('edit-image-input').click();
+                                            }}
+                                            className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-700 underline"
+                                        >
+                                            Cambiar imagen
+                                        </button>
+                                    )}
+                                    <input
+                                        id="edit-image-input"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                        disabled={uploading}
+                                    />
+                                    <p className="text-xs text-slate-500 mt-2 text-center">Click para ampliar o subir foto</p>
                                 </div>
 
                                 {/* Fields */}
                                 <div className="md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Código Interno *</label>
-                                        <div className="relative">
-                                            <input required name="codigo_equipo" value={formData.codigo_equipo} onChange={handleInputChange} placeholder="ej. ACT-001" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none pr-20" />
-                                            <button type="button" onClick={() => setFormData(p => ({ ...p, codigo_equipo: generateAssetCode() }))} className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-1 rounded hover:bg-slate-300 transition-colors uppercase">Regenerar</button>
-                                        </div>
+                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Código Activo (Manual)</label>
+                                        <input name="codigo_administrativo" value={formData.codigo_administrativo} onChange={handleInputChange} placeholder="ej. FIN-1234" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                                    </div>
+                                    <div className="col-span-1">
+                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Código Interno (Auto)</label>
+                                        <input disabled value={formData.codigo_equipo || "Generado al guardar"} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-400 italic cursor-not-allowed outline-none" />
                                     </div>
                                     <div className="col-span-1">
                                         <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Estado</label>
@@ -484,16 +632,28 @@ const AssetsPage = () => {
                                         <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Categoría</label>
                                         <select name="categoria" value={formData.categoria} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
                                             <option value="">Seleccionar...</option>
-                                            <option value="HVAC">Climatización (HVAC)</option>
-                                            <option value="ELECTRICO">Eléctrico</option>
-                                            <option value="PLOMERIA">Plomería</option>
-                                            <option value="MOBILIARIO">Mobiliario</option>
-                                            <option value="COMPUTO">Cómputo</option>
+                                            {categoriesList.map(cat => (
+                                                <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="col-span-1">
+                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Ubicación</label>
+                                        <select name="ubicacion" value={formData.ubicacion} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
+                                            <option value="">Seleccionar...</option>
+                                            {locationsList.map(loc => (
+                                                <option key={loc.id} value={loc.nombre}>{loc.nombre}</option>
+                                            ))}
                                         </select>
                                     </div>
                                     <div className="col-span-1">
                                         <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Tipo Activo</label>
-                                        <input name="tipo_activo" value={formData.tipo_activo} onChange={handleInputChange} placeholder="ej. Maquinaria Pesada" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                                        <select name="tipo_activo" value={formData.tipo_activo} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
+                                            <option value="">Seleccionar...</option>
+                                            {typesList.map(t => (
+                                                <option key={t.id} value={t.nombre}>{t.nombre}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                     <div className="col-span-1">
                                         <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Año</label>
@@ -528,21 +688,43 @@ const AssetsPage = () => {
                                         <input name="ubicacion_detallada" value={formData.ubicacion_detallada} onChange={handleInputChange} placeholder="ej. Ala Norte, Pasillo 4, Rack B" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
                                     </div>
                                     <div className="col-span-2">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Manual Técnico / Ficha</label>
-                                        <div className="flex items-center gap-4 bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5">
-                                            <label className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-1.5 rounded-md text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 cursor-pointer transition-colors shadow-sm">
-                                                <Upload className="w-4 h-4" /> Subir Archivo
-                                                <input type="file" onChange={handleManualUpload} className="hidden" />
-                                            </label>
-                                            <div className="flex-1 text-sm truncate text-slate-500 italic">
-                                                {formData.manual_pdf ? (
-                                                    <span className="text-blue-600 dark:text-blue-400 font-medium not-italic">{formData.manual_name || formData.manual_pdf.split('/').pop()}</span>
-                                                ) : 'PDF, Word, etc. (Máx 10MB)'}
+                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Manuales Técnicos / Fichas</label>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-4 bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5">
+                                                <label className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-1.5 rounded-md text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 cursor-pointer transition-colors shadow-sm">
+                                                    <Upload className="w-4 h-4" /> Agregar Manual
+                                                    <input type="file" onChange={handleManualUpload} className="hidden" />
+                                                </label>
+                                                <span className="text-xs text-slate-400 font-medium italic">Puedes subir múltiples archivos (PDF, DOCX, Imágenes)</span>
                                             </div>
-                                            {formData.manual_pdf && (
-                                                <button type="button" onClick={() => setFormData(p => ({ ...p, manual_pdf: '', manual_name: '' }))} className="text-red-500 hover:text-red-600 p-1">
-                                                    <X className="w-4 h-4" />
-                                                </button>
+
+                                            {formData.documentos && formData.documentos.length > 0 && (
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    {formData.documentos.map((doc, idx) => (
+                                                        <div key={doc.id || idx} className="flex items-center justify-between bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl group transition-all hover:border-blue-400/50">
+                                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                                <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500 flex-shrink-0">
+                                                                    <FileText className="w-4 h-4" />
+                                                                </div>
+                                                                <a
+                                                                    href={`http://localhost:3000${doc.url_archivo}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 truncate max-w-[200px]"
+                                                                >
+                                                                    {doc.nombre_archivo}
+                                                                </a>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleDeleteDocument(doc)}
+                                                                className="p-1.5 text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                                            >
+                                                                <X className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             )}
                                         </div>
                                     </div>
@@ -554,6 +736,31 @@ const AssetsPage = () => {
                                 <button type="submit" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-lg shadow-blue-500/30 transition-all">Guardar Activo</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Image Preview Modal */}
+            {previewImage && (
+                <div
+                    className="fixed inset-0 bg-slate-900/90 dark:bg-black/95 backdrop-blur-md flex items-center justify-center z-[100] p-4 cursor-zoom-out"
+                    onClick={() => setPreviewImage(null)}
+                >
+                    <button
+                        className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors"
+                        onClick={() => setPreviewImage(null)}
+                    >
+                        <X className="w-8 h-8" />
+                    </button>
+                    <div
+                        className="max-w-5xl max-h-[90vh] flex items-center justify-center relative shadow-2xl rounded-2xl overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <img
+                            src={previewImage}
+                            alt="Preview"
+                            className="max-w-full max-h-[90vh] object-contain"
+                        />
                     </div>
                 </div>
             )}

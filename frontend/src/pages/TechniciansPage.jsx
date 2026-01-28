@@ -59,7 +59,7 @@ const TechniciansPage = () => {
         setEditingTech(null);
         setFormData({
             ...initialFormData,
-            codigo_tecnico: generateCode('TEC-')
+            // codigo_tecnico: generateCode('TEC-') // Removed: Auto-generated in backend
         });
         setShowModal(true);
     };
@@ -141,6 +141,12 @@ const TechniciansPage = () => {
                             </div>
                         </div>
 
+                        <div className="mb-2">
+                            <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                                {tech.codigo || 'N/A'}
+                            </span>
+                        </div>
+
                         <div className="space-y-2 mb-4">
                             <div className="flex justify-between text-sm">
                                 <span className="text-slate-400">Modalidad:</span>
@@ -170,11 +176,9 @@ const TechniciansPage = () => {
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-1">
-                                    <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Código Técnico *</label>
-                                    <div className="relative">
-                                        <input required name="codigo_tecnico" value={formData.codigo_tecnico} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none pr-20" />
-                                        <button type="button" onClick={() => setFormData(p => ({ ...p, codigo_tecnico: generateCode('TEC-') }))} className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-1 rounded hover:bg-slate-300 transition-colors uppercase">Regenerar</button>
-                                    </div>
+                                    {/* Code generation is now automatic in backend */}
+                                    <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Código Técnico (Auto)</label>
+                                    <input disabled value="Generado al guardar" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none text-slate-400 cursor-not-allowed italic" />
                                 </div>
                                 <div className="col-span-1">
                                     <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Nombre</label>

@@ -47,7 +47,7 @@ const ProvidersPage = () => {
         setEditingProvider(null);
         setFormData({
             ...initialFormData,
-            codigo_proveedor: generateCode('PRV-')
+            // codigo_proveedor: generateCode('PRV-') // Removed: Auto-generated in backend
         });
         setShowModal(true);
     };
@@ -126,6 +126,7 @@ const ProvidersPage = () => {
                 <table className="w-full text-left">
                     <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 text-xs uppercase font-semibold">
                         <tr>
+                            <th className="px-6 py-4">Código</th>
                             <th className="px-6 py-4">Proveedor</th>
                             <th className="px-6 py-4">Tipo</th>
                             <th className="px-6 py-4">Contacto</th>
@@ -138,6 +139,11 @@ const ProvidersPage = () => {
                             <tr><td colSpan="5" className="text-center py-8">Cargando...</td></tr>
                         ) : filtered.map((p) => (
                             <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                <td className="px-6 py-4">
+                                    <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
+                                        {p.codigo || 'N/A'}
+                                    </span>
+                                </td>
                                 <td className="px-6 py-4 font-semibold text-slate-800 dark:text-white">{p.nombre}</td>
                                 <td className="px-6 py-4">
                                     <span className="px-2 py-1 bg-blue-100 dark:bg-blue-500/10 text-blue-600 text-xs rounded uppercase font-bold">
@@ -174,13 +180,7 @@ const ProvidersPage = () => {
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Código Proveedor *</label>
-                                    <div className="relative">
-                                        <input required name="codigo_proveedor" value={formData.codigo_proveedor} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none pr-20" />
-                                        <button type="button" onClick={() => setFormData(p => ({ ...p, codigo_proveedor: generateCode('PRV-') }))} className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-1 rounded hover:bg-slate-300 transition-colors uppercase">Regenerar</button>
-                                    </div>
-                                </div>
+                                {/* Code generation is now automatic in backend */}
                                 <div>
                                     <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Nombre Empresa</label>
                                     <input required name="nombre_proveedor" value={formData.nombre_proveedor} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />

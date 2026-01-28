@@ -8,6 +8,7 @@ const UsersPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [editingId, setEditingId] = useState(null); // Added missing state
     const [formData, setFormData] = useState({
         codigo_usuario: '',
         nombre: '',
@@ -15,14 +16,31 @@ const UsersPage = () => {
         email: '',
         usuario: '',
         password: '',
-        cargo: ''
+        cargo: '',
+        role_id: '',
+        estado: 'activo'
     });
 
-    const [editingId, setEditingId] = useState(null);
+    const [roles, setRoles] = useState([]);
+
+    // Filters
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterRole, setFilterRole] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
 
     useEffect(() => {
         fetchUsers();
+        fetchRoles();
     }, []);
+
+    const fetchRoles = async () => {
+        try {
+            const res = await axios.get('http://localhost:3000/api/roles');
+            setRoles(res.data);
+        } catch (error) {
+            console.error("Error fetching roles", error);
+        }
+    };
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -52,7 +70,9 @@ const UsersPage = () => {
             email: user.email,
             usuario: user.usuario,
             password: '', // Password stays empty unless changed
-            cargo: user.cargo || ''
+            cargo: user.cargo || '',
+            role_id: user.rol_id || '',
+            estado: user.estado || 'activo'
         });
         setShowModal(true);
     };
@@ -68,13 +88,41 @@ const UsersPage = () => {
         }
     };
 
+    const handleToggleStatus = async (user) => {
+        try {
+            const newStatus = user.estado === 'activo' ? 'inactivo' : 'activo';
+            const payload = {
+                nombre: user.nombre,
+                apellido: user.apellido,
+                email: user.email,
+                usuario: user.usuario,
+                password: "",
+                cargo: user.cargo,
+                codigo_usuario: user.codigo,
+                role_id: user.rol_id,
+                estado: newStatus
+            };
+
+            await axios.put(`http://localhost:3000/api/users/${user.id}`, payload);
+            fetchUsers();
+        } catch (error) {
+            console.error("Error toggling status", error);
+            alert("Error al cambiar estado");
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const payload = {
+                ...formData,
+                role_id: formData.role_id ? parseInt(formData.role_id) : null
+            };
+
             if (editingId) {
-                await axios.put(`http://localhost:3000/api/users/${editingId}`, formData);
+                await axios.put(`http://localhost:3000/api/users/${editingId}`, payload);
             } else {
-                await axios.post('http://localhost:3000/api/users', formData);
+                await axios.post('http://localhost:3000/api/users', payload);
             }
             setShowModal(false);
             resetForm();
@@ -86,13 +134,26 @@ const UsersPage = () => {
     };
 
     const resetForm = () => {
-        setFormData({ codigo_usuario: '', nombre: '', apellido: '', email: '', usuario: '', password: '', cargo: '' });
+        setFormData({ codigo_usuario: '', nombre: '', apellido: '', email: '', usuario: '', password: '', cargo: '', role_id: '', estado: 'activo' });
         setEditingId(null);
     };
 
+    const filteredUsers = users.filter(user => {
+        const matchesSearch =
+            user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (user.codigo || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (user.cargo || '').toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesRole = filterRole ? (user.rol_id === parseInt(filterRole)) : true;
+        const matchesStatus = filterStatus ? (user.estado === filterStatus) : true;
+
+        return matchesSearch && matchesRole && matchesStatus;
+    });
+
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center bg-white dark:bg-[#1e293b] p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-[#1e293b] p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div>
                     <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Usuarios del Sistema</h2>
                     <p className="text-slate-500 dark:text-slate-400 text-sm">Gestiona el acceso y roles del personal</p>
@@ -100,7 +161,6 @@ const UsersPage = () => {
                 <button
                     onClick={() => {
                         resetForm();
-                        setFormData(prev => ({ ...prev, codigo_usuario: generateCode('USR-') }));
                         setShowModal(true);
                     }}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 shadow-lg shadow-blue-500/30"
@@ -109,10 +169,48 @@ const UsersPage = () => {
                 </button>
             </div>
 
+            {/* Filters Bar */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white dark:bg-[#1e293b] p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="relative md:col-span-2">
+                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre, código o cargo..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                </div>
+                <div>
+                    <select
+                        value={filterRole}
+                        onChange={(e) => setFilterRole(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 dark:text-slate-300"
+                    >
+                        <option value="">Todos los Roles</option>
+                        {roles.map(role => (
+                            <option key={role.id} value={role.id}>{role.nombre}</option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <select
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 dark:text-slate-300"
+                    >
+                        <option value="">Todos los Estados</option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                </div>
+            </div>
+
             <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                 <table className="w-full text-left">
                     <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold">
                         <tr>
+                            <th className="px-6 py-4">Código</th>
                             <th className="px-6 py-4">Usuario</th>
                             <th className="px-6 py-4">Rol / Cargo</th>
                             <th className="px-6 py-4">Estado</th>
@@ -124,10 +222,15 @@ const UsersPage = () => {
                             <tr><td colSpan="4" className="text-center py-8 text-slate-500 font-medium">Cargando usuarios...</td></tr>
                         ) : error ? (
                             <tr><td colSpan="4" className="text-center py-8 text-red-500 font-medium">{error}</td></tr>
-                        ) : users.length === 0 ? (
-                            <tr><td colSpan="4" className="text-center py-8 text-slate-500 italic">No hay usuarios registrados</td></tr>
-                        ) : users.map((user) => (
+                        ) : filteredUsers.length === 0 ? (
+                            <tr><td colSpan="5" className="text-center py-8 text-slate-500 italic">No se encontraron usuarios</td></tr>
+                        ) : filteredUsers.map((user) => (
                             <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                <td className="px-6 py-4">
+                                    <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
+                                        {user.codigo || 'N/A'}
+                                    </span>
+                                </td>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-white font-bold">
@@ -143,27 +246,34 @@ const UsersPage = () => {
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex flex-col">
-                                        <span className="text-slate-700 dark:text-slate-200">Usuario (Por defecto)</span>
+                                        <span className="text-slate-700 dark:text-slate-200 font-medium">{user.rol_nombre || 'Sin Rol'}</span>
                                         <span className="text-xs text-slate-500">{user.cargo || 'Sin cargo'}</span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded-md text-xs font-semibold ${user.estado === 'activo' ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400'
-                                        }`}>
-                                        {user.estado}
-                                    </span>
+                                    <button
+                                        onClick={() => handleToggleStatus(user)}
+                                        className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${user.estado === 'activo'
+                                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400'
+                                            : 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-400'
+                                            }`}
+                                    >
+                                        {user.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                                    </button>
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex justify-end gap-2">
                                         <button
                                             onClick={() => handleEdit(user)}
-                                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+                                            className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                                            title="Editar Usuario"
                                         >
                                             <Edit2 className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(user.id)}
-                                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                            className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                                            title="Eliminar Usuario"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
@@ -184,13 +294,7 @@ const UsersPage = () => {
                         </h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-2">
-                                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Código Usuario *</label>
-                                    <div className="relative">
-                                        <input required name="codigo_usuario" value={formData.codigo_usuario} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none pr-20" />
-                                        <button type="button" onClick={() => setFormData(p => ({ ...p, codigo_usuario: generateCode('USR-') }))} className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded hover:bg-slate-200 transition-colors uppercase">Regenerar</button>
-                                    </div>
-                                </div>
+                                {/* Code generation is now automatic in backend */}
                                 <div>
                                     <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Nombre</label>
                                     <input required name="nombre" value={formData.nombre} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
@@ -212,14 +316,48 @@ const UsersPage = () => {
                                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">
                                     Contraseña {editingId && "(Dejar en blanco para no cambiar)"}
                                 </label>
-                                <input
-                                    required={!editingId}
-                                    type="password"
-                                    name="password"
-                                    value={formData.password}
+                                <div className="flex gap-2">
+                                    <input
+                                        required={!editingId}
+                                        type="text" // Changed to text to see the generated password, or keep password and add show/hide? Usually generated passwords need to be seen.
+                                        // Actually, let's keep it simple: input type="text" if generated? Or just toggle visibility.
+                                        // The user wants to generate it.
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleInputChange}
+                                        placeholder={editingId ? "********" : ""}
+                                        className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+                                            let pass = "";
+                                            for (let i = 0; i < 12; i++) {
+                                                pass += charset.charAt(Math.floor(Math.random() * charset.length));
+                                            }
+                                            setFormData(prev => ({ ...prev, password: pass }));
+                                        }}
+                                        className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                                        title="Generar Contraseña Segura"
+                                    >
+                                        <Shield className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Rol Asignado</label>
+                                <select
+                                    name="role_id"
+                                    value={formData.role_id}
                                     onChange={handleInputChange}
                                     className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none"
-                                />
+                                >
+                                    <option value="">Seleccionar Rol...</option>
+                                    {roles.map(role => (
+                                        <option key={role.id} value={role.id}>{role.nombre}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Cargo</label>

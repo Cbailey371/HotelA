@@ -114,7 +114,7 @@ const InventoryPage = () => {
         setEditingPart(null);
         setFormData({
             ...initialForm,
-            codigo_repuesto: generateCode('REP-')
+            // codigo_repuesto: generateCode('REP-') // Removed: Auto-generated in backend
         });
         setShowModal(true);
     };
@@ -214,6 +214,7 @@ const InventoryPage = () => {
                 <table className="w-full text-left">
                     <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 text-xs uppercase font-semibold">
                         <tr>
+                            <th className="px-6 py-4">Código</th>
                             <th className="px-6 py-4">Repuesto</th>
                             <th className="px-6 py-4">Categoría / Marca</th>
                             <th className="px-6 py-4">Stock Actual</th>
@@ -229,6 +230,11 @@ const InventoryPage = () => {
                             <tr><td colSpan="6" className="text-center py-8 text-slate-400 font-medium">No se encontraron suministros.</td></tr>
                         ) : filtered.map((p) => (
                             <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                <td className="px-6 py-4">
+                                    <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
+                                        {p.codigo || 'N/A'}
+                                    </span>
+                                </td>
                                 <td className="px-6 py-4 font-bold text-slate-800 dark:text-white underline decoration-blue-500/20 underline-offset-4">{p.nombre}</td>
                                 <td className="px-6 py-4">
                                     <div className="text-xs font-medium text-slate-500 uppercase">{p.categoria}</div>
@@ -270,11 +276,10 @@ const InventoryPage = () => {
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-1">
-                                    <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Código Repuesto *</label>
-                                    <div className="relative">
-                                        <input required name="codigo_repuesto" value={formData.codigo_repuesto} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none focus:border-blue-500 transition-colors pr-20" />
-                                        <button type="button" onClick={() => setFormData(p => ({ ...p, codigo_repuesto: generateCode('REP-') }))} className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-1 rounded hover:bg-slate-300 transition-colors uppercase">Regenerar</button>
-                                    </div>
+                                    {/* Code generation is now automatic in backend */}
+                                    {/* Placeholder for alignment or remove div */}
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Código Repuesto (Auto)</label>
+                                    <input disabled value="Generado al guardar" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none text-slate-400 cursor-not-allowed italic" />
                                 </div>
                                 <div className="col-span-1">
                                     <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Nombre del Repuesto</label>

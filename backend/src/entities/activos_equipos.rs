@@ -10,6 +10,7 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id_equipo: i32,
     pub codigo_equipo: String,
+    pub codigo_administrativo: Option<String>,
     pub nombre_equipo: String,
     pub descripcion: Option<String>,
     pub categoria: Option<String>,

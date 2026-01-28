@@ -16,6 +16,8 @@ pub struct Model {
     pub created_at: Option<DateTimeWithTimeZone>,
     pub updated_at: Option<DateTimeWithTimeZone>,
     pub tipo_mantenimiento_id: Option<i32>,
+    pub tarea_tipo_id: Option<i32>,
+    pub responsable_interno_email: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -54,6 +56,14 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     MantenimientoTipo,
+    #[sea_orm(
+        belongs_to = "super::mantenimiento_tareas::Entity",
+        from = "Column::TareaTipoId",
+        to = "super::mantenimiento_tareas::Column::Id",
+        on_update = "NoAction",
+        on_delete = "SetNull"
+    )]
+    MantenimientoTareas,
 }
 
 impl Related<super::activos_equipos::Entity> for Entity {
@@ -83,6 +93,12 @@ impl Related<super::historial_repuestos::Entity> for Entity {
 impl Related<super::mantenimiento_tipo::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::MantenimientoTipo.def()
+    }
+}
+
+impl Related<super::mantenimiento_tareas::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::MantenimientoTareas.def()
     }
 }
 

@@ -10,4 +10,7 @@ pub mod reports;
 pub mod upload;
 pub mod providers;
 pub mod work_orders;
+pub mod roles;
 pub mod purchases;
+pub mod settings;
+pub mod asset_config;

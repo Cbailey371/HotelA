@@ -4,6 +4,7 @@ import Layout from './layouts/Layout';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import UsersPage from './pages/UsersPage';
+import RolesPage from './pages/RolesPage';
 import AssetsPage from './pages/AssetsPage';
 import AssetDetailPage from './pages/AssetDetailPage';
 import MaintenancePage from './pages/MaintenancePage';
@@ -44,6 +45,7 @@ function App() {
               <Route path="technicians" element={<TechniciansPage />} />
               <Route path="audit" element={<AuditPage />} />
               <Route path="users" element={<UsersPage />} />
+              <Route path="roles" element={<RolesPage />} />
               <Route path="work-orders" element={<WorkOrdersPage />} />
               <Route path="purchases" element={<PurchasesPage />} />
               <Route path="settings" element={<SettingsPage />} />

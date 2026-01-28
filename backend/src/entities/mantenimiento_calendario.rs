@@ -23,6 +23,9 @@ pub struct Model {
     pub dias_anticipacion: Option<i32>,
     pub proveedor_id: Option<i32>,
     pub tecnico_id: Option<i32>,
+    pub tarea_tipo_id: Option<i32>,
+    pub recurrente: bool,
+    pub responsable_interno_email: Option<String>,
     pub created_at: Option<DateTimeWithTimeZone>,
     pub updated_at: Option<DateTimeWithTimeZone>,
 }
@@ -69,6 +72,19 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Tecnicos,
+    #[sea_orm(
+        belongs_to = "super::mantenimiento_tareas::Entity",
+        from = "Column::TareaTipoId",
+        to = "super::mantenimiento_tareas::Column::Id",
+        on_update = "NoAction",
+        on_delete = "SetNull"
+    )]
+    MantenimientoTareas,
+    #[sea_orm(has_many = "super::orden_trabajo::Entity")]
+    OrdenTrabajo,
+    #[sea_orm(has_many = "super::mantenimiento_repuestos::Entity")]
+    MantenimientoRepuestos,
+
 }
 
 impl Related<super::activos_equipos::Entity> for Entity {
@@ -100,5 +116,24 @@ impl Related<super::tecnicos::Entity> for Entity {
         Relation::Tecnicos.def()
     }
 }
+
+impl Related<super::mantenimiento_tareas::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::MantenimientoTareas.def()
+    }
+}
+
+impl Related<super::orden_trabajo::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::OrdenTrabajo.def()
+    }
+}
+
+impl Related<super::mantenimiento_repuestos::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::MantenimientoRepuestos.def()
+    }
+}
+
 
 impl ActiveModelBehavior for ActiveModel {}

@@ -56,6 +56,10 @@ pub async fn create_technician(
     State(db): State<DatabaseConnection>,
     Json(payload): Json<TechnicianRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
+    // Generate sequential code
+    let next_code = crate::utils::code_generator::generate_next_code(&db, "tecnicos", "codigo_tecnico", "TEC-").await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
     let new_tech = tecnicos::ActiveModel {
         nombre: Set(payload.nombre),
         apellido: Set(payload.apellido),
@@ -66,7 +70,7 @@ pub async fn create_technician(
         es_independiente: Set(payload.es_independiente),
         costo_hora: Set(payload.costo_hora),
         estado: Set(payload.estado.unwrap_or("activo".to_string())),
-        codigo_tecnico: Set(payload.codigo_tecnico),
+        codigo_tecnico: Set(Some(next_code)),
         ..Default::default()
     };
 

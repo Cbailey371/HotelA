@@ -47,6 +47,15 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Proveedor,
+    #[sea_orm(
+        belongs_to = "super::mantenimiento_calendario::Entity",
+        from = "Column::IdCalendario",
+        to = "super::mantenimiento_calendario::Column::IdMantenimientoCalendario",
+        on_update = "Cascade",
+        on_delete = "SetNull"
+    )]
+    MantenimientoCalendario,
+
 }
 
 impl Related<super::activos_equipos::Entity> for Entity {
@@ -66,5 +75,12 @@ impl Related<super::proveedores::Entity> for Entity {
         Relation::Proveedor.def()
     }
 }
+
+impl Related<super::mantenimiento_calendario::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::MantenimientoCalendario.def()
+    }
+}
+
 
 impl ActiveModelBehavior for ActiveModel {}

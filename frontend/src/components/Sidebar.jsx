@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Wrench, Users, Settings, LogOut, Moon, Sun, Box, Calendar, ClipboardList, Building2, ShoppingCart } from 'lucide-react';
+import { LayoutDashboard, Wrench, Users, Settings, LogOut, Moon, Sun, Box, Calendar, ClipboardList, Building2, ShoppingCart, Shield } from 'lucide-react';
 import logo from '../assets/andros_logo.png';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -19,6 +19,7 @@ const Sidebar = () => {
         { icon: Building2, label: 'Proveedores', path: '/providers' },
         { icon: Wrench, label: 'Técnicos', path: '/technicians' },
         { icon: Users, label: 'Usuarios', path: '/users', roles: ['ADMINISTRADOR', 'SUPER-ADMIN'] },
+        { icon: Shield, label: 'Roles y Permisos', path: '/roles', roles: ['ADMINISTRADOR', 'SUPER-ADMIN'] },
         { icon: LayoutDashboard, label: 'Auditoría', path: '/audit', roles: ['ADMINISTRADOR', 'SUPER-ADMIN'] },
         { icon: Settings, label: 'Configuración', path: '/settings' },
     ];

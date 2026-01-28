@@ -1,13 +1,16 @@
 use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode, Extension};
 use axum_extra::extract::Multipart;
 use serde::{Deserialize, Serialize};
-use crate::entities::{activos_equipos, mantenimiento_historial, historial_repuestos, activos_repuestos, tecnicos};
+use crate::entities::{activos_equipos, mantenimiento_historial, historial_repuestos, activos_repuestos, tecnicos, activos_documentos};
 use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, RelationTrait};
-use crate::utils::{jwt, audit};
+use crate::utils::{jwt, audit, code_generator::generate_next_code};
 
 #[derive(Deserialize)]
 pub struct CreateAssetRequest {
-    pub codigo_equipo: String,
+    // pub codigo_equipo: String, // This is technically unused in create as we generate it, but frontend sends it? Frontend sends empty now.
+    // Actually wait, let's keep one.
+    pub codigo_equipo: Option<String>, // Making it Option since backend generates it? Or Keep String if frontend sends dummy.
+    pub codigo_administrativo: Option<String>,
     pub nombre_equipo: String,
     pub descripcion: Option<String>,
     pub categoria: Option<String>,
@@ -28,10 +31,12 @@ pub struct CreateAssetRequest {
     pub ubicacion_detallada: Option<String>,
     pub fecha_instalacion: Option<String>,
     pub fecha_adquisicion: Option<String>,
+    pub documentos: Option<Vec<AddDocumentRequest>>,
 }
 
 #[derive(Deserialize)]
 pub struct UpdateAssetRequest {
+    pub codigo_administrativo: Option<String>,
     pub nombre_equipo: Option<String>,
     pub descripcion: Option<String>,
     pub categoria: Option<String>,
@@ -52,12 +57,14 @@ pub struct UpdateAssetRequest {
     pub ubicacion_detallada: Option<String>,
     pub fecha_instalacion: Option<String>,
     pub fecha_adquisicion: Option<String>,
+    pub documentos: Option<Vec<AddDocumentRequest>>,
 }
 
 #[derive(Serialize)]
 pub struct AssetDto {
     pub id: i32,
     pub codigo: String,
+    pub codigo_administrativo: Option<String>,
     pub nombre: String,
     pub descripcion: Option<String>,
     pub categoria: Option<String>,
@@ -75,10 +82,25 @@ pub struct AssetDto {
     pub manual_pdf: Option<String>,
     pub cantidad: Option<i32>,
     pub ubicacion_detallada: Option<String>,
-    pub fecha_instalacion: Option<Option<String>>,
-    pub fecha_adquisicion: Option<Option<String>>,
+    pub fecha_instalacion: Option<String>,
+    pub fecha_adquisicion: Option<String>,
     pub historial: Vec<MaintenanceHistoryItem>,
     pub repuestos: Vec<SparePartHistoryItem>,
+    pub documentos: Vec<DocumentoDto>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct DocumentoDto {
+    pub id: i32,
+    pub nombre_archivo: String,
+    pub url_archivo: String,
+    pub created_at: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct AddDocumentRequest {
+    pub nombre_archivo: String,
+    pub url_archivo: String,
 }
 
 #[derive(Serialize)]
@@ -103,8 +125,12 @@ pub async fn create_asset(
     Extension(claims): Extension<jwt::Claims>,
     Json(payload): Json<CreateAssetRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let codigo_equipo = generate_next_code(&db, "activos_equipos", "codigo_equipo", "ACT-").await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
     let new_asset = activos_equipos::ActiveModel {
-        codigo_equipo: Set(payload.codigo_equipo),
+        codigo_equipo: Set(codigo_equipo),
+        codigo_administrativo: Set(payload.codigo_administrativo),
         nombre_equipo: Set(payload.nombre_equipo.clone()),
         descripcion: Set(payload.descripcion),
         categoria: Set(payload.categoria),
@@ -131,6 +157,20 @@ pub async fn create_asset(
     let asset = new_asset.insert(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+    // Insert documents if any
+    if let Some(docs) = payload.documentos {
+        for doc_req in docs {
+            let new_doc = activos_documentos::ActiveModel {
+                activo_id: Set(asset.id_equipo),
+                nombre_archivo: Set(doc_req.nombre_archivo),
+                url_archivo: Set(doc_req.url_archivo),
+                ..Default::default()
+            };
+            new_doc.insert(&db).await
+                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        }
+    }
+
     audit::log_action(
         &db, 
         claims.user_id, 
@@ -141,13 +181,21 @@ pub async fn create_asset(
         None
     ).await;
 
-    Ok(Json(map_asset_to_dto(asset, vec![], vec![])))
+    // Fetch documents to return in DTO
+    let documentos = activos_documentos::Entity::find()
+        .filter(activos_documentos::Column::ActivoId.eq(asset.id_equipo))
+        .all(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(map_asset_to_dto_full(asset, vec![], vec![], documentos)))
 }
 
 fn map_asset_to_dto(a: activos_equipos::Model, historial: Vec<MaintenanceHistoryItem>, repuestos: Vec<SparePartHistoryItem>) -> AssetDto {
     AssetDto {
         id: a.id_equipo,
         codigo: a.codigo_equipo,
+        codigo_administrativo: a.codigo_administrativo,
         nombre: a.nombre_equipo,
         descripcion: a.descripcion,
         categoria: a.categoria,
@@ -165,10 +213,51 @@ fn map_asset_to_dto(a: activos_equipos::Model, historial: Vec<MaintenanceHistory
         manual_pdf: a.manual_pdf,
         cantidad: a.cantidad,
         ubicacion_detallada: a.ubicacion_detallada,
-        fecha_instalacion: Some(a.fecha_instalacion.map(|d| d.to_string())),
-        fecha_adquisicion: Some(a.fecha_adquisicion.map(|d| d.to_string())),
+        fecha_instalacion: a.fecha_instalacion.map(|d| d.to_string()),
+        fecha_adquisicion: a.fecha_adquisicion.map(|d| d.to_string()),
         historial,
         repuestos,
+        documentos: vec![],
+    }
+}
+
+fn map_asset_to_dto_full(
+    a: activos_equipos::Model, 
+    historial: Vec<MaintenanceHistoryItem>, 
+    repuestos: Vec<SparePartHistoryItem>,
+    documentos: Vec<activos_documentos::Model>
+) -> AssetDto {
+    AssetDto {
+        id: a.id_equipo,
+        codigo: a.codigo_equipo,
+        codigo_administrativo: a.codigo_administrativo,
+        nombre: a.nombre_equipo,
+        descripcion: a.descripcion,
+        categoria: a.categoria,
+        marca: a.marca,
+        modelo: a.modelo,
+        serie: a.numero_serie,
+        ubicacion: a.ubicacion,
+        estado: a.estado,
+        imagen_url: a.imagen_url,
+        tipo_activo: a.tipo_activo,
+        anio: a.anio,
+        color: a.color,
+        numero_motor: a.numero_motor,
+        numero_chasis: a.numero_chasis,
+        manual_pdf: a.manual_pdf,
+        cantidad: a.cantidad,
+        ubicacion_detallada: a.ubicacion_detallada,
+        fecha_instalacion: a.fecha_instalacion.map(|d| d.to_string()),
+        fecha_adquisicion: a.fecha_adquisicion.map(|d| d.to_string()),
+        historial,
+        repuestos,
+        documentos: documentos.into_iter().map(|d| DocumentoDto {
+            id: d.id,
+            nombre_archivo: d.nombre_archivo,
+            url_archivo: d.url_archivo,
+            created_at: d.created_at.map(|dt| dt.to_rfc3339()),
+        }).collect(),
     }
 }
 
@@ -190,18 +279,29 @@ pub async fn get_asset_by_id(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
+    tracing::info!("Fetching asset by id: {}", id);
     let asset = activos_equipos::Entity::find_by_id(id)
         .one(&db)
         .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .map_err(|e| {
+            tracing::error!("Error finding asset: {}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?
         .ok_or((StatusCode::NOT_FOUND, "Asset not found".to_string()))?;
+
+    tracing::info!("Asset found, fetching maintenance history");
 
     let history_items = mantenimiento_historial::Entity::find()
         .filter(mantenimiento_historial::Column::EquipoId.eq(id))
         .find_also_related(tecnicos::Entity)
         .all(&db)
         .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .map_err(|e| {
+            tracing::error!("Error fetching maintenance history: {}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?;
+
+    tracing::info!("Maintenance history fetched (count: {}), fetching spare parts", history_items.len());
 
     let historial = history_items.into_iter().map(|(h, t)| MaintenanceHistoryItem {
         id: h.id_mantenimiento,
@@ -216,7 +316,12 @@ pub async fn get_asset_by_id(
         .find_also_related(activos_repuestos::Entity)
         .all(&db)
         .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .map_err(|e| {
+            tracing::error!("Error fetching spare parts history: {}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?;
+
+    tracing::info!("Spare parts history fetched (count: {}), fetching documents", spare_items.len());
 
     let repuestos = spare_items.into_iter().map(|(h, r)| SparePartHistoryItem {
         id: h.id_historial_repuesto,
@@ -225,7 +330,18 @@ pub async fn get_asset_by_id(
         fecha: h.fecha_uso.map(|d| d.to_string()).unwrap_or_default(),
     }).collect();
 
-    Ok(Json(map_asset_to_dto(asset, historial, repuestos)))
+    let documentos = activos_documentos::Entity::find()
+        .filter(activos_documentos::Column::ActivoId.eq(id))
+        .all(&db)
+        .await
+        .map_err(|e| {
+            tracing::error!("Error fetching documents: {}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?;
+
+    tracing::info!("Documents fetched (count: {}), mapping to DTO", documentos.len());
+
+    Ok(Json(map_asset_to_dto_full(asset, historial, repuestos, documentos)))
 }
 
 pub async fn update_asset(
@@ -240,6 +356,7 @@ pub async fn update_asset(
         .ok_or((StatusCode::NOT_FOUND, "Asset not found".to_string()))?
         .into();
 
+    if let Some(v) = payload.codigo_administrativo { asset.codigo_administrativo = Set(Some(v)); }
     if let Some(v) = payload.nombre_equipo { asset.nombre_equipo = Set(v); }
     if let Some(v) = payload.descripcion { asset.descripcion = Set(Some(v)); }
     if let Some(v) = payload.categoria { asset.categoria = Set(Some(v)); }
@@ -265,7 +382,13 @@ pub async fn update_asset(
     let updated = asset.update(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    Ok(Json(map_asset_to_dto(updated, vec![], vec![])))
+    let documentos = activos_documentos::Entity::find()
+        .filter(activos_documentos::Column::ActivoId.eq(id))
+        .all(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(map_asset_to_dto_full(updated, vec![], vec![], documentos)))
 }
 
 pub async fn delete_asset(
@@ -315,8 +438,11 @@ pub async fn import_assets_csv(
                 let record: CreateAssetRequest = result.map_err(|e| (StatusCode::BAD_REQUEST, format!("CSV format error: {}", e)))?;
                 
                 // Buscar si existe por código para actualizar, o crear
+                // Buscar si existe por código para actualizar, o crear
+                let codigo_equipo = record.codigo_equipo.clone().ok_or((StatusCode::BAD_REQUEST, "Código de equipo es requerido".to_string()))?;
+
                 let existing = activos_equipos::Entity::find()
-                    .filter(activos_equipos::Column::CodigoEquipo.eq(record.codigo_equipo.clone()))
+                    .filter(activos_equipos::Column::CodigoEquipo.eq(codigo_equipo.clone()))
                     .one(&db)
                     .await
                     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -325,7 +451,7 @@ pub async fn import_assets_csv(
                     asset.into()
                 } else {
                     activos_equipos::ActiveModel {
-                        codigo_equipo: Set(record.codigo_equipo.clone()),
+                        codigo_equipo: Set(codigo_equipo),
                         ..Default::default()
                     }
                 };
@@ -384,4 +510,34 @@ GEN-001,Generador Eléctrico,Generador diesel 500kva,Energía,Cummins,C500,GEN98
         [(axum::http::header::CONTENT_TYPE, "text/csv"), (axum::http::header::CONTENT_DISPOSITION, "attachment; filename=\"plantilla_activos.csv\"")],
         csv_content,
     )
+}
+
+pub async fn add_asset_document(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+    Json(payload): Json<AddDocumentRequest>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let new_doc = activos_documentos::ActiveModel {
+        activo_id: Set(id),
+        nombre_archivo: Set(payload.nombre_archivo),
+        url_archivo: Set(payload.url_archivo),
+        ..Default::default()
+    };
+
+    let doc = new_doc.insert(&db).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(doc))
+}
+
+pub async fn delete_asset_document(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    activos_documentos::Entity::delete_by_id(id)
+        .exec(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json("Documento eliminado".to_string()))
 }

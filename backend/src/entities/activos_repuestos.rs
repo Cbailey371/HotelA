@@ -22,6 +22,7 @@ pub struct Model {
     pub estado: Option<String>,
     pub created_at: Option<DateTimeWithTimeZone>,
     pub updated_at: Option<DateTimeWithTimeZone>,
+    pub imagen: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -36,6 +37,8 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Proveedores,
+    #[sea_orm(has_many = "super::mantenimiento_repuestos::Entity")]
+    MantenimientoRepuestos,
 }
 
 impl Related<super::historial_repuestos::Entity> for Entity {
@@ -47,6 +50,12 @@ impl Related<super::historial_repuestos::Entity> for Entity {
 impl Related<super::proveedores::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Proveedores.def()
+    }
+}
+
+impl Related<super::mantenimiento_repuestos::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::MantenimientoRepuestos.def()
     }
 }
 

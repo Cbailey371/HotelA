@@ -36,6 +36,7 @@ pub struct PartDto {
     pub precio: f64,
     pub ubicacion: Option<String>,
     pub codigo: Option<String>,
+    pub imagen: Option<String>,
 }
 
 pub async fn get_parts(
@@ -57,6 +58,7 @@ pub async fn get_parts(
         precio: p.costo_unitario.map(|v| v.to_string().parse().unwrap_or(0.0)).unwrap_or(0.0),
         ubicacion: p.ubicacion_almacen,
         codigo: Some(p.codigo_repuesto),
+        imagen: p.imagen,
     }).collect();
 
     Ok(Json(dtos))
@@ -66,8 +68,12 @@ pub async fn create_part(
     State(db): State<DatabaseConnection>,
     Json(payload): Json<CreatePartRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
+    // Generate sequential code (default prefix REP-)
+    let next_code = crate::utils::code_generator::generate_next_code(&db, "activos_repuestos", "codigo_repuesto", "REP-").await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
     let new_part = activos_repuestos::ActiveModel {
-        codigo_repuesto: Set(payload.codigo_repuesto.unwrap_or_else(|| format!("REP-{}", chrono::Utc::now().timestamp_millis() % 10000))),
+        codigo_repuesto: Set(next_code),
         nombre_repuesto: Set(payload.nombre_repuesto),
         descripcion: Set(payload.descripcion),
         tipo_repuesto: Set(payload.categoria),
@@ -97,6 +103,7 @@ pub async fn create_part(
         precio: p.costo_unitario.map(|v| v.to_string().parse().unwrap_or(0.0)).unwrap_or(0.0),
         ubicacion: p.ubicacion_almacen,
         codigo: Some(p.codigo_repuesto),
+        imagen: None,
     }))
 }
 
@@ -139,6 +146,7 @@ pub async fn update_part(
         precio: updated.costo_unitario.map(|v| v.to_string().parse().unwrap_or(0.0)).unwrap_or(0.0),
         ubicacion: updated.ubicacion_almacen,
         codigo: Some(updated.codigo_repuesto),
+        imagen: updated.imagen,
     }))
 }
 
