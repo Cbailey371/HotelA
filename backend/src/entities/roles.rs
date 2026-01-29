@@ -45,4 +45,13 @@ impl Related<super::permisos::Entity> for Entity {
     }
 }
 
+impl Related<super::usuarios::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::usuario_roles::Relation::Usuarios.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::usuario_roles::Relation::Roles.def().rev())
+    }
+}
+
 impl ActiveModelBehavior for ActiveModel {}

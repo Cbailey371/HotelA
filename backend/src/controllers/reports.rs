@@ -266,3 +266,374 @@ pub async fn delete_scheduled_report(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     Ok(StatusCode::NO_CONTENT)
 }
+
+#[derive(Deserialize)]
+pub struct GenerateReportRequest {
+    pub report_type: String,
+    // filters can be expanded later
+    pub filters: Option<serde_json::Value>, 
+}
+
+pub async fn generate_report(
+    State(db): State<DatabaseConnection>,
+    Json(payload): Json<GenerateReportRequest>,
+) -> Result<Json<Vec<serde_json::Value>>, (StatusCode, String)> {
+    let results = generate_report_data(&db, payload.report_type.as_str(), payload.filters).await?;
+    Ok(Json(results))
+}
+
+// Helper function to generate report data
+async fn generate_report_data(
+    db: &DatabaseConnection,
+    report_type: &str,
+    filters: Option<serde_json::Value>,
+) -> Result<Vec<serde_json::Value>, (StatusCode, String)> {
+    let mut results = Vec::new();
+
+    // Extract date filters
+    let (date_field, start_date, end_date) = if let Some(f) = &filters {
+        (
+            f.get("date_field").and_then(|v| v.as_str()),
+            f.get("start_date").and_then(|v| v.as_str()).and_then(|s| NaiveDate::parse_from_str(s, "%Y-%m-%d").ok()),
+            f.get("end_date").and_then(|v| v.as_str()).and_then(|s| NaiveDate::parse_from_str(s, "%Y-%m-%d").ok()),
+        )
+    } else {
+        (None, None, None)
+    };
+
+    match report_type {
+        "Inventario" => {
+            let mut query = activos_repuestos::Entity::find();
+            
+            // Apply filtering if applicable (e.g. Last Purchase > X)
+            if let (Some("fecha_ultima_compra"), Some(start), Some(end)) = (date_field, start_date, end_date) {
+                 query = query.filter(activos_repuestos::Column::FechaUltimaCompra.between(start, end));
+            } else if let (Some("fecha_vencimiento"), Some(start), Some(end)) = (date_field, start_date, end_date) {
+                 query = query.filter(activos_repuestos::Column::FechaVencimiento.between(start, end));
+            }
+
+            let parts = query.all(db).await
+                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            
+            for part in parts {
+                results.push(serde_json::json!({
+                    "ID": part.id_repuesto,
+                    "Nombre": part.nombre_repuesto,
+                    "SKU": part.codigo_repuesto,
+                    "Categoría": part.tipo_repuesto.unwrap_or_default(),
+                    "Stock Actual": part.stock_actual.unwrap_or(0),
+                    "Stock Mínimo": part.stock_minimo.unwrap_or(0),
+                    "Costo Unitario": part.costo_unitario.unwrap_or_default().to_string(),
+                    "Ubicación": part.ubicacion_almacen.unwrap_or_default(),
+                    "Fecha Última Compra": part.fecha_ultima_compra,
+                    "Fecha Vencimiento": part.fecha_vencimiento,
+                }));
+            }
+        },
+        "Mantenimiento" => {
+             let mut query = mantenimiento_historial::Entity::find()
+                .order_by_desc(mantenimiento_historial::Column::FechaEjecucion);
+
+             if let (Some("fecha_ejecucion"), Some(start), Some(end)) = (date_field, start_date, end_date) {
+                 query = query.filter(mantenimiento_historial::Column::FechaEjecucion.between(start, end));
+             } else if let (Some("created_at"), Some(start), Some(end)) = (date_field, start_date, end_date) {
+                 // Convert NaiveDate to DateTimeWithTimeZone for filtering if needed, or just specific range
+                 // This matches timestamps, might need casting or full day range logic
+                 let start_dt = start.and_hms_opt(0, 0, 0).unwrap().and_utc();
+                 let end_dt = end.and_hms_opt(23, 59, 59).unwrap().and_utc();
+                 query = query.filter(mantenimiento_historial::Column::CreatedAt.between(start_dt, end_dt));
+             }
+
+             let history = query.all(db).await
+                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+             for record in history {
+                results.push(serde_json::json!({
+                    "ID": record.id_mantenimiento,
+                    "Fecha Ejecución": record.fecha_ejecucion,
+                    "Fecha Inicio": record.fecha_inicio,
+                    "Fecha Fin": record.fecha_fin,
+                    "Técnico": record.tecnico_responsable.unwrap_or_default(), 
+                    "Descripción": record.descripcion_trabajo.unwrap_or_default(),
+                    "Resultado": record.resultado.unwrap_or_default(),
+                    "Costo Total": record.costo_total.unwrap_or_default().to_string(),
+                    "Observaciones": record.observaciones.unwrap_or("".to_string()),
+                    "Fecha Creación": record.created_at.map(|d| d.to_string()),
+                }));
+             }
+        },
+        "Depreciación" => {
+            // Depreciacion usually is a snapshot, but could filter by purchase date
+            let mut query = activos_equipos::Entity::find();
+            if let (Some("fecha_adquisicion"), Some(start), Some(end)) = (date_field, start_date, end_date) {
+                 query = query.filter(activos_equipos::Column::FechaAdquisicion.between(start, end));
+            }
+
+            let assets = query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            let now = Utc::now().naive_utc().date();
+
+            for asset in assets {
+                let purchase_val = asset.valor_compra.unwrap_or_default().to_string().parse::<f64>().unwrap_or(0.0);
+                let life_months = asset.vida_util_meses.unwrap_or(60) as f64;
+                let purchase_date = asset.fecha_adquisicion;
+
+                let (current_val, dep_accumulated) = if let Some(p_date) = purchase_date {
+                    let age_days = (now - p_date).num_days() as f64;
+                    let age_months = age_days / 30.44; 
+                    let dep_amount = if life_months > 0.0 {
+                        (purchase_val / life_months) * age_months
+                    } else { 0.0 };
+
+                    let mut val = purchase_val - dep_amount;
+                    if val < 0.0 { val = 0.0; }
+                    (val, purchase_val - val)
+                } else {
+                    (purchase_val, 0.0)
+                };
+
+                results.push(serde_json::json!({
+                    "Activo": asset.nombre_equipo,
+                    "Modelo": asset.modelo.unwrap_or_default(),
+                    "Serie": asset.numero_serie.unwrap_or_default(),
+                    "Fecha Compra": purchase_date,
+                    "Fin Vida Útil": asset.fecha_fin_vida_util,
+                    "Valor Compra": purchase_val,
+                    "Valor Actual": (current_val * 100.0).round() / 100.0,
+                    "Depreciación Acumulada": (dep_accumulated * 100.0).round() / 100.0,
+                }));
+            }
+        },
+        "OrdenesCompra" => {
+            use crate::entities::orden_compra_repuesto;
+            let mut query = orden_compra_repuesto::Entity::find();
+            
+            // Filtering
+            if let (Some("fecha_solicitud"), Some(start), Some(end)) = (date_field, start_date, end_date) {
+                 query = query.filter(orden_compra_repuesto::Column::FechaSolicitud.between(start, end));
+            } else if let (Some("fecha_entrega"), Some(start), Some(end)) = (date_field, start_date, end_date) {
+                 query = query.filter(orden_compra_repuesto::Column::FechaEntrega.between(start, end));
+            } else if let (Some("created_at"), Some(start), Some(end)) = (date_field, start_date, end_date) {
+                 let start_dt = start.and_hms_opt(0, 0, 0).unwrap().and_utc();
+                 let end_dt = end.and_hms_opt(23, 59, 59).unwrap().and_utc();
+                 query = query.filter(orden_compra_repuesto::Column::CreatedAt.between(start_dt, end_dt));
+            }
+
+            let orders = query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            for order in orders {
+                results.push(serde_json::json!({
+                    "Código": order.codigo_compra.unwrap_or_default(),
+                    "Estado": order.estado.unwrap_or_default(),
+                    "Fecha Solicitud": order.fecha_solicitud,
+                    "Fecha Entrega": order.fecha_entrega,
+                    "Recepción": order.estado_recepcion.unwrap_or_default(),
+                    "Total": order.total.unwrap_or_default().to_string(),
+                    "Notas": order.notas.unwrap_or_default(),
+                    "Creado": order.created_at.map(|d| d.to_string()),
+                }));
+            }
+        },
+        "OrdenesTrabajo" => {
+            use crate::entities::orden_trabajo;
+            let mut query = orden_trabajo::Entity::find();
+
+            if let (Some("created_at"), Some(start), Some(end)) = (date_field, start_date, end_date) {
+                 let start_dt = start.and_hms_opt(0, 0, 0).unwrap().and_utc();
+                 let end_dt = end.and_hms_opt(23, 59, 59).unwrap().and_utc();
+                 query = query.filter(orden_trabajo::Column::CreatedAt.between(start_dt, end_dt));
+            } else if let (Some("fecha_inicio_real"), Some(start), Some(end)) = (date_field, start_date, end_date) {
+                // Need to match DateTime for start/end or just dates? Column is DateTime (naive or tz?)
+                // Assuming standard DateTime logic
+                let start_dt = start.and_hms_opt(0,0,0).unwrap();
+                let end_dt = end.and_hms_opt(23,59,59).unwrap();
+                query = query.filter(orden_trabajo::Column::FechaInicioReal.between(start_dt, end_dt));
+            }
+
+            let wos = query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            for wo in wos {
+                results.push(serde_json::json!({
+                    "Código": wo.codigo_ot.unwrap_or_default(),
+                    "Prioridad": wo.prioridad.unwrap_or_default(),
+                    "Estado": wo.estado.unwrap_or_default(),
+                    "Costo Estimado": wo.costo_estimado.unwrap_or_default().to_string(),
+                    "Activo ID": wo.id_activo,
+                    "Fecha Inicio Real": wo.fecha_inicio_real,
+                    "Creado": wo.created_at.map(|d| d.to_string()),
+                    "Observaciones": wo.observaciones.unwrap_or_default(),
+                }));
+            }
+        },
+        "ProveedoresTecnicos" => {
+            // Combine both? Or just list them separately. Let's do a combined list with "Tipo" 
+            
+            // 1. Proveedores
+            use crate::entities::{proveedores, tecnicos};
+            let mut prov_query = proveedores::Entity::find();
+             if let (Some("created_at"), Some(start), Some(end)) = (date_field, start_date, end_date) {
+                 let start_dt = start.and_hms_opt(0, 0, 0).unwrap().and_utc();
+                 let end_dt = end.and_hms_opt(23, 59, 59).unwrap().and_utc();
+                 prov_query = prov_query.filter(proveedores::Column::CreatedAt.between(start_dt, end_dt));
+             }
+            let providers = prov_query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+            for p in providers {
+                results.push(serde_json::json!({
+                    "Tipo": "Proveedor",
+                    "Nombre": p.nombre_proveedor,
+                    "Identificador": p.rut_o_ruc.unwrap_or_default(),
+                    "Email": p.email.unwrap_or_default(),
+                    "Teléfono": p.telefono.unwrap_or_default(),
+                    "Estado": p.estado.unwrap_or_default(),
+                    "Creado": p.created_at.map(|d| d.to_string()),
+                }));
+            }
+
+            // 2. Tecnicos
+            let mut tech_query = tecnicos::Entity::find();
+             if let (Some("created_at"), Some(start), Some(end)) = (date_field, start_date, end_date) {
+                 let start_dt = start.and_hms_opt(0, 0, 0).unwrap().and_utc();
+                 let end_dt = end.and_hms_opt(23, 59, 59).unwrap().and_utc();
+                 tech_query = tech_query.filter(tecnicos::Column::CreatedAt.between(start_dt, end_dt));
+             }
+            let techs = tech_query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+            for t in techs {
+                 results.push(serde_json::json!({
+                    "Tipo": "Técnico",
+                    "Nombre": format!("{} {}", t.nombre, t.apellido),
+                    "Identificador": t.especialidad.unwrap_or_default(), // Using specialidad as generic info
+                    "Email": t.email.unwrap_or_default(),
+                    "Teléfono": t.telefono.unwrap_or_default(),
+                    "Estado": t.estado,
+                    "Creado": t.created_at.map(|d| d.to_string()),
+                }));
+            }
+        },
+        _ => return Err((StatusCode::BAD_REQUEST, "Invalid report type".to_string())),
+    }
+
+    Ok(results)
+}
+
+
+pub async fn execute_scheduled_report(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
+    // 1. Fetch Report
+    let report = reportes_programados::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Report not found".to_string()))?;
+
+    // 2. Process Dynamic Filters
+    let mut filters_json = report.filtros.clone().unwrap_or(serde_json::json!({}));
+    
+    if let Some(dynamic_range) = filters_json.get("dynamic_date_range").and_then(|v| v.as_str()) {
+        let now = chrono::Utc::now();
+        let today = now.date_naive();
+        let (start_date, end_date) = match dynamic_range {
+            "last_7_days" => (today - chrono::Duration::days(7), today),
+            "last_30_days" => (today - chrono::Duration::days(30), today),
+            "current_month" => {
+                let start = NaiveDate::from_ymd_opt(today.year(), today.month(), 1).unwrap();
+                (start, today)
+            },
+            "previous_month" => {
+                let month = today.month();
+                let year = today.year();
+                let (prev_month, prev_year) = if month == 1 { (12, year - 1) } else { (month - 1, year) };
+                let start = NaiveDate::from_ymd_opt(prev_year, prev_month, 1).unwrap();
+                
+                // Get last day of previous month
+                let next_month_start = if prev_month == 12 {
+                    NaiveDate::from_ymd_opt(prev_year + 1, 1, 1).unwrap()
+                } else {
+                    NaiveDate::from_ymd_opt(prev_year, prev_month + 1, 1).unwrap()
+                };
+                let end = next_month_start - chrono::Duration::days(1);
+                (start, end)
+            },
+            "current_year" => {
+                let start = NaiveDate::from_ymd_opt(today.year(), 1, 1).unwrap();
+                (start, today)
+            },
+            _ => (today, today) // Fallback
+        };
+
+        // Determine date field based on report type to apply range to
+        let date_field = match report.tipo_reporte.as_str() {
+            "OrdenesTrabajo" | "Mantenimiento" => "created_at", // or fecha_ejecucion
+            "OrdenesCompra" => "fecha_solicitud",
+            "Depreciación" => "fecha_adquisicion",
+             _ => "created_at"
+        };
+        
+        if dynamic_range != "" {
+             filters_json["date_field"] = serde_json::Value::String(date_field.to_string());
+             filters_json["start_date"] = serde_json::Value::String(start_date.to_string());
+             filters_json["end_date"] = serde_json::Value::String(end_date.to_string());
+        }
+    }
+
+    // 3. Generate Data
+    let data = generate_report_data(&db, &report.tipo_reporte, Some(filters_json)).await?;
+
+    // 3. Format Email Body
+    let mut body = format!("<h1>Reporte: {}</h1>", report.nombre);
+    body.push_str(&format!("<p>Tipo: {}</p>", report.tipo_reporte));
+    body.push_str("<table border='1' cellspacing='0' cellpadding='5'>");
+    
+    if let Some(first) = data.first() {
+        body.push_str("<thead><tr>");
+        if let Some(obj) = first.as_object() {
+            for key in obj.keys() {
+                body.push_str(&format!("<th>{}</th>", key));
+            }
+        }
+        body.push_str("</tr></thead>");
+        
+        body.push_str("<tbody>");
+        for row in data {
+            body.push_str("<tr>");
+            if let Some(obj) = row.as_object() {
+                for val in obj.values() {
+                     let cell = match val {
+                        serde_json::Value::String(s) => s.clone(),
+                        serde_json::Value::Number(n) => n.to_string(),
+                        serde_json::Value::Bool(b) => b.to_string(),
+                        serde_json::Value::Null => "".to_string(),
+                        _ => format!("{:?}", val),
+                    };
+                    body.push_str(&format!("<td>{}</td>", cell));
+                }
+            }
+            body.push_str("</tr>");
+        }
+        body.push_str("</tbody>");
+    } else {
+        body.push_str("<p>No se encontraron datos para este reporte.</p>");
+    }
+    body.push_str("</table>");
+
+    // 4. Send Email
+    if let Some(destinatarios) = report.destinatarios {
+        if !destinatarios.is_empty() {
+             for email in destinatarios.split(',') {
+                let email = email.trim();
+                if !email.is_empty() {
+                    // We ignore email errors for now to allow execution even if SMTP fails, 
+                    // but logging it is good practice. Use crate::utils::mailer
+                    let _ = crate::utils::mailer::send_email(
+                        &db, 
+                        email, 
+                        &format!("Reporte Ejecutado: {}", report.nombre), 
+                        &body
+                    ).await.map_err(|e| tracing::error!("Error sending email to {}: {}", email, e));
+                }
+            }
+        }
+    }
+
+    Ok(Json(serde_json::json!({ "status": "executed", "message": "Report executed and emails queued" })))
+}

@@ -7,3 +7,5 @@ export const getScheduledReports = () => api.get('/reports/scheduled');
 export const createScheduledReport = (data) => api.post('/reports/scheduled', data);
 export const updateScheduledReport = (id, data) => api.put(`/reports/scheduled/${id}`, data);
 export const deleteScheduledReport = (id) => api.delete(`/reports/scheduled/${id}`);
+export const executeScheduledReport = (id) => api.post(`/reports/scheduled/${id}/execute`);
+export const generateReport = (data) => api.post('/reports/generate', data);

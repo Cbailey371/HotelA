@@ -1,7 +1,7 @@
 use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode};
 use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, LoaderTrait};
 use serde::{Deserialize, Serialize};
-use crate::entities::{roles, permisos, rol_permisos};
+use crate::entities::{roles, permisos, rol_permisos, usuario_roles};
 
 #[derive(Serialize)]
 pub struct PermissionDto {
@@ -17,6 +17,7 @@ pub struct RoleDto {
     pub nombre: String,
     pub descripcion: Option<String>,
     pub permisos: Vec<String>, // List of permission codes
+    pub usuarios_count: usize,
 }
 
 #[derive(Deserialize)]
@@ -49,18 +50,26 @@ pub async fn get_roles(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     // Load permissions for each role
-    // This could be optimized with a join or loader, but considering low volume of roles, N+1 query per role or loop is acceptable for MVP,
-    // actually SeaORM loader is better.
     let permissions = roles_list.load_many_to_many(permisos::Entity, rol_permisos::Entity, &db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+    // Load users for each role to count them
+    // Note: optimization would be a count query or join, but load_many is easiest given existing structure
+    let users_assigned = roles_list.load_many_to_many(crate::entities::usuarios::Entity, usuario_roles::Entity, &db).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
     let mut role_dtos = Vec::new();
-    for (role, perms) in roles_list.into_iter().zip(permissions.into_iter()) {
+    for (i, role) in roles_list.into_iter().enumerate() {
+        // Safe indexing because load_many preserves order matching input list
+        let perms = &permissions[i];
+        let users = &users_assigned[i];
+
         role_dtos.push(RoleDto {
             id: role.id_rol,
             nombre: role.nombre_rol,
             descripcion: role.descripcion,
-            permisos: perms.into_iter().map(|p| p.codigo_permiso).collect(),
+            permisos: perms.iter().map(|p| p.codigo_permiso.clone()).collect(),
+            usuarios_count: users.len(),
         });
     }
 

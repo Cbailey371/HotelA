@@ -92,8 +92,10 @@ async fn main() {
                 .route("/reports/inventory-status", get(controllers::reports::get_inventory_status))
                 .route("/reports/maintenance-roi", get(controllers::reports::get_maintenance_roi))
                 .route("/reports/asset-depreciation", get(controllers::reports::get_asset_depreciation))
+                .route("/reports/generate", post(controllers::reports::generate_report))
                 .route("/reports/scheduled", get(controllers::reports::get_scheduled_reports).post(controllers::reports::create_scheduled_report))
                 .route("/reports/scheduled/{id}", delete(controllers::reports::delete_scheduled_report).put(controllers::reports::update_scheduled_report))
+                .route("/reports/scheduled/{id}/execute", post(controllers::reports::execute_scheduled_report))
                 // Payment Terms
                 .route("/settings/payment-terms", get(controllers::payment_terms::get_payment_terms).post(controllers::payment_terms::create_payment_term)
                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))

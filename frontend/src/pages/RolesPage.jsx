@@ -186,8 +186,7 @@ const RolesPage = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-1 rounded-full">
-                                                {/* Placeholder for user count if available, mostly static for now */}
-                                                -- Usuarios
+                                                {role.usuarios_count ?? 0} Usuarios
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
