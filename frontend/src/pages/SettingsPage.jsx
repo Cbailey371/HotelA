@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Mail, Server, Shield, Send, Plus, Trash2, Tag, Box, LayoutGrid, MapPin, ClipboardList, Building, Image as ImageIcon } from 'lucide-react';
+import { Save, Mail, Server, Shield, Send, Plus, Trash2, Tag, Box, LayoutGrid, MapPin, ClipboardList, Building, Image as ImageIcon, CreditCard, ArrowDownRight, X, Pencil } from 'lucide-react';
 import api from '../services/api';
 
 const SettingsPage = () => {
@@ -24,8 +24,23 @@ const SettingsPage = () => {
     const [types, setTypes] = useState([]);
     const [locations, setLocations] = useState([]);
     const [taskTypes, setTaskTypes] = useState([]);
+    const [paymentTerms, setPaymentTerms] = useState([]);
+    // New States
+    const [brands, setBrands] = useState([]);
+    const [warehouses, setWarehouses] = useState([]);
+    const [selectedWarehouse, setSelectedWarehouse] = useState(null);
+    const [warehouseLocations, setWarehouseLocations] = useState([]);
+    const [newLocationName, setNewLocationName] = useState('');
+    const [newLocationDesc, setNewLocationDesc] = useState('');
+
     const [newItemName, setNewItemName] = useState('');
     const [newItemDesc, setNewItemDesc] = useState('');
+    const [newItemDias, setNewItemDias] = useState(0);
+    // For Warehouses
+    const [newItemLocation, setNewItemLocation] = useState('');
+    const [editingWarehouse, setEditingWarehouse] = useState(null);
+    const [editingLocation, setEditingLocation] = useState(null);
+
     const [configLoading, setConfigLoading] = useState(false);
 
     // Company State
@@ -50,6 +65,13 @@ const SettingsPage = () => {
         if (activeTab === 'types') fetchTypes();
         if (activeTab === 'locations') fetchLocations();
         if (activeTab === 'tasks') fetchTaskTypes();
+        if (activeTab === 'payment-terms') fetchPaymentTerms();
+        if (activeTab === 'brands') fetchBrands();
+        if (activeTab === 'warehouses') fetchWarehouses();
+        if (activeTab === 'tasks') fetchTaskTypes();
+        if (activeTab === 'payment-terms') fetchPaymentTerms();
+        if (activeTab === 'brands') fetchBrands();
+        if (activeTab === 'warehouses') fetchWarehouses();
         setMessage({ type: '', text: '' });
     }, [activeTab]);
 
@@ -128,6 +150,104 @@ const SettingsPage = () => {
         }
     };
 
+    const fetchPaymentTerms = async () => {
+        setConfigLoading(true);
+        try {
+            const res = await api.get('/settings/payment-terms');
+            setPaymentTerms(res.data);
+        } catch (error) {
+            console.error("Error loading payment terms", error);
+        } finally {
+            setConfigLoading(false);
+        }
+    };
+
+    const fetchBrands = async () => {
+        setConfigLoading(true);
+        try {
+            const res = await api.get('/settings/brands');
+            setBrands(res.data);
+        } catch (error) {
+            console.error("Error loading brands", error);
+        } finally {
+            setConfigLoading(false);
+        }
+    };
+
+    const fetchWarehouses = async () => {
+        setConfigLoading(true);
+        try {
+            const response = await api.get('/settings/warehouses');
+            setWarehouses(response.data);
+        } catch (error) {
+            console.error("Error fetching warehouses", error);
+        } finally {
+            setConfigLoading(false);
+        }
+    };
+
+    const fetchWarehouseLocations = async (warehouseId) => {
+        try {
+            const response = await api.get(`/settings/warehouses/${warehouseId}/locations`);
+            setWarehouseLocations(response.data);
+        } catch (error) {
+            console.error("Error fetching locations", error);
+        }
+    };
+
+    const handleCreateLocation = async (e) => {
+        e.preventDefault();
+        try {
+            if (editingLocation) {
+                await api.put(`/settings/warehouses/locations/${editingLocation.id}`, {
+                    nombre: newLocationName,
+                    descripcion: newLocationDesc
+                });
+                setMessage({ type: 'success', text: 'Ubicación actualizada correctamente' });
+                setEditingLocation(null);
+            } else {
+                await api.post(`/settings/warehouses/${selectedWarehouse.id}/locations`, {
+                    nombre: newLocationName,
+                    descripcion: newLocationDesc
+                });
+                setMessage({ type: 'success', text: 'Ubicación agregada correctamente' });
+            }
+
+            setNewLocationName('');
+            setNewLocationDesc('');
+            fetchWarehouseLocations(selectedWarehouse.id);
+            setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+        } catch (error) {
+            console.error("Error saving location", error);
+            setMessage({ type: 'error', text: 'Error al guardar ubicación' });
+        }
+    };
+
+    const startEditLocation = (loc) => {
+        setEditingLocation(loc);
+        setNewLocationName(loc.nombre);
+        setNewLocationDesc(loc.descripcion || '');
+    };
+
+    const cancelEditLocation = () => {
+        setEditingLocation(null);
+        setNewLocationName('');
+        setNewLocationDesc('');
+    };
+
+    const handleDeleteLocation = async (locationId) => {
+        if (!window.confirm('¿Eliminar esta ubicación?')) return;
+        try {
+            await api.delete(`/settings/warehouses/locations/${locationId}`);
+            fetchWarehouseLocations(selectedWarehouse.id);
+            setMessage({ type: 'success', text: 'Ubicación eliminada' });
+            setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+        } catch (error) {
+            console.error("Error deleting location", error);
+            setMessage({ type: 'error', text: 'Error al eliminar ubicación' });
+        }
+    };
+
     // Actions
     const handleSmtpChange = (e) => {
         const { name, value } = e.target;
@@ -191,6 +311,70 @@ const SettingsPage = () => {
         e.preventDefault();
         if (!newItemName.trim()) return;
 
+        if (activeTab === 'payment-terms') {
+            try {
+                await api.post('/settings/payment-terms', {
+                    nombre: newItemName,
+                    dias: parseInt(newItemDias) || 0
+                });
+                setNewItemName('');
+                setNewItemDias(0);
+                setMessage({ type: 'success', text: 'Término de pago creado' });
+                fetchPaymentTerms();
+            } catch (error) {
+                console.error("Error creating payment term", error);
+                setMessage({ type: 'error', text: 'Error creando término de pago' });
+            }
+            return;
+        }
+
+        if (activeTab === 'brands') {
+            try {
+                await api.post('/settings/brands', {
+                    nombre: newItemName,
+                    descripcion: newItemDesc
+                });
+                setNewItemName('');
+                setNewItemDesc('');
+                setMessage({ type: 'success', text: 'Marca creada correctamente' });
+                fetchBrands();
+            } catch (error) {
+                console.error("Error creating brand", error);
+                setMessage({ type: 'error', text: 'Error creando marca' });
+            }
+            return;
+        }
+
+        if (activeTab === 'warehouses') {
+            try {
+                if (editingWarehouse) {
+                    await api.put(`/settings/warehouses/${editingWarehouse.id}`, {
+                        nombre: newItemName,
+                        ubicacion: newItemLocation,
+                        descripcion: newItemDesc
+                    });
+                    setMessage({ type: 'success', text: 'Bodega actualizada correctamente' });
+                    setEditingWarehouse(null);
+                } else {
+                    await api.post('/settings/warehouses', {
+                        nombre: newItemName,
+                        ubicacion: newItemLocation,
+                        descripcion: newItemDesc
+                    });
+                    setMessage({ type: 'success', text: 'Bodega creada correctamente' });
+                }
+
+                setNewItemName('');
+                setNewItemLocation('');
+                setNewItemDesc('');
+                fetchWarehouses();
+            } catch (error) {
+                console.error("Error saving warehouse", error);
+                setMessage({ type: 'error', text: 'Error guardando bodega' });
+            }
+            return;
+        }
+
         const endpoint = activeTab === 'categories' ? 'categories' : (activeTab === 'types' ? 'types' : (activeTab === 'locations' ? 'locations' : 'maintenance-tasks'));
         try {
             await api.post(`/asset-config/${endpoint}`, {
@@ -214,6 +398,18 @@ const SettingsPage = () => {
 
     const handleDeleteConfigItem = async (id) => {
         if (!window.confirm('¿Seguro que deseas eliminar este elemento?')) return;
+
+        if (activeTab === 'payment-terms') {
+            try {
+                await api.delete(`/settings/payment-terms/${id}`);
+                setMessage({ type: 'success', text: 'Término de pago eliminado' });
+                fetchPaymentTerms();
+            } catch (error) {
+                console.error("Error deleting payment term", error);
+                setMessage({ type: 'error', text: 'Error eliminando término de pago' });
+            }
+            return;
+        }
 
         const endpoint = activeTab === 'categories' ? 'categories' : (activeTab === 'types' ? 'types' : (activeTab === 'locations' ? 'locations' : 'maintenance-tasks'));
         try {
@@ -540,44 +736,258 @@ const SettingsPage = () => {
         </div>
     );
 
+    const startEditWarehouse = (item) => {
+        setEditingWarehouse(item);
+        setNewItemName(item.nombre);
+        setNewItemLocation(item.ubicacion || '');
+        setNewItemDesc(item.descripcion || '');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const cancelEditWarehouse = () => {
+        setEditingWarehouse(null);
+        setNewItemName('');
+        setNewItemLocation('');
+        setNewItemDesc('');
+    };
+
+    const renderWarehousesTable = () => (
+        <div className="space-y-6">
+            <div className="bg-slate-50 dark:bg-[#0f172a] p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-sm font-bold text-slate-700 dark:text-white uppercase">
+                        {editingWarehouse ? 'Editar Bodega' : 'Agregar Bodega'}
+                    </h3>
+                    {editingWarehouse && (
+                        <button onClick={cancelEditWarehouse} className="text-xs text-red-500 hover:underline">Cancelar Edición</button>
+                    )}
+                </div>
+                <form onSubmit={handleCreateConfigItem} className="flex gap-4 items-end">
+                    <div className="flex-[2]">
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Nombre</label>
+                        <input
+                            type="text"
+                            value={newItemName}
+                            onChange={(e) => setNewItemName(e.target.value)}
+                            className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none focus:border-blue-500 font-bold"
+                            placeholder="Nombre Bodega"
+                            required
+                        />
+                    </div>
+                    <div className="flex-[2]">
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Ubicación</label>
+                        <input
+                            type="text"
+                            value={newItemLocation}
+                            onChange={(e) => setNewItemLocation(e.target.value)}
+                            className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none focus:border-blue-500"
+                            placeholder="Dirección física..."
+                            required
+                        />
+                    </div>
+                    <div className="flex-[3]">
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Descripción</label>
+                        <input
+                            type="text"
+                            value={newItemDesc}
+                            onChange={(e) => setNewItemDesc(e.target.value)}
+                            className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none focus:border-blue-500"
+                            placeholder="Opcional..."
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={!newItemName.trim()}
+                        className={`px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 h-[38px] disabled:opacity-50 ${editingWarehouse ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-700'}`}
+                    >
+                        {editingWarehouse ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                        {editingWarehouse ? 'Actualizar' : 'Agregar'}
+                    </button>
+                </form>
+            </div>
+
+            <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <table className="w-full text-left">
+                    <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold">
+                        <tr>
+                            <th className="px-6 py-4">Nombre</th>
+                            <th className="px-6 py-4">Ubicación</th>
+                            <th className="px-6 py-4">Descripción</th>
+                            <th className="px-6 py-4 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {configLoading ? (
+                            <tr><td colSpan="4" className="text-center py-8 text-slate-500">Cargando...</td></tr>
+                        ) : warehouses.length === 0 ? (
+                            <tr><td colSpan="4" className="text-center py-8 text-slate-500">No hay bodegas registradas.</td></tr>
+                        ) : warehouses.map((item) => (
+                            <React.Fragment key={item.id}>
+                                <tr className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${selectedWarehouse?.id === item.id ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
+                                    <td className="px-6 py-4 font-bold text-slate-800 dark:text-white">{item.nombre}</td>
+                                    <td className="px-6 py-4 text-slate-500 text-sm">{item.ubicacion}</td>
+                                    <td className="px-6 py-4 text-slate-500 text-sm">{item.descripcion || '-'}</td>
+                                    <td className="px-6 py-4 text-right flex justify-end gap-2">
+                                        <button
+                                            onClick={() => startEditWarehouse(item)}
+                                            className="text-slate-400 hover:text-amber-500 p-2 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors"
+                                            title="Editar Bodega"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                if (selectedWarehouse?.id === item.id) {
+                                                    setSelectedWarehouse(null);
+                                                } else {
+                                                    setSelectedWarehouse(item);
+                                                    fetchWarehouseLocations(item.id);
+                                                    cancelEditLocation();
+                                                }
+                                            }}
+                                            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-xs font-bold uppercase ${selectedWarehouse?.id === item.id ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-blue-50 hover:text-blue-600'}`}
+                                            title="Gestionar Ubicaciones"
+                                        >
+                                            <MapPin className="w-4 h-4" /> Ubicaciones
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteConfigItem(item.id)}
+                                            className="text-red-500 hover:text-red-600 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </td>
+                                </tr>
+                                {selectedWarehouse?.id === item.id && (
+                                    <tr className="bg-slate-50/50 dark:bg-slate-800/30">
+                                        <td colSpan="4" className="px-6 py-4">
+                                            <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-slate-200 dark:border-slate-700 p-4 ml-8">
+                                                <h4 className="text-xs font-bold uppercase text-slate-500 mb-4 flex items-center gap-2">
+                                                    <ArrowDownRight className="w-4 h-4" />
+                                                    Ubicaciones en {item.nombre}
+                                                </h4>
+
+                                                <form onSubmit={handleCreateLocation} className="flex gap-3 mb-4 items-end">
+                                                    <div className="flex-1">
+                                                        <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">
+                                                            {editingLocation ? 'Editar Ubicación' : 'Nueva Ubicación'}
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={newLocationName}
+                                                            onChange={(e) => setNewLocationName(e.target.value)}
+                                                            className={`w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-lg text-xs outline-none focus:border-blue-500 font-bold ${editingLocation ? 'border-amber-300 ring-1 ring-amber-100' : 'border-slate-200 dark:border-slate-600'}`}
+                                                            placeholder="Nombre Ubicación (ej: Rack A1)"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <input
+                                                            type="text"
+                                                            value={newLocationDesc}
+                                                            onChange={(e) => setNewLocationDesc(e.target.value)}
+                                                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-xs outline-none focus:border-blue-500"
+                                                            placeholder="Descripción (opcional)"
+                                                        />
+                                                    </div>
+                                                    <button type="submit" className={`text-white px-3 py-2 rounded-lg text-xs font-bold uppercase transition-colors h-[34px] ${editingLocation ? 'bg-amber-500 hover:bg-amber-600' : 'bg-slate-800 hover:bg-slate-700'}`}>
+                                                        {editingLocation ? 'Actualizar' : 'Agregar'}
+                                                    </button>
+                                                    {editingLocation && (
+                                                        <button type="button" onClick={cancelEditLocation} className="text-slate-400 hover:text-red-500 px-2 py-2">
+                                                            <X className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </form>
+
+                                                <div className="space-y-1">
+                                                    {warehouseLocations.length === 0 ? (
+                                                        <div className="text-center py-4 text-xs text-slate-400 italic">No hay ubicaciones creadas.</div>
+                                                    ) : warehouseLocations.map(loc => (
+                                                        <div key={loc.id} className="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg border border-transparent hover:border-slate-100 group">
+                                                            <div>
+                                                                <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{loc.nombre}</div>
+                                                                {loc.descripcion && <div className="text-[10px] text-slate-400">{loc.descripcion}</div>}
+                                                            </div>
+                                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <button onClick={() => startEditLocation(loc)} className="text-slate-400 hover:text-amber-500 p-1">
+                                                                    <Pencil className="w-3 h-3" />
+                                                                </button>
+                                                                <button onClick={() => handleDeleteLocation(loc.id)} className="text-slate-400 hover:text-red-500 p-1">
+                                                                    <Trash2 className="w-3 h-3" />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </React.Fragment>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+
     return (
         <div className="max-w-5xl mx-auto space-y-6">
             <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Configuración del Sistema</h2>
 
-            <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800 pb-1 overflow-x-auto">
-                <button
-                    onClick={() => setActiveTab('smtp')}
-                    className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'smtp' ? 'bg-white dark:bg-[#1e293b] text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                >
-                    <Mail className="w-4 h-4" /> SMTP / Correo
-                </button>
+            <div className="flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
                 <button
                     onClick={() => setActiveTab('company')}
-                    className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'company' ? 'bg-white dark:bg-[#1e293b] text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'company' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                 >
                     <Building className="w-4 h-4" /> Empresa
                 </button>
                 <button
+                    onClick={() => setActiveTab('smtp')}
+                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'smtp' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                >
+                    <Mail className="w-4 h-4" /> SMTP / Correo
+                </button>
+                <button
                     onClick={() => setActiveTab('categories')}
-                    className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'categories' ? 'bg-white dark:bg-[#1e293b] text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'categories' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                 >
                     <LayoutGrid className="w-4 h-4" /> Categorías de Activos
                 </button>
                 <button
-                    onClick={() => setActiveTab('types')}
-                    className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'types' ? 'bg-white dark:bg-[#1e293b] text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                >
-                    <Tag className="w-4 h-4" /> Tipos de Activos
-                </button>
-                <button
                     onClick={() => setActiveTab('locations')}
-                    className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'locations' ? 'bg-white dark:bg-[#1e293b] text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'locations' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                 >
                     <MapPin className="w-4 h-4" /> Ubicaciones
                 </button>
                 <button
+                    onClick={() => setActiveTab('types')}
+                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'types' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                >
+                    <Tag className="w-4 h-4" /> Tipos de Activos
+                </button>
+                <button
+                    onClick={() => setActiveTab('payment-terms')}
+                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'payment-terms' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                >
+                    <CreditCard className="w-4 h-4" /> Términos de Pago
+                </button>
+                <button
+                    onClick={() => setActiveTab('brands')}
+                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'brands' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                >
+                    <Tag className="w-4 h-4" /> Marcas
+                </button>
+                <button
+                    onClick={() => setActiveTab('warehouses')}
+                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'warehouses' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                >
+                    <Box className="w-4 h-4" /> Bodegas y Ubicaciones
+                </button>
+                <button
                     onClick={() => setActiveTab('tasks')}
-                    className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === 'tasks' ? 'bg-white dark:bg-[#1e293b] text-blue-600 border-b-2 border-blue-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'tasks' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                 >
                     <ClipboardList className="w-4 h-4" /> Tipos de Tarea
                 </button>
@@ -590,11 +1000,82 @@ const SettingsPage = () => {
                     </div>
                 )}
 
-                {activeTab === 'smtp' && renderSmtpTab()}
                 {activeTab === 'company' && renderCompanyTab()}
+                {activeTab === 'smtp' && renderSmtpTab()}
                 {activeTab === 'categories' && renderConfigTable(categories, 'Categoría')}
-                {activeTab === 'types' && renderConfigTable(types, 'Tipo de Activo')}
                 {activeTab === 'locations' && renderConfigTable(locations, 'Ubicación')}
+                {activeTab === 'types' && renderConfigTable(types, 'Tipo de Activo')}
+                {activeTab === 'payment-terms' && (
+                    <div className="space-y-6">
+                        <div className="bg-slate-50 dark:bg-[#0f172a] p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <h3 className="text-sm font-bold text-slate-700 dark:text-white uppercase mb-4">Agregar Término de Pago</h3>
+                            <form onSubmit={handleCreateConfigItem} className="flex gap-4 items-end">
+                                <div className="flex-[2]">
+                                    <label className="block text-xs font-medium text-slate-500 mb-1">Nombre</label>
+                                    <input
+                                        type="text"
+                                        value={newItemName}
+                                        onChange={(e) => setNewItemName(e.target.value)}
+                                        className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none focus:border-blue-500 font-bold"
+                                        placeholder="Ej: Crédito 30 días"
+                                        required
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <label className="block text-xs font-medium text-slate-500 mb-1">Días de Crédito</label>
+                                    <input
+                                        type="number"
+                                        value={newItemDias}
+                                        onChange={(e) => setNewItemDias(e.target.value)}
+                                        className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none focus:border-blue-500"
+                                        placeholder="0"
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={!newItemName.trim()}
+                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 h-[38px] disabled:opacity-50"
+                                >
+                                    <Plus className="w-4 h-4" /> Agregar
+                                </button>
+                            </form>
+                        </div>
+
+                        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                            <table className="w-full text-left">
+                                <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold">
+                                    <tr>
+                                        <th className="px-6 py-4">Término</th>
+                                        <th className="px-6 py-4">Días</th>
+                                        <th className="px-6 py-4 text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                    {configLoading ? (
+                                        <tr><td colSpan="3" className="text-center py-8 text-slate-500">Cargando...</td></tr>
+                                    ) : paymentTerms.length === 0 ? (
+                                        <tr><td colSpan="3" className="text-center py-8 text-slate-500">No hay términos registrados.</td></tr>
+                                    ) : paymentTerms.map((item) => (
+                                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <td className="px-6 py-4 font-bold text-slate-800 dark:text-white uppercase tracking-tight">{item.nombre}</td>
+                                            <td className="px-6 py-4 text-slate-500 text-sm">{item.dias} {item.dias === 1 ? 'día' : 'días'}</td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={() => handleDeleteConfigItem(item.id)}
+                                                    className="text-red-500 hover:text-red-600 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+                {activeTab === 'brands' && renderConfigTable(brands, 'Marca')}
+                {activeTab === 'warehouses' && renderWarehousesTable()}
                 {activeTab === 'tasks' && renderConfigTable(taskTypes, 'Tipo de Tarea')}
             </div>
         </div>

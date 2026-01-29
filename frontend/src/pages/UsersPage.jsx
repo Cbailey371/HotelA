@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Plus, Search, Edit2, Trash2, Shield, Mail, User } from 'lucide-react';
 import { generateCode } from '../utils/codeGenerator';
+import Modal from '../components/Modal';
 
 const UsersPage = () => {
     const [users, setUsers] = useState([]);
@@ -9,6 +10,7 @@ const UsersPage = () => {
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [editingId, setEditingId] = useState(null); // Added missing state
+    const [isDirty, setIsDirty] = useState(false);
     const [formData, setFormData] = useState({
         codigo_usuario: '',
         nombre: '',
@@ -59,6 +61,7 @@ const UsersPage = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        setIsDirty(true);
     };
 
     const handleEdit = (user) => {
@@ -75,6 +78,7 @@ const UsersPage = () => {
             estado: user.estado || 'activo'
         });
         setShowModal(true);
+        setIsDirty(false);
     };
 
     const handleDelete = async (id) => {
@@ -112,7 +116,7 @@ const UsersPage = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         try {
             const payload = {
                 ...formData,
@@ -136,6 +140,7 @@ const UsersPage = () => {
     const resetForm = () => {
         setFormData({ codigo_usuario: '', nombre: '', apellido: '', email: '', usuario: '', password: '', cargo: '', role_id: '', estado: 'activo' });
         setEditingId(null);
+        setIsDirty(false);
     };
 
     const filteredUsers = users.filter(user => {
@@ -286,93 +291,93 @@ const UsersPage = () => {
             </div>
 
             {/* Modal Crear/Editar Usuario */}
-            {showModal && (
-                <div className="fixed inset-0 bg-slate-900/50 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-[#1e293b] p-6 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg shadow-2xl">
-                        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">
-                            {editingId ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
-                        </h3>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                {/* Code generation is now automatic in backend */}
-                                <div>
-                                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Nombre</label>
-                                    <input required name="nombre" value={formData.nombre} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                </div>
-                                <div>
-                                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Apellido</label>
-                                    <input required name="apellido" value={formData.apellido} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Email</label>
-                                <input required type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                            </div>
-                            <div>
-                                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Usuario (Login)</label>
-                                <input required name="usuario" value={formData.usuario} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                            </div>
-                            <div>
-                                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">
-                                    Contraseña {editingId && "(Dejar en blanco para no cambiar)"}
-                                </label>
-                                <div className="flex gap-2">
-                                    <input
-                                        required={!editingId}
-                                        type="text" // Changed to text to see the generated password, or keep password and add show/hide? Usually generated passwords need to be seen.
-                                        // Actually, let's keep it simple: input type="text" if generated? Or just toggle visibility.
-                                        // The user wants to generate it.
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleInputChange}
-                                        placeholder={editingId ? "********" : ""}
-                                        className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-                                            let pass = "";
-                                            for (let i = 0; i < 12; i++) {
-                                                pass += charset.charAt(Math.floor(Math.random() * charset.length));
-                                            }
-                                            setFormData(prev => ({ ...prev, password: pass }));
-                                        }}
-                                        className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                                        title="Generar Contraseña Segura"
-                                    >
-                                        <Shield className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Rol Asignado</label>
-                                <select
-                                    name="role_id"
-                                    value={formData.role_id}
-                                    onChange={handleInputChange}
-                                    className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none"
-                                >
-                                    <option value="">Seleccionar Rol...</option>
-                                    {roles.map(role => (
-                                        <option key={role.id} value={role.id}>{role.nombre}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Cargo</label>
-                                <input name="cargo" value={formData.cargo} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                            </div>
-                            <div className="flex justify-end gap-3 pt-4">
-                                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white text-sm">Cancelar</button>
-                                <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">
-                                    {editingId ? 'Guardar Cambios' : 'Guardar Usuario'}
-                                </button>
-                            </div>
-                        </form>
+            <Modal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                onSave={handleSubmit}
+                isDirty={isDirty}
+                title={editingId ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
+            >
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Code generation is now automatic in backend */}
+                        <div>
+                            <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Nombre</label>
+                            <input required name="nombre" value={formData.nombre} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                        </div>
+                        <div>
+                            <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Apellido</label>
+                            <input required name="apellido" value={formData.apellido} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                        </div>
                     </div>
-                </div>
-            )}
+                    <div>
+                        <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Email</label>
+                        <input required type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                    </div>
+                    <div>
+                        <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Usuario (Login)</label>
+                        <input required name="usuario" value={formData.usuario} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                    </div>
+                    <div>
+                        <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">
+                            Contraseña {editingId && "(Dejar en blanco para no cambiar)"}
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                required={!editingId}
+                                type="text" // Changed to text to see the generated password, or keep password and add show/hide? Usually generated passwords need to be seen.
+                                // Actually, let's keep it simple: input type="text" if generated? Or just toggle visibility.
+                                // The user wants to generate it.
+                                name="password"
+                                value={formData.password}
+                                onChange={handleInputChange}
+                                placeholder={editingId ? "********" : ""}
+                                className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+                                    let pass = "";
+                                    for (let i = 0; i < 12; i++) {
+                                        pass += charset.charAt(Math.floor(Math.random() * charset.length));
+                                    }
+                                    setFormData(prev => ({ ...prev, password: pass }));
+                                    setIsDirty(true);
+                                }}
+                                className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                                title="Generar Contraseña Segura"
+                            >
+                                <Shield className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Rol Asignado</label>
+                        <select
+                            name="role_id"
+                            value={formData.role_id}
+                            onChange={handleInputChange}
+                            className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none"
+                        >
+                            <option value="">Seleccionar Rol...</option>
+                            {roles.map(role => (
+                                <option key={role.id} value={role.id}>{role.nombre}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Cargo</label>
+                        <input name="cargo" value={formData.cargo} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                    </div>
+                    <div className="flex justify-end gap-3 pt-4">
+                        <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white text-sm">Cancelar</button>
+                        <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">
+                            {editingId ? 'Guardar Cambios' : 'Guardar Usuario'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 };

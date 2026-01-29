@@ -14,5 +14,15 @@ export const workOrderService = {
     updateStatus: async (id, status) => {
         const response = await api.put(`/work-orders/${id}/status`, { estado: status });
         return response.data;
+    },
+
+    update: async (id, data) => {
+        const response = await api.put(`/work-orders/${id}`, data);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        const response = await api.delete(`/work-orders/${id}`);
+        return response.data;
     }
 };

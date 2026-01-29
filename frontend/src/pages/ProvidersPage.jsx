@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Plus, Search, Edit2, Trash2, Building2, Phone, Mail, MapPin, Tag } from 'lucide-react';
-import { generateCode } from '../utils/codeGenerator';
+import { providerService } from '../services/providerService';
+import { paymentTermsService } from '../services/paymentTermsService';
+
+import Modal from '../components/Modal';
 
 const ProvidersPage = () => {
     const [providers, setProviders] = useState([]);
@@ -9,9 +11,10 @@ const ProvidersPage = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingProvider, setEditingProvider] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [paymentTermsList, setPaymentTermsList] = useState([]);
+    const [isDirty, setIsDirty] = useState(false);
 
     const initialFormData = {
-        codigo_proveedor: '',
         nombre_proveedor: '',
         tipo_proveedor: 'repuestos',
         contacto_nombre: '',
@@ -19,18 +22,34 @@ const ProvidersPage = () => {
         email: '',
         direccion: '',
         pais: 'México',
+        ciudad: '',
+        rut_o_ruc: '',
+        dv: '',
+        sitio_web: '',
+        metodos_pago_aceptados: '',
+        observaciones: '',
         estado: 'activo'
     };
     const [formData, setFormData] = useState(initialFormData);
 
     useEffect(() => {
         fetchProviders();
+        fetchPaymentTerms();
     }, []);
+
+    const fetchPaymentTerms = async () => {
+        try {
+            const data = await paymentTermsService.getAll();
+            setPaymentTermsList(data);
+        } catch (error) {
+            console.error("Error fetching payment terms", error);
+        }
+    };
 
     const fetchProviders = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/api/providers');
-            setProviders(res.data);
+            const data = await providerService.getAll();
+            setProviders(data);
         } catch (error) {
             console.error("Error fetching providers", error);
         } finally {
@@ -41,21 +60,19 @@ const ProvidersPage = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        setIsDirty(true);
     };
 
     const openCreateModal = () => {
         setEditingProvider(null);
-        setFormData({
-            ...initialFormData,
-            // codigo_proveedor: generateCode('PRV-') // Removed: Auto-generated in backend
-        });
+        setFormData(initialFormData);
+        setIsDirty(false);
         setShowModal(true);
     };
 
     const openEditModal = (provider) => {
         setEditingProvider(provider);
         setFormData({
-            codigo_proveedor: provider.codigo || '',
             nombre_proveedor: provider.nombre,
             tipo_proveedor: provider.tipo || 'repuestos',
             contacto_nombre: provider.contacto || '',
@@ -63,20 +80,28 @@ const ProvidersPage = () => {
             email: provider.email || '',
             direccion: provider.direccion || '',
             pais: 'México',
+            ciudad: provider.ciudad || '',
+            rut_o_ruc: provider.rut_o_ruc || '',
+            dv: provider.dv || '',
+            sitio_web: provider.sitio_web || '',
+            metodos_pago_aceptados: provider.metodos_pago_aceptados || '',
+            observaciones: provider.observaciones || '',
             estado: provider.estado || 'activo'
         });
+        setIsDirty(false);
         setShowModal(true);
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         try {
             if (editingProvider) {
-                await axios.put(`http://localhost:3000/api/providers/${editingProvider.id}`, formData);
+                await providerService.update(editingProvider.id, formData);
             } else {
-                await axios.post('http://localhost:3000/api/providers', formData);
+                await providerService.create(formData);
             }
             setShowModal(false);
+            setIsDirty(false);
             fetchProviders();
         } catch (error) {
             console.error("Error saving provider", error);
@@ -86,7 +111,7 @@ const ProvidersPage = () => {
     const handleDelete = async (id) => {
         if (window.confirm('¿Eliminar este proveedor?')) {
             try {
-                await axios.delete(`http://localhost:3000/api/providers/${id}`);
+                await providerService.delete(id);
                 fetchProviders();
             } catch (error) {
                 console.error("Error deleting provider", error);
@@ -172,56 +197,101 @@ const ProvidersPage = () => {
                 </table>
             </div>
 
-            {showModal && (
-                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
-                        <div className="p-6 border-b border-slate-200 dark:border-slate-800">
-                            <h3 className="text-xl font-bold">{editingProvider ? 'Editar' : 'Nuevo'} Proveedor</h3>
+            <Modal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                onSave={handleSubmit}
+                isDirty={isDirty}
+                title={editingProvider ? 'Editar Proveedor' : 'Nuevo Proveedor'}
+                width="max-w-lg"
+            >
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Code generation is now automatic in backend */}
+                        <div>
+                            <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Nombre Empresa</label>
+                            <input required name="nombre_proveedor" value={formData.nombre_proveedor} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                {/* Code generation is now automatic in backend */}
-                                <div>
-                                    <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Nombre Empresa</label>
-                                    <input required name="nombre_proveedor" value={formData.nombre_proveedor} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />
+                        <div>
+                            <div className="flex gap-4">
+                                <div className="flex-1">
+                                    <label className="text-xs font-bold uppercase text-slate-500 block mb-1">NIT / RUC</label>
+                                    <input name="rut_o_ruc" value={formData.rut_o_ruc} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" placeholder="Ej: 12.345.678" />
+                                </div>
+                                <div className="w-24">
+                                    <label className="text-xs font-bold uppercase text-slate-500 block mb-1">DV</label>
+                                    <input name="dv" value={formData.dv} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none text-center" placeholder="000" maxLength="3" />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Tipo</label>
-                                    <select name="tipo_proveedor" value={formData.tipo_proveedor} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none">
-                                        <option value="repuestos">Repuestos</option>
-                                        <option value="mano_obra">Mano de Obra</option>
-                                        <option value="ambos">Mixto (Ambos)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Contacto</label>
-                                    <input name="contacto_nombre" value={formData.contacto_nombre} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Teléfono</label>
-                                    <input name="telefono" value={formData.telefono} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />
-                                </div>
-                                <div>
-                                    <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Email</label>
-                                    <input name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Dirección</label>
-                                <input name="direccion" value={formData.direccion} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />
-                            </div>
-                            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-                                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2">Cancelar</button>
-                                <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold">Guardar</button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Tipo</label>
+                            <select name="tipo_proveedor" value={formData.tipo_proveedor} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none">
+                                <option value="repuestos">Repuestos</option>
+                                <option value="mano_obra">Mano de Obra</option>
+                                <option value="ambos">Mixto (Ambos)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input name="contacto_nombre" value={formData.contacto_nombre} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" placeholder="Nombre Contacto" />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Sitio Web</label>
+                            <input name="sitio_web" value={formData.sitio_web} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" placeholder="https://..." />
+                        </div>
+                        <div>
+                            <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Términos de Pago</label>
+                            <select
+                                name="metodos_pago_aceptados"
+                                value={formData.metodos_pago_aceptados}
+                                onChange={handleInputChange}
+                                className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none font-bold"
+                            >
+                                <option value="">Seleccionar...</option>
+                                {paymentTermsList.map(term => (
+                                    <option key={term.id} value={term.nombre}>{term.nombre}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Teléfono</label>
+                            <input name="telefono" value={formData.telefono} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />
+                        </div>
+                        <div>
+                            <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Email</label>
+                            <input name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Dirección</label>
+                        <input name="direccion" value={formData.direccion} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Ciudad</label>
+                            <input name="ciudad" value={formData.ciudad} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />
+                        </div>
+                        <div>
+                            <label className="text-xs font-bold uppercase text-slate-500 block mb-1">País</label>
+                            <input name="pais" value={formData.pais} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Observaciones</label>
+                        <textarea name="observaciones" value={formData.observaciones} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none h-20 resize-none" />
+                    </div>
+                    <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                        <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">Cancelar</button>
+                        <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold">Guardar</button>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 };

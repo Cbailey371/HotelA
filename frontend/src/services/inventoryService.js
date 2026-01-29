@@ -13,6 +13,12 @@ export const inventoryService = {
         const response = await api.put(`/inventory/${id}`, data);
         return response.data;
     },
+    uploadImage: async (id, formData) => {
+        const response = await api.post(`/inventory/${id}/image`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
+    },
     delete: async (id) => {
         const response = await api.delete(`/inventory/${id}`);
         return response.data;
@@ -25,6 +31,10 @@ export const inventoryService = {
         const response = await api.post('/inventory/import', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
+        return response.data;
+    },
+    getHistory: async (id) => {
+        const response = await api.get(`/inventory/${id}/history`);
         return response.data;
     }
 };

@@ -14,3 +14,8 @@ pub mod roles;
 pub mod purchases;
 pub mod settings;
 pub mod asset_config;
+pub mod inventory_transaction;
+pub mod payment_terms;
+pub mod brands;
+pub mod warehouses;
+pub mod warehouse_locations;

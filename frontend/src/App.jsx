@@ -13,8 +13,11 @@ import ProvidersPage from './pages/ProvidersPage';
 import TechniciansPage from './pages/TechniciansPage';
 import AuditPage from './pages/AuditPage';
 import WorkOrdersPage from './pages/WorkOrdersPage';
+import PurchaseOrdersPage from './pages/PurchaseOrdersPage';
 import PurchasesPage from './pages/PurchasesPage';
+import ReceivingPage from './pages/ReceivingPage';
 import SettingsPage from './pages/SettingsPage';
+import ReportsPage from './pages/ReportsPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -47,8 +50,10 @@ function App() {
               <Route path="users" element={<UsersPage />} />
               <Route path="roles" element={<RolesPage />} />
               <Route path="work-orders" element={<WorkOrdersPage />} />
-              <Route path="purchases" element={<PurchasesPage />} />
+              <Route path="purchases" element={<PurchaseOrdersPage />} />
+              <Route path="purchases/receive/:orderId" element={<ReceivingPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="reports" element={<ReportsPage />} />
             </Route>
           </Routes>
         </BrowserRouter>

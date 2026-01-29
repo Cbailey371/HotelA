@@ -14,6 +14,12 @@ pub struct ProviderRequest {
     pub pais: Option<String>,
     pub estado: Option<String>,
     pub codigo_proveedor: Option<String>,
+    pub rut_o_ruc: Option<String>,
+    pub ciudad: Option<String>,
+    pub sitio_web: Option<String>,
+    pub metodos_pago_aceptados: Option<String>,
+    pub observaciones: Option<String>,
+    pub dv: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -27,6 +33,12 @@ pub struct ProviderDto {
     pub direccion: Option<String>,
     pub estado: Option<String>,
     pub codigo: Option<String>,
+    pub rut_o_ruc: Option<String>,
+    pub ciudad: Option<String>,
+    pub sitio_web: Option<String>,
+    pub metodos_pago_aceptados: Option<String>,
+    pub observaciones: Option<String>,
+    pub dv: Option<String>,
 }
 
 pub async fn get_providers(
@@ -44,7 +56,14 @@ pub async fn get_providers(
         email: p.email,
         direccion: p.direccion,
         estado: p.estado,
+
         codigo: p.codigo_proveedor,
+        rut_o_ruc: p.rut_o_ruc,
+        ciudad: p.ciudad,
+        sitio_web: p.sitio_web,
+        metodos_pago_aceptados: p.metodos_pago_aceptados,
+        observaciones: p.observaciones,
+        dv: p.dv,
     }).collect();
 
     Ok(Json(dtos))
@@ -67,7 +86,14 @@ pub async fn create_provider(
         direccion: Set(payload.direccion),
         pais: Set(payload.pais),
         estado: Set(payload.estado.or(Some("activo".to_string()))),
+
         codigo_proveedor: Set(Some(next_code)),
+        rut_o_ruc: Set(payload.rut_o_ruc),
+        ciudad: Set(payload.ciudad),
+        sitio_web: Set(payload.sitio_web),
+        metodos_pago_aceptados: Set(payload.metodos_pago_aceptados),
+        observaciones: Set(payload.observaciones),
+        dv: Set(payload.dv),
         ..Default::default()
     };
 
@@ -83,7 +109,14 @@ pub async fn create_provider(
         email: p.email,
         direccion: p.direccion,
         estado: p.estado,
+
         codigo: p.codigo_proveedor,
+        rut_o_ruc: p.rut_o_ruc,
+        ciudad: p.ciudad,
+        sitio_web: p.sitio_web,
+        metodos_pago_aceptados: p.metodos_pago_aceptados,
+        observaciones: p.observaciones,
+        dv: p.dv,
     }))
 }
 
@@ -107,6 +140,12 @@ pub async fn update_provider(
     provider.pais = Set(payload.pais);
     provider.estado = Set(payload.estado);
     provider.codigo_proveedor = Set(payload.codigo_proveedor);
+    provider.rut_o_ruc = Set(payload.rut_o_ruc);
+    provider.ciudad = Set(payload.ciudad);
+    provider.sitio_web = Set(payload.sitio_web);
+    provider.metodos_pago_aceptados = Set(payload.metodos_pago_aceptados);
+    provider.observaciones = Set(payload.observaciones);
+    provider.dv = Set(payload.dv);
 
     let updated = provider.update(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -120,7 +159,14 @@ pub async fn update_provider(
         email: updated.email,
         direccion: updated.direccion,
         estado: updated.estado,
+
         codigo: updated.codigo_proveedor,
+        rut_o_ruc: updated.rut_o_ruc,
+        ciudad: updated.ciudad,
+        sitio_web: updated.sitio_web,
+        metodos_pago_aceptados: updated.metodos_pago_aceptados,
+        observaciones: updated.observaciones,
+        dv: updated.dv,
     }))
 }
 

@@ -4,7 +4,7 @@ mod controllers;
 mod middleware;
 
 use axum::{
-    routing::{get, post, put},
+    routing::{get, post, put, delete},
     Router,
 };
 use tower_http::services::ServeDir;
@@ -72,8 +72,14 @@ async fn main() {
                 .route("/inventory/{id}", put(controllers::inventory::update_part).delete(controllers::inventory::delete_part)
                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "inventory_edit")))
                 )
+                .route("/inventory/{id}/image", post(controllers::inventory::upload_part_image)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "inventory_edit")))
+                )
+                .route("/inventory/{id}/history", get(controllers::inventory::get_part_history)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "inventory_view")))
+                )
                 .route("/maintenance/schedule", get(controllers::maintenance::get_schedules).post(controllers::maintenance::create_schedule))
-                .route("/maintenance/schedule/{id}", put(controllers::maintenance::update_schedule))
+                .route("/maintenance/schedule/{id}", put(controllers::maintenance::update_schedule).delete(controllers::maintenance::delete_schedule))
                 .route("/maintenance/schedule/{id}/parts", get(controllers::maintenance::get_maintenance_parts).post(controllers::maintenance::add_maintenance_part))
                 .route("/maintenance/schedule/parts/{id}", axum::routing::delete(controllers::maintenance::remove_maintenance_part))
                 .route("/maintenance/execute/{id}", post(controllers::maintenance::execute_maintenance))
@@ -82,7 +88,37 @@ async fn main() {
                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
                 )
                 .route("/dashboard/stats", get(controllers::dashboard::get_stats))
-                .route("/reports/assets", get(controllers::reports::generate_assets_report))
+                // Reports Routes
+                .route("/reports/inventory-status", get(controllers::reports::get_inventory_status))
+                .route("/reports/maintenance-roi", get(controllers::reports::get_maintenance_roi))
+                .route("/reports/asset-depreciation", get(controllers::reports::get_asset_depreciation))
+                .route("/reports/scheduled", get(controllers::reports::get_scheduled_reports).post(controllers::reports::create_scheduled_report))
+                .route("/reports/scheduled/{id}", delete(controllers::reports::delete_scheduled_report).put(controllers::reports::update_scheduled_report))
+                // Payment Terms
+                .route("/settings/payment-terms", get(controllers::payment_terms::get_payment_terms).post(controllers::payment_terms::create_payment_term)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
+                )
+                .route("/settings/payment-terms/{id}", axum::routing::delete(controllers::payment_terms::delete_payment_term)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
+                )
+                .route("/settings/brands", get(controllers::brands::get_brands).post(controllers::brands::create_brand)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
+                )
+                .route("/settings/brands/{id}", axum::routing::delete(controllers::brands::delete_brand)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
+                )
+                .route("/settings/warehouses", get(controllers::warehouses::get_warehouses).post(controllers::warehouses::create_warehouse)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
+                )
+                .route("/settings/warehouses/{id}", put(controllers::warehouses::update_warehouse).delete(controllers::warehouses::delete_warehouse)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
+                )
+                .route("/settings/warehouses/{id}/locations", get(controllers::warehouse_locations::get_warehouse_locations).post(controllers::warehouse_locations::create_warehouse_location)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
+                )
+                .route("/settings/warehouses/locations/{id}", put(controllers::warehouse_locations::update_warehouse_location).delete(controllers::warehouse_locations::delete_warehouse_location)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
+                )
                 .route("/users", get(controllers::user::get_users).post(controllers::user::create_user)
                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
                 )
@@ -92,21 +128,31 @@ async fn main() {
                 
                 // Roles & Permissions
                 .route("/roles", get(controllers::roles::get_roles).post(controllers::roles::create_role)
-                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
+                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
                 )
                 .route("/roles/{id}", put(controllers::roles::update_role).delete(controllers::roles::delete_role)
                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
                 )
-                .route("/permissions", get(controllers::roles::get_permissions)
-                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
-                )
+                .route("/permissions", get(controllers::roles::get_permissions))
+
+                 // Purchases
+                .route("/purchases/requests", get(controllers::purchases::get_requests).post(controllers::purchases::create_request))
+                .route("/purchases/requests/{id}", get(controllers::purchases::get_request_by_id))
+                .route("/purchases/requests/{id}/status", put(controllers::purchases::update_request_status))
+                .route("/purchases/orders/from-request/{id}", post(controllers::purchases::create_order_from_request))
+                .route("/purchases/orders/{id}/receive", axum::routing::post(controllers::purchases::receive_order_items)
+         .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "inventory_edit")))
+    )
+                .route("/purchases/orders", get(controllers::purchases::get_orders).post(controllers::purchases::create_direct_order))
+                .route("/purchases/orders/{id}", get(controllers::purchases::get_order_by_id).put(controllers::purchases::update_order).delete(controllers::purchases::delete_order))
+                .route("/purchases/orders/{id}/status", put(controllers::purchases::update_order_status))
                 
                 // Work Orders
                 .route("/work-orders", get(controllers::work_orders::get_work_orders).post(controllers::work_orders::create_work_order))
+                .route("/work-orders/{id}", put(controllers::work_orders::update_work_order).delete(controllers::work_orders::delete_work_order))
                 .route("/work-orders/{id}/status", put(controllers::work_orders::update_work_order_status))
+                
 
-                // Purchases
-                .route("/purchases", post(controllers::purchases::create_purchase_order).get(controllers::purchases::get_purchases))
 
                 .route("/upload/manual", post(controllers::upload::upload_manual))
                 .route("/upload", post(controllers::upload::upload_image))

@@ -1,11 +1,13 @@
 use sea_orm::{DatabaseConnection, DbErr, ConnectionTrait, Statement, DatabaseBackend};
 
-pub async fn generate_next_code(
-    db: &DatabaseConnection,
+pub async fn generate_next_code<C>(
+    db: &C,
     table: &str,
     column: &str,
     prefix: &str,
-) -> Result<String, DbErr> {
+) -> Result<String, DbErr> 
+where C: ConnectionTrait,
+{
     // Query to find the last code with the given prefix.
     // We sort by length descending first to ensure that "COD-10" > "COD-9", 
     // and then by the value strings descending.

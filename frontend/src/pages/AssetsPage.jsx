@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Plus, Search, Edit2, Trash2, Box, MapPin, Tag, Hash, Activity, Image as ImageIcon, Upload, Filter, X, Download, ZoomIn, FileText } from 'lucide-react';
 import { assetService } from '../services/assetService';
+import Modal from '../components/Modal';
 
 const AssetsPage = () => {
     const navigate = useNavigate();
@@ -24,6 +25,7 @@ const AssetsPage = () => {
     const [filterStatus, setFilterStatus] = useState('');
     const [filterBrand, setFilterBrand] = useState('');
     const [filterLocation, setFilterLocation] = useState('');
+    const [isDirty, setIsDirty] = useState(false);
 
     // Form State
     const initialFormState = {
@@ -85,6 +87,7 @@ const AssetsPage = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        setIsDirty(true);
     };
 
     const handleImageUpload = async (e) => {
@@ -100,6 +103,7 @@ const AssetsPage = () => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setFormData(prev => ({ ...prev, imagen_url: res.data.url }));
+            setIsDirty(true);
         } catch (error) {
             console.error("Error uploading image", error);
             alert("Error al subir la imagen");
@@ -146,6 +150,7 @@ const AssetsPage = () => {
     const openCreateModal = () => {
         setEditingAsset(null);
         setFormData(initialFormState);
+        setIsDirty(false);
         setShowModal(true);
     };
 
@@ -179,6 +184,7 @@ const AssetsPage = () => {
                     documentos: [...prev.documentos, newDoc]
                 }));
             }
+            setIsDirty(true);
         } catch (error) {
             console.error("Error uploading manual", error);
             alert("Error al subir el manual");
@@ -198,6 +204,7 @@ const AssetsPage = () => {
                 ...prev,
                 documentos: prev.documentos.filter(d => d.url_archivo !== doc.url_archivo)
             }));
+            setIsDirty(true);
         } catch (error) {
             console.error("Error deleting document", error);
             alert("Error al eliminar el documento.");
@@ -244,11 +251,12 @@ const AssetsPage = () => {
     const openEditModal = (asset) => {
         setEditingAsset(asset);
         fetchAssetById(asset.id); // Fetch full asset details including documents
+        setIsDirty(false);
         setShowModal(true);
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
 
         // Sanitize data: convert empty strings to null for optional fields, especially numeric/dates
         const sanitizedData = { ...formData };
@@ -282,6 +290,7 @@ const AssetsPage = () => {
                 await axios.post('http://localhost:3000/api/assets', sanitizedData);
             }
             setShowModal(false);
+            setIsDirty(false);
             fetchAssets();
         } catch (error) {
             console.error("Error saving asset", error);
@@ -524,221 +533,219 @@ const AssetsPage = () => {
             </div>
 
             {/* Modal */}
-            {showModal && (
-                <div className="fixed inset-0 bg-slate-900/50 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="p-6 border-b border-slate-200 dark:border-slate-800">
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-white">
-                                {editingAsset ? 'Editar Activo' : 'Registrar Nuevo Activo'}
-                            </h3>
-                        </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                            <div className="flex gap-6 flex-col md:flex-row">
-                                {/* Image Upload Section */}
-                                <div className="md:w-1/3 flex flex-col items-center">
-                                    <div
-                                        onClick={() => {
-                                            if (formData.imagen_url) setPreviewImage(`http://localhost:3000${formData.imagen_url}`);
-                                        }}
-                                        className={`w-full aspect-square bg-slate-100 dark:bg-[#0f172a] rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center overflow-hidden relative group transition-colors ${formData.imagen_url ? 'cursor-zoom-in border-solid hover:border-blue-500' : 'cursor-pointer hover:border-blue-500'}`}
-                                    >
-                                        {formData.imagen_url ? (
-                                            <>
-                                                <img src={`http://localhost:3000${formData.imagen_url}`} alt="Preview" className="w-full h-full object-cover" />
-                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all">
-                                                    <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100" />
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div className="text-center p-4">
-                                                <ImageIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                                                <span className="text-xs text-slate-500 block">Subir Imagen</span>
-                                            </div>
-                                        )}
-                                        {!formData.imagen_url && (
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleImageUpload}
-                                                className="absolute inset-0 opacity-0 cursor-pointer"
-                                                disabled={uploading}
-                                            />
-                                        )}
-                                        {uploading && (
-                                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                                            </div>
-                                        )}
+            <Modal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                onSave={handleSubmit}
+                isDirty={isDirty}
+                title={editingAsset ? 'Editar Activo' : 'Registrar Nuevo Activo'}
+                width="max-w-3xl"
+            >
+                <form onSubmit={handleSubmit} className="p-0 space-y-6">
+                    <div className="flex gap-6 flex-col md:flex-row">
+                        {/* Image Upload Section */}
+                        <div className="md:w-1/3 flex flex-col items-center">
+                            <div
+                                onClick={() => {
+                                    if (formData.imagen_url) setPreviewImage(`http://localhost:3000${formData.imagen_url}`);
+                                }}
+                                className={`w-full aspect-square bg-slate-100 dark:bg-[#0f172a] rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center overflow-hidden relative group transition-colors ${formData.imagen_url ? 'cursor-zoom-in border-solid hover:border-blue-500' : 'cursor-pointer hover:border-blue-500'}`}
+                            >
+                                {formData.imagen_url ? (
+                                    <>
+                                        <img src={`http://localhost:3000${formData.imagen_url}`} alt="Preview" className="w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all">
+                                            <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100" />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="text-center p-4">
+                                        <ImageIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                                        <span className="text-xs text-slate-500 block">Subir Imagen</span>
                                     </div>
-                                    {formData.imagen_url && (
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                // Trigger hidden file input
-                                                document.getElementById('edit-image-input').click();
-                                            }}
-                                            className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-700 underline"
-                                        >
-                                            Cambiar imagen
-                                        </button>
-                                    )}
+                                )}
+                                {!formData.imagen_url && (
                                     <input
-                                        id="edit-image-input"
                                         type="file"
                                         accept="image/*"
                                         onChange={handleImageUpload}
-                                        className="hidden"
+                                        className="absolute inset-0 opacity-0 cursor-pointer"
                                         disabled={uploading}
                                     />
-                                    <p className="text-xs text-slate-500 mt-2 text-center">Click para ampliar o subir foto</p>
-                                </div>
+                                )}
+                                {uploading && (
+                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                                    </div>
+                                )}
+                            </div>
+                            {formData.imagen_url && (
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        // Trigger hidden file input
+                                        document.getElementById('edit-image-input').click();
+                                    }}
+                                    className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-700 underline"
+                                >
+                                    Cambiar imagen
+                                </button>
+                            )}
+                            <input
+                                id="edit-image-input"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                className="hidden"
+                                disabled={uploading}
+                            />
+                            <p className="text-xs text-slate-500 mt-2 text-center">Click para ampliar o subir foto</p>
+                        </div>
 
-                                {/* Fields */}
-                                <div className="md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Código Activo (Manual)</label>
-                                        <input name="codigo_administrativo" value={formData.codigo_administrativo} onChange={handleInputChange} placeholder="ej. FIN-1234" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                        {/* Fields */}
+                        <div className="md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Código Activo (Manual)</label>
+                                <input name="codigo_administrativo" value={formData.codigo_administrativo} onChange={handleInputChange} placeholder="ej. FIN-1234" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Código Interno (Auto)</label>
+                                <input disabled value={formData.codigo_equipo || "Generado al guardar"} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-400 italic cursor-not-allowed outline-none" />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Estado</label>
+                                <select name="estado" value={formData.estado} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
+                                    <option value="activo">Activo</option>
+                                    <option value="en_reparacion">En Reparación</option>
+                                    <option value="baja">De Baja</option>
+                                </select>
+                            </div>
+                            <div className="col-span-2">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Nombre del Equipo *</label>
+                                <input required name="nombre_equipo" value={formData.nombre_equipo} onChange={handleInputChange} placeholder="ej. Aire Acondicionado Split" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Marca</label>
+                                <input name="marca" value={formData.marca} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Modelo</label>
+                                <input name="modelo" value={formData.modelo} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Número de Serie</label>
+                                <input name="numero_serie" value={formData.numero_serie} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Categoría</label>
+                                <select name="categoria" value={formData.categoria} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
+                                    <option value="">Seleccionar...</option>
+                                    {categoriesList.map(cat => (
+                                        <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Ubicación</label>
+                                <select name="ubicacion" value={formData.ubicacion} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
+                                    <option value="">Seleccionar...</option>
+                                    {locationsList.map(loc => (
+                                        <option key={loc.id} value={loc.nombre}>{loc.nombre}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Tipo Activo</label>
+                                <select name="tipo_activo" value={formData.tipo_activo} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
+                                    <option value="">Seleccionar...</option>
+                                    {typesList.map(t => (
+                                        <option key={t.id} value={t.nombre}>{t.nombre}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Año</label>
+                                <input type="number" name="anio" value={formData.anio} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Color</label>
+                                <input name="color" value={formData.color} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Cantidad</label>
+                                <input type="number" name="cantidad" value={formData.cantidad} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">N° Motor</label>
+                                <input name="numero_motor" value={formData.numero_motor} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">N° Chasis</label>
+                                <input name="numero_chasis" value={formData.numero_chasis} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">F. Adquisición</label>
+                                <input type="date" name="fecha_adquisicion" value={formData.fecha_adquisicion} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">F. Instalación</label>
+                                <input type="date" name="fecha_instalacion" value={formData.fecha_instalacion} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                            </div>
+                            <div className="col-span-2">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Ubicación Detallada</label>
+                                <input name="ubicacion_detallada" value={formData.ubicacion_detallada} onChange={handleInputChange} placeholder="ej. Ala Norte, Pasillo 4, Rack B" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                            </div>
+                            <div className="col-span-2">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Manuales Técnicos / Fichas</label>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-4 bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5">
+                                        <label className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-1.5 rounded-md text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 cursor-pointer transition-colors shadow-sm">
+                                            <Upload className="w-4 h-4" /> Agregar Manual
+                                            <input type="file" onChange={handleManualUpload} className="hidden" />
+                                        </label>
+                                        <span className="text-xs text-slate-400 font-medium italic">Puedes subir múltiples archivos (PDF, DOCX, Imágenes)</span>
                                     </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Código Interno (Auto)</label>
-                                        <input disabled value={formData.codigo_equipo || "Generado al guardar"} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-400 italic cursor-not-allowed outline-none" />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Estado</label>
-                                        <select name="estado" value={formData.estado} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
-                                            <option value="activo">Activo</option>
-                                            <option value="en_reparacion">En Reparación</option>
-                                            <option value="baja">De Baja</option>
-                                        </select>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Nombre del Equipo *</label>
-                                        <input required name="nombre_equipo" value={formData.nombre_equipo} onChange={handleInputChange} placeholder="ej. Aire Acondicionado Split" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Marca</label>
-                                        <input name="marca" value={formData.marca} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Modelo</label>
-                                        <input name="modelo" value={formData.modelo} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Número de Serie</label>
-                                        <input name="numero_serie" value={formData.numero_serie} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Categoría</label>
-                                        <select name="categoria" value={formData.categoria} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
-                                            <option value="">Seleccionar...</option>
-                                            {categoriesList.map(cat => (
-                                                <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Ubicación</label>
-                                        <select name="ubicacion" value={formData.ubicacion} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
-                                            <option value="">Seleccionar...</option>
-                                            {locationsList.map(loc => (
-                                                <option key={loc.id} value={loc.nombre}>{loc.nombre}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Tipo Activo</label>
-                                        <select name="tipo_activo" value={formData.tipo_activo} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
-                                            <option value="">Seleccionar...</option>
-                                            {typesList.map(t => (
-                                                <option key={t.id} value={t.nombre}>{t.nombre}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Año</label>
-                                        <input type="number" name="anio" value={formData.anio} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Color</label>
-                                        <input name="color" value={formData.color} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Cantidad</label>
-                                        <input type="number" name="cantidad" value={formData.cantidad} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">N° Motor</label>
-                                        <input name="numero_motor" value={formData.numero_motor} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">N° Chasis</label>
-                                        <input name="numero_chasis" value={formData.numero_chasis} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">F. Adquisición</label>
-                                        <input type="date" name="fecha_adquisicion" value={formData.fecha_adquisicion} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                    </div>
-                                    <div className="col-span-1">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">F. Instalación</label>
-                                        <input type="date" name="fecha_instalacion" value={formData.fecha_instalacion} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                    </div>
-                                    <div className="col-span-2">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Ubicación Detallada</label>
-                                        <input name="ubicacion_detallada" value={formData.ubicacion_detallada} onChange={handleInputChange} placeholder="ej. Ala Norte, Pasillo 4, Rack B" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
-                                    </div>
-                                    <div className="col-span-2">
-                                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Manuales Técnicos / Fichas</label>
-                                        <div className="space-y-3">
-                                            <div className="flex items-center gap-4 bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5">
-                                                <label className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-1.5 rounded-md text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 cursor-pointer transition-colors shadow-sm">
-                                                    <Upload className="w-4 h-4" /> Agregar Manual
-                                                    <input type="file" onChange={handleManualUpload} className="hidden" />
-                                                </label>
-                                                <span className="text-xs text-slate-400 font-medium italic">Puedes subir múltiples archivos (PDF, DOCX, Imágenes)</span>
-                                            </div>
 
-                                            {formData.documentos && formData.documentos.length > 0 && (
-                                                <div className="grid grid-cols-1 gap-2">
-                                                    {formData.documentos.map((doc, idx) => (
-                                                        <div key={doc.id || idx} className="flex items-center justify-between bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl group transition-all hover:border-blue-400/50">
-                                                            <div className="flex items-center gap-3 overflow-hidden">
-                                                                <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500 flex-shrink-0">
-                                                                    <FileText className="w-4 h-4" />
-                                                                </div>
-                                                                <a
-                                                                    href={`http://localhost:3000${doc.url_archivo}`}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 truncate max-w-[200px]"
-                                                                >
-                                                                    {doc.nombre_archivo}
-                                                                </a>
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleDeleteDocument(doc)}
-                                                                className="p-1.5 text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                                                            >
-                                                                <X className="w-4 h-4" />
-                                                            </button>
+                                    {formData.documentos && formData.documentos.length > 0 && (
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {formData.documentos.map((doc, idx) => (
+                                                <div key={doc.id || idx} className="flex items-center justify-between bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-2.5 rounded-xl group transition-all hover:border-blue-400/50">
+                                                    <div className="flex items-center gap-3 overflow-hidden">
+                                                        <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500 flex-shrink-0">
+                                                            <FileText className="w-4 h-4" />
                                                         </div>
-                                                    ))}
+                                                        <a
+                                                            href={`http://localhost:3000${doc.url_archivo}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 truncate max-w-[200px]"
+                                                        >
+                                                            {doc.nombre_archivo}
+                                                        </a>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteDocument(doc)}
+                                                        className="p-1.5 text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
                                                 </div>
-                                            )}
+                                            ))}
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
-
-                            <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-800 mt-4">
-                                <button type="button" onClick={() => setShowModal(false)} className="px-5 py-2.5 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-sm font-medium transition-colors">Cancelar</button>
-                                <button type="submit" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-lg shadow-blue-500/30 transition-all">Guardar Activo</button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
-                </div>
-            )}
+
+                    <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-800 mt-4">
+                        <button type="button" onClick={() => setShowModal(false)} className="px-5 py-2.5 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-sm font-medium transition-colors">Cancelar</button>
+                        <button type="submit" className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-lg shadow-blue-500/30 transition-all">Guardar Activo</button>
+                    </div>
+                </form>
+            </Modal>
 
             {/* Image Preview Modal */}
             {previewImage && (

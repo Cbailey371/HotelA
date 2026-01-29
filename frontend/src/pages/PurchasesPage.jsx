@@ -1,235 +1,485 @@
 import React, { useState, useEffect } from 'react';
-import { purchaseService } from '../services/purchaseService';
-import { providerService } from '../services/providerService'; // Assuming this exists or generic
-import { inventoryService } from '../services/inventoryService'; // To pick parts
-import { pdfGenerator } from '../utils/pdfGenerator';
-import { Plus, Printer, ShoppingCart, Loader2 } from 'lucide-react';
-import { generateCode } from '../utils/codeGenerator';
+import axios from 'axios';
+import { Plus, Search, Filter, Eye, CheckCircle, XCircle, FileText, Loader2, ShoppingCart, Building2, ChevronRight } from 'lucide-react';
+import { providerService } from '../services/providerService';
+import Modal from '../components/Modal';
 
 const PurchasesPage = () => {
-    const [purchases, setPurchases] = useState([]);
-    const [providers, setProviders] = useState([]);
-    const [parts, setParts] = useState([]);
+    const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('ALL');
     const [showModal, setShowModal] = useState(false);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDirty, setIsDirty] = useState(false);
 
-    // Create Form State
+    // Provider Selection State
+    const [showProviderModal, setShowProviderModal] = useState(false);
+    const [providers, setProviders] = useState([]);
+    const [selectedProviderId, setSelectedProviderId] = useState('');
+    const [generatingOrder, setGeneratingOrder] = useState(false);
+
+    // Form data (simplified for now)
     const [formData, setFormData] = useState({
-        codigo_compra: '',
-        id_proveedor: '',
-        detalles: [] // { id_repuesto, cantidad, costo_unitario }
+        motivo: '',
+        prioridad: 'NORMAL',
+        items: [{ descripcion: '', cantidad: 1 }] // Simplified dynamic fields
     });
 
-    // Detailed Item State for Form
-    const [currentItem, setCurrentItem] = useState({ id_repuesto: '', cantidad: 1, costo_unitario: 0 });
-
     useEffect(() => {
-        fetchData();
+        fetchRequests();
     }, []);
 
-    const fetchData = async () => {
+    const fetchRequests = async () => {
         setLoading(true);
         try {
-            const [pData, provData, partsData] = await Promise.all([
-                purchaseService.getAll(),
-                providerService.getAll(),
-                inventoryService.getAll()
-            ]);
-            setPurchases(pData);
-            setProviders(provData);
-            setParts(partsData);
+            const res = await axios.get('http://localhost:3000/api/purchases/requests');
+            setRequests(res.data);
         } catch (error) {
-            console.error(error);
+            console.error("Error fetching requests", error);
         } finally {
             setLoading(false);
         }
     };
 
-    const addItem = () => {
-        if (!currentItem.id_repuesto) return;
-        setFormData({
-            ...formData,
-            detalles: [...formData.detalles, { ...currentItem, id_repuesto: parseInt(currentItem.id_repuesto) }]
-        });
-        setCurrentItem({ id_repuesto: '', cantidad: 1, costo_unitario: 0 });
-    };
-
-    const handleCreate = async (e) => {
+    const handleCreateRequest = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
-            await purchaseService.create({
-                ...formData,
-                id_proveedor: parseInt(formData.id_proveedor),
-                detalles: formData.detalles
-            });
+            // Hardcoded solicitante_id for now (e.g., 1 or from auth context)
+            const payload = {
+                solicitante_id: 1,
+                fecha_solicitud: new Date().toISOString().split('T')[0],
+                motivo: formData.motivo,
+                prioridad: formData.prioridad,
+                detalles: formData.items.map(i => ({
+                    descripcion_item: i.descripcion,
+                    cantidad: parseInt(i.cantidad),
+                    repuesto_id: null // Assuming text-based requests for MVP
+                }))
+            };
+            await axios.post('http://localhost:3000/api/purchases/requests', payload);
             setShowModal(false);
-            fetchData();
-            setFormData({ codigo_compra: '', id_proveedor: '', detalles: [] });
+            setFormData({ motivo: '', prioridad: 'NORMAL', items: [{ descripcion: '', cantidad: 1 }] });
+            setIsDirty(false);
+            fetchRequests();
         } catch (error) {
-            console.error("Error creating purchase", error);
+            console.error("Error creating request", error);
+            alert("Error al crear la solicitud");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    const handlePrint = (purchase) => {
-        // Hydrate details with part names for PDF
-        const hydratedDetails = purchase.details.map(d => {
-            const part = parts.find(p => p.id_repuesto === d.id_repuesto);
-            return { ...d, repuesto: part };
-        });
-        const provider = providers.find(p => p.id_proveedor === purchase.order.id_proveedor);
+    const handleStatusChange = async (id, newStatus) => {
+        try {
+            await axios.put(`http://localhost:3000/api/purchases/requests/${id}/status`, { estado: newStatus });
+            fetchRequests();
+            if (selectedRequest && selectedRequest.id === id) {
+                setSelectedRequest(prev => ({ ...prev, estado: newStatus }));
+            }
+        } catch (error) {
+            console.error("Error updating status", error);
+            alert("Error al actualizar estado");
+        }
+    };
 
-        pdfGenerator.generatePurchaseOrderPDF(purchase.order, hydratedDetails, provider);
+    const handleOpenGenerateOrder = async () => {
+        try {
+            setLoading(true); // Re-use loading or specific state
+            const providersData = await providerService.getAll();
+            setProviders(providersData);
+            setShowProviderModal(true);
+        } catch (error) {
+            console.error("Error fetching providers", error);
+            alert("No se pudo cargar la lista de proveedores");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const confirmGenerateOrder = async () => {
+        if (!selectedProviderId) {
+            alert("Por favor seleccione un proveedor");
+            return;
+        }
+
+        setGeneratingOrder(true);
+        try {
+            await axios.post(`http://localhost:3000/api/purchases/orders/from-request/${selectedRequest.id}`, {
+                proveedor_id: parseInt(selectedProviderId)
+            });
+            alert("Orden de Compra generada exitosamente");
+            fetchRequests();
+            setShowProviderModal(false);
+            setShowDetailModal(false);
+            setSelectedProviderId('');
+        } catch (error) {
+            console.error(error);
+            alert("Error al generar OC: " + (error.response?.data || error.message));
+        } finally {
+            setGeneratingOrder(false);
+        }
+    };
+
+    const fetchRequestDetails = async (id) => {
+        try {
+            const res = await axios.get(`http://localhost:3000/api/purchases/requests/${id}`);
+            setSelectedRequest(res.data);
+            setShowDetailModal(true);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const addItemField = () => {
+        setFormData({ ...formData, items: [...formData.items, { descripcion: '', cantidad: 1 }] });
+        setIsDirty(true);
+    };
+
+    const removeItemField = (index) => {
+        const newItems = [...formData.items];
+        newItems.splice(index, 1);
+        setFormData({ ...formData, items: newItems });
+        setIsDirty(true);
+    };
+
+    const filteredRequests = requests.filter(r => {
+        const matchSearch = r.motivo.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchStatus = statusFilter === 'ALL' || r.estado === statusFilter;
+        return matchSearch && matchStatus;
+    });
+
+    const getStatusBadge = (status) => {
+        switch (status) {
+            case 'PENDIENTE': return <span className="px-2 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">Pendiente</span>;
+            case 'APROBADA': return <span className="px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">Aprobada</span>;
+            case 'RECHAZADA': return <span className="px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">Rechazada</span>;
+            case 'PROCESADA': return <span className="px-2 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">Procesada (OC)</span>;
+            default: return <span className="px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">{status}</span>;
+        }
     };
 
     return (
-        <div className="p-6 bg-slate-50 min-h-screen">
-            <div className="flex justify-between items-center mb-8">
+        <div className="space-y-6">
+            <div className="flex justify-between items-center bg-white dark:bg-[#1e293b] p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Solicitudes de Compra</h1>
-                    <p className="text-slate-500 mt-1">Gestión de órdenes de compra y reabastecimiento</p>
+                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Solicitudes de Compra</h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Gestiona requerimientos y adquisiciones</p>
                 </div>
                 <button
                     onClick={() => {
-                        setFormData(prev => ({ ...prev, detalles: [] }));
-                        // setFormData(prev => ({ ...prev, codigo_compra: generateCode('OC-') })); // Removed: Auto-generated in backend
                         setShowModal(true);
+                        setIsDirty(false);
                     }}
-                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2"
                 >
-                    <Plus size={20} />
-                    Nueva Solicitud
+                    <Plus className="w-4 h-4" /> Nueva Solicitud
                 </button>
             </div>
 
-            {loading ? (
-                <div className="flex justify-center p-12"><Loader2 className="animate-spin text-slate-400" /></div>
-            ) : (
-                <div className="grid grid-cols-1 gap-4">
-                    {purchases.map(({ order, details }) => {
-                        const provider = providers.find(p => p.id_proveedor === order.id_proveedor);
-                        const total = details.reduce((acc, d) => acc + (d.cantidad * d.costo_unitario), 0);
-
-                        return (
-                            <div key={order.id_orden_compra} className="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm hover:shadow-md transition-all">
-                                <div>
-                                    <div className="flex items-center gap-3">
-                                        <h3 className="font-bold text-slate-800">{order.codigo_compra || `OC #${order.id_orden_compra}`}</h3>
-                                        <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs uppercase font-bold">
-                                            {order.estado}
-                                        </span>
-                                    </div>
-                                    <p className="text-sm text-slate-500 mt-1">
-                                        Proveedor: <span className="font-medium text-slate-700">{provider?.nombre_empresa || 'Desconocido'}</span>
-                                    </p>
-                                    <p className="text-xs text-slate-400 mt-1">
-                                        {details.length} item(s) • Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(total)}
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => handlePrint({ order, details })}
-                                    className="flex items-center gap-2 text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors border border-slate-200"
-                                >
-                                    <Printer size={18} />
-                                    <span className="text-sm font-medium">PDF</span>
-                                </button>
-                            </div>
-                        );
-                    })}
+            {/* Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white dark:bg-[#1e293b] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="relative">
+                    <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Buscar por motivo..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 pl-9 outline-none"
+                    />
                 </div>
-            )}
+                <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-slate-400" />
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 outline-none flex-1"
+                    >
+                        <option value="ALL">Todos los Estados</option>
+                        <option value="PENDIENTE">Pendientes</option>
+                        <option value="APROBADA">Aprobadas</option>
+                        <option value="RECHAZADA">Rechazadas</option>
+                        <option value="PROCESADA">Procesadas</option>
+                    </select>
+                </div>
+            </div>
 
-            {/* Modal */}
-            {showModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6">
-                        <h2 className="text-xl font-bold mb-4">Nueva Orden de Compra</h2>
-                        <form onSubmit={handleCreate}>
-                            <div className="mb-4">
-                                {/* Code generation is now automatic in backend */}
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Código de Compra (Auto)</label>
-                                <input disabled value="Generado al guardar" className="w-full border rounded-lg px-3 py-2 bg-slate-100 text-slate-400 italic cursor-not-allowed" />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Proveedor</label>
-                                <select
-                                    required
-                                    className="w-full border rounded-lg px-3 py-2"
-                                    value={formData.id_proveedor}
-                                    onChange={(e) => setFormData({ ...formData, id_proveedor: e.target.value })}
-                                >
-                                    <option value="">Seleccionar Proveedor</option>
-                                    {providers.map(p => (
-                                        <option key={p.id_proveedor} value={p.id_proveedor}>{p.nombre_empresa}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="bg-slate-50 p-4 rounded-lg mb-4 border border-slate-200">
-                                <h4 className="text-sm font-bold text-slate-700 mb-2">Agregar Item</h4>
-                                <div className="flex gap-2">
-                                    <select
-                                        className="flex-grow border rounded px-2 py-1 text-sm"
-                                        value={currentItem.id_repuesto}
-                                        onChange={(e) => setCurrentItem({ ...currentItem, id_repuesto: e.target.value })}
-                                    >
-                                        <option value="">Repuesto...</option>
-                                        {parts.map(p => (
-                                            <option key={p.id_repuesto} value={p.id_repuesto}>{p.nombre_repuesto}</option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        type="number"
-                                        placeholder="Cant."
-                                        className="w-20 border rounded px-2 py-1 text-sm"
-                                        value={currentItem.cantidad}
-                                        onChange={(e) => setCurrentItem({ ...currentItem, cantidad: parseInt(e.target.value) })}
-                                    />
-                                    <input
-                                        type="number"
-                                        placeholder="Costo"
-                                        className="w-24 border rounded px-2 py-1 text-sm"
-                                        value={currentItem.costo_unitario}
-                                        onChange={(e) => setCurrentItem({ ...currentItem, costo_unitario: parseFloat(e.target.value) })}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={addItem}
-                                        className="bg-blue-600 text-white px-3 rounded hover:bg-blue-700"
-                                    >
-                                        <Plus size={16} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="mb-6 max-h-40 overflow-y-auto">
-                                <table className="w-full text-sm">
-                                    <thead className="bg-slate-100 text-left">
-                                        <tr><th className="p-2">Item</th><th className="p-2">Cant</th><th className="p-2">Costo</th></tr>
-                                    </thead>
-                                    <tbody>
-                                        {formData.detalles.map((d, i) => {
-                                            const part = parts.find(p => p.id_repuesto === d.id_repuesto);
-                                            return (
-                                                <tr key={i} className="border-b">
-                                                    <td className="p-2">{part?.nombre_repuesto}</td>
-                                                    <td className="p-2">{d.cantidad}</td>
-                                                    <td className="p-2">${d.costo_unitario}</td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                                {formData.detalles.length === 0 && <p className="text-center text-slate-400 py-4 italic">No hay items agregados</p>}
-                            </div>
-
-                            <div className="flex gap-3">
-                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 border rounded py-2 hover:bg-slate-50">Cancelar</button>
-                                <button type="submit" className="flex-1 bg-emerald-600 text-white rounded py-2 hover:bg-emerald-700">Generar Orden</button>
-                            </div>
-                        </form>
+            {loading ? (
+                <div className="flex justify-center py-10"><Loader2 className="animate-spin text-slate-400" /></div>
+            ) : (
+                <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                                <tr>
+                                    <th className="px-6 py-4">ID</th>
+                                    <th className="px-6 py-4">Fecha</th>
+                                    <th className="px-6 py-4">Motivo</th>
+                                    <th className="px-6 py-4">Prioridad</th>
+                                    <th className="px-6 py-4">Estado</th>
+                                    <th className="px-6 py-4 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                {filteredRequests.map(r => (
+                                    <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-[#0f172a]/50">
+                                        <td className="px-6 py-4 font-mono text-xs text-slate-500">#{r.id}</td>
+                                        <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">{r.fecha_solicitud}</td>
+                                        <td className="px-6 py-4 text-sm font-medium text-slate-800 dark:text-white">{r.motivo}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${r.prioridad === 'URGENTE' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                                {r.prioridad}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {getStatusBadge(r.estado)}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button
+                                                onClick={() => fetchRequestDetails(r.id)}
+                                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-blue-600 transition-colors"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             )}
+
+            {/* Create Modal */}
+            {/* Create Modal */}
+            <Modal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                onSave={handleCreateRequest}
+                isDirty={isDirty}
+                title="Nueva Solicitud de Compra"
+            >
+                <form onSubmit={handleCreateRequest} className="space-y-6">
+                    <div>
+                        <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Motivo / Justificación</label>
+                        <textarea
+                            required
+                            value={formData.motivo}
+                            onChange={(e) => {
+                                setFormData({ ...formData, motivo: e.target.value });
+                                setIsDirty(true);
+                            }}
+                            className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-3 outline-none"
+                            rows="3"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Prioridad</label>
+                        <select
+                            value={formData.prioridad}
+                            onChange={(e) => {
+                                setFormData({ ...formData, prioridad: e.target.value });
+                                setIsDirty(true);
+                            }}
+                            className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-3 outline-none"
+                        >
+                            <option value="NORMAL">Normal</option>
+                            <option value="URGENTE">Urgente</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="text-xs font-bold uppercase text-slate-500">Items Solicitados</label>
+                            <button type="button" onClick={addItemField} className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded transition-colors">+ Agregar Item</button>
+                        </div>
+                        <div className="space-y-2">
+                            {formData.items.map((item, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Descripción del artículo..."
+                                        value={item.descripcion}
+                                        onChange={(e) => {
+                                            const newItems = [...formData.items];
+                                            newItems[index].descripcion = e.target.value;
+                                            setFormData({ ...formData, items: newItems });
+                                            setIsDirty(true);
+                                        }}
+                                        className="flex-1 bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm outline-none"
+                                        required
+                                    />
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        placeholder="Cant."
+                                        value={item.cantidad}
+                                        onChange={(e) => {
+                                            const newItems = [...formData.items];
+                                            newItems[index].cantidad = e.target.value;
+                                            setFormData({ ...formData, items: newItems });
+                                            setIsDirty(true);
+                                        }}
+                                        className="w-20 bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm outline-none"
+                                        required
+                                    />
+                                    {index > 0 && (
+                                        <button type="button" onClick={() => removeItemField(index)} className="text-red-400 hover:text-red-600 p-2"><XCircle className="w-5 h-5" /></button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
+                        <button type="button" onClick={() => setShowModal(false)} className="px-5 py-2.5 text-slate-500 font-bold hover:text-slate-800 transition-colors">Cancelar</button>
+                        <button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-500/20 disabled:opacity-50">
+                            {isSubmitting ? 'Guardando...' : 'Crear Solicitud'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Detail/Approval Modal */}
+            {/* Detail/Approval Modal */}
+            <Modal
+                isOpen={showDetailModal && !!selectedRequest}
+                onClose={() => setShowDetailModal(false)}
+                title={`Solicitud #${selectedRequest?.id}`}
+                width="max-w-3xl"
+            >
+                {selectedRequest && (
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3 mb-1">
+                            {getStatusBadge(selectedRequest.estado)}
+                            <p className="text-sm text-slate-500">Fecha: {selectedRequest.fecha_solicitud} | Prioridad: {selectedRequest.prioridad}</p>
+                        </div>
+
+                        <div>
+                            <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-2">Motivo</h4>
+                            <p className="bg-slate-50 dark:bg-[#0f172a] p-3 rounded-lg text-slate-600 dark:text-slate-400 text-sm border border-slate-100 dark:border-slate-800">
+                                {selectedRequest.motivo}
+                            </p>
+                        </div>
+
+                        <div>
+                            <h4 className="font-bold text-slate-700 dark:text-slate-300 mb-3">Detalle de Items</h4>
+                            <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                                <table className="w-full text-left text-sm">
+                                    <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 text-xs font-bold uppercase">
+                                        <tr>
+                                            <th className="px-4 py-3">Descripción</th>
+                                            <th className="px-4 py-3 w-24 text-right">Cantidad</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                        {selectedRequest.detalles && selectedRequest.detalles.map(d => (
+                                            <tr key={d.id}>
+                                                <td className="px-4 py-3">{d.descripcion_item || (`Repuesto ID: ${d.repuesto_id}`)}</td>
+                                                <td className="px-4 py-3 text-right font-medium">{d.cantidad}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons based on status */}
+                        <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
+                            {selectedRequest.estado === 'PENDIENTE' && (
+                                <>
+                                    <button
+                                        onClick={() => handleStatusChange(selectedRequest.id, 'RECHAZADA')}
+                                        className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg font-bold transition-colors"
+                                    >
+                                        Rechazar
+                                    </button>
+                                    <button
+                                        onClick={() => handleStatusChange(selectedRequest.id, 'APROBADA')}
+                                        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-green-500/20 transition-colors"
+                                    >
+                                        Aprobar Solicitud
+                                    </button>
+                                </>
+                            )}
+                            {selectedRequest.estado === 'APROBADA' && (
+                                <button
+                                    onClick={handleOpenGenerateOrder}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-blue-500/20 transition-colors flex items-center gap-2"
+                                >
+                                    <FileText className="w-4 h-4" /> Generar Orden de Compra
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </Modal>
+
+            {/* Provider Selection Modal */}
+            <Modal
+                isOpen={showProviderModal}
+                onClose={() => setShowProviderModal(false)}
+                title="Adjudicar Proveedor"
+                width="max-w-md"
+            >
+                <div>
+                    <div className="bg-slate-50 dark:bg-[#0f172a] p-4 rounded-xl border border-slate-200 dark:border-slate-700 mb-4">
+                        <p className="text-xs font-bold uppercase text-slate-500 mb-1">Solicitud</p>
+                        <p className="font-medium text-slate-800 dark:text-gray-300">#{selectedRequest?.id} - {selectedRequest?.motivo}</p>
+                    </div>
+
+                    <label className="text-xs font-bold uppercase text-slate-500 block mb-2">Proveedor</label>
+                    <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        {providers.length === 0 ? (
+                            <p className="text-sm text-slate-400 italic py-2 text-center">No hay proveedores registrados</p>
+                        ) : (
+                            providers.map(prov => (
+                                <label
+                                    key={prov.id}
+                                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${selectedProviderId === prov.id
+                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10'
+                                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                        }`}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="provider"
+                                        value={prov.id}
+                                        checked={selectedProviderId === prov.id}
+                                        onChange={() => setSelectedProviderId(prov.id)}
+                                        className="w-4 h-4 text-blue-600"
+                                    />
+                                    <div className="flex-1">
+                                        <div className="font-bold text-slate-800 dark:text-white text-sm">{prov.nombre}</div>
+                                        <div className="text-xs text-slate-500">{prov.rut_o_ruc || 'Sin RUT'}</div>
+                                    </div>
+                                    {selectedProviderId === prov.id && <CheckCircle className="w-4 h-4 text-blue-600" />}
+                                </label>
+                            ))
+                        )}
+                    </div>
+                </div>
+                <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 mt-6">
+                    <button
+                        onClick={() => setShowProviderModal(false)}
+                        className="px-4 py-2 text-slate-500 font-bold hover:text-slate-800 transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={confirmGenerateOrder}
+                        disabled={generatingOrder || !selectedProviderId}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                        {generatingOrder && <Loader2 className="w-4 h-4 animate-spin" />}
+                        Generar OC
+                    </button>
+                </div>
+            </Modal>
         </div>
     );
 };
