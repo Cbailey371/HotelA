@@ -1,23 +1,15 @@
 # Build stage
-FROM rust:1.85-slim as builder
+FROM rust:1.84-slim as builder
 
-# Instalar dependencias necesarias para la compilación (SSL y herramientas de enlace)
+# Instalar dependencias esenciales
 RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
 
-# Optimizamos el caché de dependencias
-COPY Cargo.toml Cargo.lock ./
-COPY migration/Cargo.toml ./migration/
-# Creamos archivos dummy para que cargo pueda descargar dependencias antes de copiar el código
-RUN mkdir src && echo "fn main() {}" > src/main.rs
-RUN mkdir -p migration/src && echo "pub fn test() {}" > migration/src/lib.rs
-RUN cargo fetch
-
-# Copiar el código fuente real
+# Copiamos todo de una vez para evitar conflictos de workspace/ediciones
 COPY . .
 
-# Compilar en modo release
+# Compilar en modo release (simplificado para evitar Error 101)
 RUN cargo build --release
 
 # Production stage
@@ -27,7 +19,7 @@ RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/
 
 WORKDIR /usr/local/bin
 
-# Copiamos el binario final
+# Copiar el binario generado
 COPY --from=builder /usr/src/app/target/release/backend ./hotel-backend
 
 ENV HOST=0.0.0.0
