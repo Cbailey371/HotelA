@@ -1,29 +1,30 @@
-# Build stage - Usamos el canal nightly que soporta 2024 nativamente
-FROM rustlang/rust:nightly-bookworm-slim as builder
+# Build stage - Usamos Rust 1.85 que es la versión oficial con soporte para 2024
+FROM rust:1.85-bookworm as builder
 
-# Instalar dependencias esenciales para compilación
+# Instalar dependencias necesarias para enlazar (OpenSSL, etc.)
 RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
 
-# Copiar archivos de configuración para pre-compilar dependencias
+# Copiamos primero los archivos de dependencias para aprovechar el cache de Docker
 COPY Cargo.toml Cargo.lock ./
 COPY migration/Cargo.toml ./migration/
 
-# Copiar todo el código fuente
+# Ahora copiamos el resto del código
 COPY . .
 
-# Compilar en modo release forzando el soporte de 2024
+# Compilamos en modo release. 
+# Si el servidor tiene 8GB, esto debería funcionar perfectamente.
 RUN cargo build --release
 
 # Production stage
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y libssl3 ca-certificates curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/local/bin
 
-# Copiar el binario generado
+# Copiamos el binario final
 COPY --from=builder /usr/src/app/target/release/backend ./hotel-backend
 
 ENV HOST=0.0.0.0

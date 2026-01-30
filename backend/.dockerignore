@@ -1,0 +1,8 @@
+target/
+**/*.rs.bk
+.git
+.github
+.env
+**/node_modules
+dist
+build
