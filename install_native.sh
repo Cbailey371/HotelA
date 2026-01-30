@@ -10,6 +10,13 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
+# Configuración del Usuario (EDITABLE)
+DB_USER="admin_hotel"
+DB_PASSWORD="Panama$01"
+DB_NAME="hotel_amm"
+JWT_SECRET="QDdM28SUzBFJ8PsW+wAkCyFY9G2qqG6CyRHUMKgRNqU="
+ALLOWED_ORIGINS="http://192.9.100.230"
+
 echo -e "${GREEN}--- Iniciando instalación nativa de HotelA ---${NC}"
 
 # 1. Actualizar sistema y dependencias de compilación
@@ -53,21 +60,30 @@ fi
 # 4. Configurar Base de Datos PostgreSQL
 echo -e "${GREEN}[4/7] Configurando PostgreSQL...${NC}"
 # Comprobar si el usuario ya existe, si no crearlo
-sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='hotela_user'" | grep -q 1 || \
-sudo -u postgres psql -c "CREATE USER hotela_user WITH PASSWORD 'hotela123';"
+sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'" | grep -q 1 || \
+sudo -u postgres psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';"
 
 # Comprobar si la DB ya existe, si no crearla
-sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='hotela_management'" | grep -q 1 || \
-sudo -u postgres psql -c "CREATE DATABASE hotela_management OWNER hotela_user;"
+sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'" | grep -q 1 || \
+sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
 
 # 5. Compilar Backend
-echo -e "${GREEN}[5/7] Compilando Backend (esto puede tardar unos minutos)...${NC}"
+echo -e "${GREEN}[5/7] Compilando Backend...${NC}"
 cd backend
 if [ ! -f .env ]; then
     cp .env.example .env
 fi
-# Ajustar DATABASE_URL para usar el Postgres local si es necesario
-sed -i 's/localhost/127.0.0.1/g' .env
+
+# Configurar archivo .env de forma dinámica
+cat <<EOF > .env
+DATABASE_URL="postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME"
+JWT_SECRET="$JWT_SECRET"
+ALLOWED_ORIGINS="$ALLOWED_ORIGINS"
+PORT=3000
+HOST=0.0.0.0
+RUST_LOG=info
+EOF
+
 cargo build --release --bin backend
 
 # Crear servicio de Systemd para el Backend
@@ -86,6 +102,9 @@ User=$USER_NAME
 WorkingDirectory=$(pwd)
 ExecStart=$BACKEND_PATH
 Restart=always
+Environment=DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME
+Environment=JWT_SECRET=$JWT_SECRET
+Environment=ALLOWED_ORIGINS=$ALLOWED_ORIGINS
 Environment=RUST_LOG=info
 
 [Install]
