@@ -41,13 +41,24 @@ sudo apt-get install -y \
 
 # 2. Instalar Rust (Canal estable 2026)
 echo -e "${GREEN}[2/7] Instalando Rust...${NC}"
+export RUSTUP_HOME="$HOME/.rustup"
+export CARGO_HOME="$HOME/.cargo"
+
 if ! command -v cargo &> /dev/null
 then
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    source $HOME/.cargo/env
+    # Asegurar que el usuario tenga permisos en su propio home si se usa sudo
+    sudo chown -R $(whoami):$(id -gn) "$HOME"
+    
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+    
+    # Cargar el entorno manualmente para la sesión actual del script
+    source "$HOME/.cargo/env"
 else
     rustup update
 fi
+
+# Asegurar que cargo esté en el PATH para el resto del script
+export PATH="$HOME/.cargo/bin:$PATH"
 
 # 3. Instalar Node.js y NPM (para el Frontend)
 echo -e "${GREEN}[3/7] Instalando Node.js y NPM...${NC}"
