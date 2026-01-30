@@ -19,6 +19,11 @@ ALLOWED_ORIGINS="http://localhost"
 
 echo -e "${GREEN}--- Iniciando instalación nativa de HotelA ---${NC}"
 
+# 0. Asegurar permisos del directorio actual
+# Esto es crítico si el proyecto está en /opt o carpetas administradas por root
+echo -e "${GREEN}[0/7] Asegurando permisos del directorio del proyecto...${NC}"
+sudo chown -R $(whoami):$(id -gn) .
+
 # 1. Actualizar sistema y dependencias de compilación
 echo -e "${GREEN}[1/7] Actualizando sistema y dependencias gráficas...${NC}"
 sudo apt-get update
