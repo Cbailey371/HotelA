@@ -179,8 +179,14 @@ sudo ln -sf /etc/nginx/sites-available/hotela /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl restart nginx
 
+# Obtener la IP del servidor
+SERVER_IP=$(hostname -I | awk '{print $1}')
+if [ -z "$SERVER_IP" ]; then
+    SERVER_IP="[IP_DEL_SERVIDOR]"
+fi
+
 echo -e "${GREEN}====================================================${NC}"
 echo -e "${GREEN}¡INSTALACIÓN COMPLETADA CON ÉXITO!${NC}"
-echo -e "Backend: http://localhost:3000 (vía systemd)"
-echo -e "Frontend: http://localhost:80 (vía Nginx)"
+echo -e "Acceso Web: http://$SERVER_IP"
+echo -e "Backend:    http://$SERVER_IP:3000 (vía systemd)"
 echo -e "====================================================${NC}"
