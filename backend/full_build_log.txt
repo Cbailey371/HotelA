@@ -1,0 +1,783 @@
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.44
+   Compiling unicode-ident v1.0.22
+   Compiling libc v0.2.180
+   Compiling cfg-if v1.0.4
+   Compiling serde_core v1.0.228
+   Compiling version_check v0.9.5
+   Compiling serde v1.0.228
+   Compiling pin-project-lite v0.2.16
+   Compiling memchr v2.7.6
+   Compiling autocfg v1.5.0
+   Compiling futures-core v0.3.31
+   Compiling itoa v1.0.17
+   Compiling once_cell v1.21.3
+   Compiling bytes v1.11.0
+   Compiling parking_lot_core v0.9.12
+   Compiling num-traits v0.2.19
+   Compiling scopeguard v1.2.0
+   Compiling value-bag v1.12.0
+   Compiling log v0.4.29
+   Compiling lock_api v0.4.14
+   Compiling shlex v1.3.0
+   Compiling find-msvc-tools v0.1.8
+   Compiling stable_deref_trait v1.2.1
+   Compiling futures-io v0.3.31
+   Compiling crossbeam-utils v0.8.21
+   Compiling cc v1.2.54
+   Compiling core-foundation-sys v0.8.7
+   Compiling zerocopy v0.8.33
+   Compiling slab v0.4.11
+   Compiling futures-sink v0.3.31
+   Compiling typenum v1.19.0
+   Compiling generic-array v0.14.7
+   Compiling getrandom v0.3.4
+   Compiling pin-utils v0.1.0
+   Compiling errno v0.3.14
+   Compiling mio v1.1.1
+   Compiling signal-hook-registry v1.4.8
+   Compiling socket2 v0.6.2
+   Compiling syn v2.0.114
+   Compiling concurrent-queue v2.5.0
+   Compiling bitflags v2.10.0
+   Compiling parking v2.2.1
+   Compiling getrandom v0.2.17
+   Compiling tracing-core v0.1.36
+   Compiling subtle v2.6.1
+   Compiling time-core v0.1.8
+   Compiling litemap v0.8.1
+   Compiling powerfmt v0.2.0
+   Compiling writeable v0.6.2
+   Compiling percent-encoding v2.3.2
+   Compiling num-conv v0.2.0
+   Compiling time-macros v0.2.26
+   Compiling futures-task v0.3.31
+   Compiling icu_normalizer_data v2.1.1
+   Compiling icu_properties_data v2.1.2
+   Compiling futures-util v0.3.31
+   Compiling zmij v1.0.17
+   Compiling form_urlencoded v1.2.2
+   Compiling event-listener v5.4.1
+   Compiling ring v0.17.14
+   Compiling iana-time-zone v0.1.64
+   Compiling aho-corasick v1.1.4
+   Compiling regex-syntax v0.8.8
+   Compiling serde_json v1.0.149
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling digest v0.10.7
+   Compiling deranged v0.5.5
+   Compiling num-integer v0.1.46
+   Compiling fastrand v2.3.0
+   Compiling allocator-api2 v0.2.21
+   Compiling zeroize v1.8.2
+   Compiling rustls-pki-types v1.14.0
+   Compiling num-bigint v0.4.6
+   Compiling ppv-lite86 v0.2.21
+   Compiling rand_core v0.9.5
+   Compiling futures-channel v0.3.31
+   Compiling utf8_iter v1.0.4
+   Compiling heck v0.4.1
+   Compiling libm v0.2.16
+   Compiling untrusted v0.9.0
+   Compiling base64 v0.22.1
+   Compiling thiserror v2.0.18
+   Compiling rand_chacha v0.9.0
+   Compiling rand_core v0.6.4
+   Compiling time v0.3.46
+   Compiling bigdecimal v0.4.10
+   Compiling syn v1.0.109
+   Compiling regex-automata v0.4.13
+   Compiling rustix v1.1.3
+   Compiling byteorder v1.5.0
+   Compiling rust_decimal v1.40.0
+   Compiling equivalent v1.0.2
+   Compiling synstructure v0.13.2
+   Compiling rand v0.9.2
+   Compiling tinyvec_macros v0.1.1
+   Compiling arrayvec v0.7.6
+   Compiling fnv v1.0.7
+   Compiling ident_case v1.0.1
+   Compiling foldhash v0.1.5
+   Compiling rustls v0.23.36
+   Compiling hashbrown v0.15.5
+   Compiling serde_derive v1.0.228
+   Compiling zerofrom-derive v0.1.6
+   Compiling yoke-derive v0.8.1
+   Compiling tokio-macros v2.6.0
+   Compiling zerovec-derive v0.11.2
+   Compiling displaydoc v0.2.5
+   Compiling tracing-attributes v0.1.31
+   Compiling zerofrom v0.1.6
+   Compiling thiserror-impl v2.0.18
+   Compiling yoke v0.8.1
+   Compiling uuid v1.20.0
+   Compiling zerotrie v0.2.3
+   Compiling zerovec v0.11.5
+   Compiling rustls-webpki v0.103.9
+   Compiling tracing v0.1.44
+   Compiling darling_core v0.20.11
+   Compiling tinyvec v1.10.0
+   Compiling tinystr v0.8.2
+   Compiling icu_locale_core v2.1.1
+   Compiling potential_utf v0.1.4
+   Compiling icu_collections v2.1.1
+   Compiling webpki-roots v1.0.5
+   Compiling cpufeatures v0.2.17
+   Compiling http v1.4.0
+   Compiling smallvec v1.15.1
+   Compiling icu_provider v2.1.1
+   Compiling chrono v0.4.43
+   Compiling parking_lot v0.12.5
+   Compiling icu_properties v2.1.2
+   Compiling icu_normalizer v2.1.1
+   Compiling tokio v1.49.0
+   Compiling hashbrown v0.16.1
+   Compiling idna_adapter v1.2.1
+   Compiling idna v1.1.0
+   Compiling object v0.37.3
+   Compiling atomic-waker v1.1.2
+   Compiling crc-catalog v2.4.0
+   Compiling encoding_index_tests v0.1.4
+   Compiling crc v3.4.0
+   Compiling indexmap v2.13.0
+   Compiling url v2.5.8
+   Compiling futures-intrusive v0.5.0
+   Compiling darling_macro v0.20.11
+   Compiling either v1.15.0
+   Compiling sha2 v0.10.9
+   Compiling webpki-roots v0.26.11
+   Compiling unicode-normalization v0.1.25
+   Compiling hashlink v0.10.0
+   Compiling rand_chacha v0.3.1
+   Compiling hmac v0.12.1
+   Compiling crossbeam-queue v0.3.12
+   Compiling standback v0.2.17
+   Compiling proc-macro-hack v0.5.20+deprecated
+   Compiling unicode-bidi v0.3.18
+   Compiling unicode-properties v0.1.4
+   Compiling crc32fast v1.5.0
+   Compiling dotenvy v0.15.7
+   Compiling stringprep v0.1.5
+   Compiling hkdf v0.12.4
+   Compiling rand v0.8.5
+   Compiling darling v0.20.11
+   Compiling http-body v1.0.1
+   Compiling md-5 v0.10.6
+   Compiling atoi v2.0.0
+   Compiling proc-macro2-diagnostics v0.10.1
+   Compiling heck v0.5.0
+   Compiling adler2 v2.0.1
+   Compiling utf8parse v0.2.2
+   Compiling simd-adler32 v0.3.8
+   Compiling whoami v1.6.1
+   Compiling mime v0.3.17
+   Compiling hex v0.4.3
+   Compiling httparse v1.10.1
+   Compiling home v0.5.12
+   Compiling miniz_oxide v0.8.9
+   Compiling anstyle-parse v0.2.7
+   Compiling sea-query-derive v0.4.3
+   Compiling bstr v1.12.1
+   Compiling inherent v1.0.13
+   Compiling futures-lite v2.6.1
+   Compiling event-listener-strategy v0.5.4
+   Compiling ordered-float v4.6.0
+   Compiling proc-macro-error-attr2 v2.0.0
+   Compiling tokio-stream v0.1.18
+   Compiling const_fn v0.4.11
+   Compiling httpdate v1.0.3
+   Compiling anstyle v1.0.13
+   Compiling yansi v1.0.1
+   Compiling tower-service v0.3.3
+   Compiling anstyle-query v1.1.5
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling colorchoice v1.0.4
+   Compiling anstream v0.6.21
+   Compiling pom v3.4.0
+   Compiling proc-macro-error2 v2.0.1
+   Compiling sea-query v0.32.7
+   Compiling time-macros-impl v0.1.2
+   Compiling flate2 v1.1.8
+   Compiling async-io v2.6.0
+   Compiling ahash v0.8.12
+   Compiling time v0.2.27
+   Compiling ar_archive_writer v0.5.1
+   Compiling unicode-xid v0.2.6
+   Compiling strsim v0.11.1
+   Compiling lazy_static v1.5.0
+   Compiling async-task v4.7.1
+   Compiling linked-hash-map v0.5.6
+   Compiling clap_lex v0.7.7
+   Compiling tower-layer v0.3.3
+   Compiling clap_builder v4.5.54
+   Compiling sharded-slab v0.1.7
+   Compiling sqlx-core v0.8.6
+   Compiling psm v0.1.29
+   Compiling derive_more-impl v2.1.1
+   Compiling time-macros v0.1.1
+   Compiling sea-bae v0.2.1
+   Compiling ouroboros_macro v0.18.5
+   Compiling async-channel v2.5.0
+   Compiling clap_derive v4.5.49
+   Compiling http-body-util v0.1.3
+   Compiling encoding-index-japanese v1.20141219.5
+   Compiling encoding-index-tradchinese v1.20141219.5
+   Compiling encoding-index-korean v1.20141219.5
+   Compiling encoding-index-simpchinese v1.20141219.5
+   Compiling encoding-index-singlebyte v1.20141219.5
+   Compiling piper v0.2.4
+   Compiling polling v3.11.0
+   Compiling matchers v0.2.0
+   Compiling async-trait v0.1.89
+   Compiling sqlx-postgres v0.8.6
+   Compiling async-stream-impl v0.3.6
+   Compiling tracing-log v0.2.0
+   Compiling stacker v0.1.22
+   Compiling security-framework-sys v2.15.0
+   Compiling core-foundation v0.9.4
+   Compiling thread_local v1.1.9
+   Compiling encoding_rs v0.8.35
+   Compiling unicase v2.9.0
+   Compiling ryu v1.0.22
+   Compiling nu-ansi-term v0.50.3
+   Compiling sync_wrapper v1.0.2
+   Compiling native-tls v0.2.14
+   Compiling aliasable v0.1.3
+   Compiling static_assertions v1.1.0
+   Compiling ouroboros v0.18.5
+   Compiling tracing-subscriber v0.3.22
+   Compiling security-framework v2.11.1
+   Compiling mime_guess v2.0.5
+   Compiling clap v4.5.54
+   Compiling async-stream v0.3.6
+   Compiling blocking v1.6.2
+   Compiling encoding v0.2.33
+   Compiling sea-orm-macros v1.1.19
+   Compiling derive_more v2.1.1
+   Compiling sqlx v0.8.6
+   Compiling sea-query-binder v0.7.0
+   Compiling async-executor v1.13.3
+   Compiling hyper v1.8.1
+   Compiling async-lock v3.4.2
+   Compiling tempfile v3.24.0
+   Compiling regex v1.12.2
+   Compiling sea-schema-derive v0.3.0
+   Compiling stb_truetype v0.3.1
+   Compiling futures v0.3.31
+   Compiling ordered-float v1.1.1
+   Compiling approx v0.3.2
+   Compiling multer v3.1.0
+   Compiling cookie v0.18.1
+   Compiling base64ct v1.8.3
+   Compiling itoa v0.4.8
+   Compiling glob v0.3.3
+   Compiling strum v0.26.3
+   Compiling dtoa v0.4.8
+   Compiling event-listener v2.5.3
+   Compiling lzw v0.10.0
+   Compiling async-channel v1.9.0
+   Compiling password-hash v0.5.0
+   Compiling lopdf v0.26.0
+   Compiling sea-orm-cli v1.1.19
+   Compiling sea-orm v1.1.19
+   Compiling rusttype v0.8.3
+   Compiling sea-schema v0.16.2
+   Compiling hyper-util v0.1.19
+   Compiling async-global-executor v2.4.1
+   Compiling hashbrown v0.14.5
+   Compiling axum-core v0.5.6
+   Compiling tower v0.5.3
+   Compiling serde_urlencoded v0.7.1
+   Compiling async-attributes v1.1.2
+   Compiling serde_path_to_error v0.1.20
+   Compiling blake2 v0.10.6
+   Compiling kv-log-macro v1.0.7
+   Compiling matchit v0.8.4
+   Compiling ttf-parser v0.19.2
+   Compiling spin v0.9.8
+   Compiling md5 v0.7.0
+   Compiling weezl v0.1.12
+   Compiling owned_ttf_parser v0.19.0
+   Compiling axum v0.8.8
+   Compiling lopdf v0.31.0
+   Compiling async-std v1.13.2
+   Compiling argon2 v0.5.3
+   Compiling chumsky v0.9.3
+   Compiling tokio-native-tls v0.3.1
+   Compiling printpdf v0.3.4
+   Compiling sea-orm-migration v1.1.19
+   Compiling tokio-util v0.7.18
+   Compiling simple_asn1 v0.6.3
+   Compiling derive_more v0.99.20
+   Compiling email-encoding v0.4.1
+   Compiling pem v3.0.6
+   Compiling hostname v0.4.2
+   Compiling nom v8.0.0
+   Compiling csv-core v0.1.13
+   Compiling quoted_printable v0.5.1
+   Compiling email_address v0.2.9
+   Compiling http-range-header v0.4.2
+   Compiling genpdf v0.2.0
+   Compiling tower-http v0.6.8
+   Compiling csv v1.4.0
+   Compiling jsonwebtoken v9.3.1
+   Compiling migration v0.1.0 (/Users/cbailey/Documents/Proyectos/HotelA/backend/migration)
+warning: unused imports: `Permisos`, `RolPermisos`, `Roles`, `UsuarioRoles`, and `Usuarios`
+ --> migration/src/m20260127_000008_fix_admin_permissions.rs:2:44
+  |
+2 | use crate::m20220101_000001_create_table::{Usuarios, Roles, Permisos, RolPermisos, UsuarioRoles};
+  |                                            ^^^^^^^^  ^^^^^  ^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `RolPermisos`, `Roles`, `UsuarioRoles`, and `Usuarios`
+ --> migration/src/m20260127_000009_create_super_admin.rs:2:44
+  |
+2 | use crate::m20220101_000001_create_table::{Usuarios, Roles, RolPermisos, UsuarioRoles};
+  |                                            ^^^^^^^^  ^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `Permisos`, `RolPermisos`, `Roles`, `UsuarioRoles`, and `Usuarios`
+ --> migration/src/m20260127_000010_setup_super_admin.rs:2:44
+  |
+2 | use crate::m20220101_000001_create_table::{Usuarios, Roles, Permisos, RolPermisos, UsuarioRoles};
+  |                                            ^^^^^^^^  ^^^^^  ^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused import: `sea_orm_migration::sea_query::*`
+ --> migration/src/m20260128_002201_seed_super_admin_and_more_permissions.rs:2:5
+  |
+2 | use sea_orm_migration::sea_query::*;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `schema::*`
+ --> migration/src/m20260128_003307_assign_super_admin_to_user_1.rs:1:37
+  |
+1 | use sea_orm_migration::{prelude::*, schema::*};
+  |                                     ^^^^^^^^^
+
+warning: unused import: `schema::*`
+ --> migration/src/m20260128_010641_create_settings_table.rs:1:37
+  |
+1 | use sea_orm_migration::{prelude::*, schema::*};
+  |                                     ^^^^^^^^^
+
+warning: unused import: `schema::*`
+ --> migration/src/m20260128_155231_create_company_config.rs:1:37
+  |
+1 | use sea_orm_migration::{prelude::*, schema::*};
+  |                                     ^^^^^^^^^
+
+   Compiling axum-extra v0.12.5
+   Compiling printpdf v0.7.0
+warning: unused variable: `db`
+ --> migration/src/m20260126_000004_seed_roles_permissions.rs:9:13
+  |
+9 |         let db = manager.get_connection();
+  |             ^^ help: if this is intentional, prefix it with an underscore: `_db`
+  |
+  = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `manager`
+  --> migration/src/m20260126_000004_seed_roles_permissions.rs:54:26
+   |
+54 |     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+   |                          ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+
+warning: unused variable: `manager`
+  --> migration/src/m20260127_000008_fix_admin_permissions.rs:57:26
+   |
+57 |     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+   |                          ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+
+warning: unused variable: `manager`
+  --> migration/src/m20260127_000009_create_super_admin.rs:14:26
+   |
+14 |     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+   |                          ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+
+warning: unused variable: `manager`
+  --> migration/src/m20260127_000010_setup_super_admin.rs:48:26
+   |
+48 |     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+   |                          ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+
+   Compiling lettre v0.11.19
+warning: enum `Roles` is never used
+  --> migration/src/m20260128_002201_seed_super_admin_and_more_permissions.rs:62:6
+   |
+62 | enum Roles {
+   |      ^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: enum `Permisos` is never used
+  --> migration/src/m20260128_002201_seed_super_admin_and_more_permissions.rs:70:6
+   |
+70 | enum Permisos {
+   |      ^^^^^^^^
+
+warning: enum `RolPermisos` is never used
+  --> migration/src/m20260128_002201_seed_super_admin_and_more_permissions.rs:79:6
+   |
+79 | enum RolPermisos {
+   |      ^^^^^^^^^^^
+
+warning: enum `Post` is never used
+  --> migration/src/m20260128_003307_assign_super_admin_to_user_1.rs:35:6
+   |
+35 | enum Post {
+   |      ^^^^
+
+warning: enum `Post` is never used
+  --> migration/src/m20260128_004143_repair_rbac_data.rs:87:6
+   |
+87 | enum Post {
+   |      ^^^^
+
+warning: `migration` (lib) generated 17 warnings (run `cargo fix --lib -p migration` to apply 12 suggestions)
+   Compiling backend v0.1.0 (/Users/cbailey/Documents/Proyectos/HotelA/backend)
+warning: unused import: `super::activos_documentos::Entity as ActivosDocumentos`
+ --> src/entities/prelude.rs:3:9
+  |
+3 | pub use super::activos_documentos::Entity as ActivosDocumentos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `super::activos_equipos::Entity as ActivosEquipos`
+ --> src/entities/prelude.rs:4:9
+  |
+4 | pub use super::activos_equipos::Entity as ActivosEquipos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::auditoria_acciones::Entity as AuditoriaAcciones`
+ --> src/entities/prelude.rs:6:9
+  |
+6 | pub use super::auditoria_acciones::Entity as AuditoriaAcciones;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::bodega_ubicaciones::Entity as BodegaUbicaciones`
+ --> src/entities/prelude.rs:7:9
+  |
+7 | pub use super::bodega_ubicaciones::Entity as BodegaUbicaciones;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::bodegas::Entity as Bodegas`
+ --> src/entities/prelude.rs:8:9
+  |
+8 | pub use super::bodegas::Entity as Bodegas;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::categorias_activos::Entity as CategoriasActivos`
+ --> src/entities/prelude.rs:9:9
+  |
+9 | pub use super::categorias_activos::Entity as CategoriasActivos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::config_empresa::Entity as ConfigEmpresa`
+  --> src/entities/prelude.rs:12:9
+   |
+12 | pub use super::config_empresa::Entity as ConfigEmpresa;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::configuraciones::Entity as Configuraciones`
+  --> src/entities/prelude.rs:13:9
+   |
+13 | pub use super::configuraciones::Entity as Configuraciones;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::empresas::Entity as Empresas`
+  --> src/entities/prelude.rs:14:9
+   |
+14 | pub use super::empresas::Entity as Empresas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::historial_repuestos::Entity as HistorialRepuestos`
+  --> src/entities/prelude.rs:15:9
+   |
+15 | pub use super::historial_repuestos::Entity as HistorialRepuestos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::inventario_movimientos::Entity as InventarioMovimientos`
+  --> src/entities/prelude.rs:16:9
+   |
+16 | pub use super::inventario_movimientos::Entity as InventarioMovimientos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_calendario::Entity as MantenimientoCalendario`
+  --> src/entities/prelude.rs:17:9
+   |
+17 | pub use super::mantenimiento_calendario::Entity as MantenimientoCalendario;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_historial::Entity as MantenimientoHistorial`
+  --> src/entities/prelude.rs:18:9
+   |
+18 | pub use super::mantenimiento_historial::Entity as MantenimientoHistorial;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_repuestos::Entity as MantenimientoRepuestos`
+  --> src/entities/prelude.rs:19:9
+   |
+19 | pub use super::mantenimiento_repuestos::Entity as MantenimientoRepuestos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_tareas::Entity as MantenimientoTareas`
+  --> src/entities/prelude.rs:20:9
+   |
+20 | pub use super::mantenimiento_tareas::Entity as MantenimientoTareas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_tipo::Entity as MantenimientoTipo`
+  --> src/entities/prelude.rs:21:9
+   |
+21 | pub use super::mantenimiento_tipo::Entity as MantenimientoTipo;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::marcas::Entity as Marcas`
+  --> src/entities/prelude.rs:22:9
+   |
+22 | pub use super::marcas::Entity as Marcas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::orden_trabajo::Entity as OrdenTrabajo`
+  --> src/entities/prelude.rs:25:9
+   |
+25 | pub use super::orden_trabajo::Entity as OrdenTrabajo;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::permisos::Entity as Permisos`
+  --> src/entities/prelude.rs:26:9
+   |
+26 | pub use super::permisos::Entity as Permisos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::proveedores::Entity as Proveedores`
+  --> src/entities/prelude.rs:27:9
+   |
+27 | pub use super::proveedores::Entity as Proveedores;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::reportes_programados::Entity as ReportesProgramados`
+  --> src/entities/prelude.rs:28:9
+   |
+28 | pub use super::reportes_programados::Entity as ReportesProgramados;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::rol_permisos::Entity as RolPermisos`
+  --> src/entities/prelude.rs:29:9
+   |
+29 | pub use super::rol_permisos::Entity as RolPermisos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::roles::Entity as Roles`
+  --> src/entities/prelude.rs:30:9
+   |
+30 | pub use super::roles::Entity as Roles;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::tecnicos::Entity as Tecnicos`
+  --> src/entities/prelude.rs:31:9
+   |
+31 | pub use super::tecnicos::Entity as Tecnicos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::terminos_pago::Entity as TerminosPago`
+  --> src/entities/prelude.rs:32:9
+   |
+32 | pub use super::terminos_pago::Entity as TerminosPago;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::tipos_activos::Entity as TiposActivos`
+  --> src/entities/prelude.rs:33:9
+   |
+33 | pub use super::tipos_activos::Entity as TiposActivos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::ubicaciones::Entity as Ubicaciones`
+  --> src/entities/prelude.rs:34:9
+   |
+34 | pub use super::ubicaciones::Entity as Ubicaciones;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::usuario_roles::Entity as UsuarioRoles`
+  --> src/entities/prelude.rs:35:9
+   |
+35 | pub use super::usuario_roles::Entity as UsuarioRoles;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::usuarios::Entity as Usuarios`
+  --> src/entities/prelude.rs:36:9
+   |
+36 | pub use super::usuarios::Entity as Usuarios;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `DatabaseConnection`
+ --> src/utils/code_generator.rs:1:15
+  |
+1 | use sea_orm::{DatabaseConnection, DbErr, ConnectionTrait, Statement, DatabaseBackend};
+  |               ^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColumnTrait` and `QueryFilter`
+ --> src/utils/mailer.rs:3:48
+  |
+3 | use sea_orm::{DatabaseConnection, EntityTrait, ColumnTrait, QueryFilter};
+  |                                                ^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `http::StatusCode`
+ --> src/controllers/assets.rs:1:66
+  |
+1 | use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode, Extension};
+  |                                                                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ModelTrait` and `RelationTrait`
+ --> src/controllers/assets.rs:5:97
+  |
+5 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, RelationTrait};
+  |                                                                                                 ^^^^^^^^^^  ^^^^^^^^^^^^^
+
+warning: unused import: `ColumnTrait`
+ --> src/controllers/technicians.rs:2:71
+  |
+2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, ColumnTrait};
+  |                                                                       ^^^^^^^^^^^
+
+warning: unused import: `http::StatusCode`
+ --> src/controllers/inventory.rs:1:66
+  |
+1 | use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode, Extension};
+  |                                                                  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `mantenimiento_calendario`
+ --> src/controllers/inventory.rs:5:80
+  |
+5 | use crate::entities::{activos_repuestos, historial_repuestos, activos_equipos, mantenimiento_calendario};
+  |                                                                                ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `JoinType`, `QuerySelect`, and `RelationTrait`
+ --> src/controllers/maintenance.rs:2:97
+  |
+2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QuerySelect, RelationTrait, JoinType, Que...
+  |                                                                                                 ^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^
+
+warning: unused import: `tecnicos`
+ --> src/controllers/maintenance.rs:4:111
+  |
+4 | use crate::entities::{mantenimiento_calendario, mantenimiento_historial, mantenimiento_tipo, activos_equipos, tecnicos, orden_trabajo, ma...
+  |                                                                                                               ^^^^^^^^
+
+warning: unused import: `Path`
+ --> src/controllers/audit.rs:1:35
+  |
+1 | use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode};
+  |                                   ^^^^
+
+warning: unused imports: `JoinType`, `QuerySelect`, and `RelationTrait`
+ --> src/controllers/audit.rs:2:60
+  |
+2 | use sea_orm::{DatabaseConnection, EntityTrait, QueryOrder, QuerySelect, RelationTrait, JoinType};
+  |                                                            ^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^
+
+warning: unused import: `prelude::*`
+  --> src/controllers/reports.rs:11:23
+   |
+11 | use crate::entities::{prelude::*, *};
+   |                       ^^^^^^^^^^
+
+warning: unused imports: `ColumnTrait`, `JoinType`, `QueryFilter`, `QuerySelect`, and `RelationTrait`
+ --> src/controllers/work_orders.rs:2:71
+  |
+2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QuerySelect, RelationTrait, JoinType};
+  |                                                                       ^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^
+
+warning: unused import: `ModelTrait`
+ --> src/controllers/roles.rs:2:97
+  |
+2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, LoaderTrait};
+  |                                                                                                 ^^^^^^^^^^
+
+warning: unused import: `ModelTrait`
+ --> src/controllers/settings.rs:2:97
+  |
+2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait};
+  |                                                                                                 ^^^^^^^^^^
+
+warning: variable does not need to be mutable
+  --> src/controllers/dashboard.rs:84:9
+   |
+84 |     let mut distinct_months: Vec<String> = Vec::new();
+   |         ----^^^^^^^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `distinct_months`
+  --> src/controllers/dashboard.rs:84:9
+   |
+84 |     let mut distinct_months: Vec<String> = Vec::new();
+   |         ^^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_distinct_months`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variant `Forbidden` is never constructed
+  --> src/utils/error.rs:14:5
+   |
+ 9 | pub enum AppError {
+   |          -------- variant in this enum
+...
+14 |     Forbidden(String),
+   |     ^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `documentos` is never read
+  --> src/controllers/assets.rs:60:9
+   |
+38 | pub struct UpdateAssetRequest {
+   |            ------------------ field in this struct
+...
+60 |     pub documentos: Option<Vec<AddDocumentRequest>>,
+   |         ^^^^^^^^^^
+
+warning: field `codigo_repuesto` is never read
+  --> src/controllers/inventory.rs:26:9
+   |
+15 | pub struct CreatePartRequest {
+   |            ----------------- field in this struct
+...
+26 |     pub codigo_repuesto: Option<String>,
+   |         ^^^^^^^^^^^^^^^
+
+warning: field `codigo_mantenimiento` is never read
+  --> src/controllers/maintenance.rs:19:9
+   |
+12 | pub struct CreateScheduleRequest {
+   |            --------------------- field in this struct
+...
+19 |     pub codigo_mantenimiento: Option<String>,
+   |         ^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `PurchaseOrderDto` is never constructed
+  --> src/controllers/purchases.rs:35:12
+   |
+35 | pub struct PurchaseOrderDto {
+   |            ^^^^^^^^^^^^^^^^
+
+warning: field `impuesto` is never read
+   --> src/controllers/purchases.rs:216:9
+    |
+212 | pub struct DirectOrderDetailDto {
+    |            -------------------- field in this struct
+...
+216 |     pub impuesto: Option<Decimal>,
+    |         ^^^^^^^^
+
+warning: function `add_stock` is never used
+   --> src/controllers/inventory_transaction.rs:109:14
+    |
+109 | pub async fn add_stock(
+    |              ^^^^^^^^^
+
+warning: `backend` (bin "backend") generated 53 warnings (run `cargo fix --bin "backend" -p backend` to apply 46 suggestions)
+    Finished `release` profile [optimized] target(s) in 1m 34s
