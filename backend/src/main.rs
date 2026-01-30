@@ -140,14 +140,25 @@ async fn main() {
                  // Purchases
                 .route("/purchases/requests", get(controllers::purchases::get_requests).post(controllers::purchases::create_request))
                 .route("/purchases/requests/{id}", get(controllers::purchases::get_request_by_id))
-                .route("/purchases/requests/{id}/status", put(controllers::purchases::update_request_status))
-                .route("/purchases/orders/from-request/{id}", post(controllers::purchases::create_order_from_request))
+                .route("/purchases/requests/{id}/status", put(controllers::purchases::update_request_status)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "purchases_edit")))
+                )
+                .route("/purchases/orders/from-request/{id}", post(controllers::purchases::create_order_from_request)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "purchases_edit")))
+                )
                 .route("/purchases/orders/{id}/receive", axum::routing::post(controllers::purchases::receive_order_items)
          .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "inventory_edit")))
     )
-                .route("/purchases/orders", get(controllers::purchases::get_orders).post(controllers::purchases::create_direct_order))
-                .route("/purchases/orders/{id}", get(controllers::purchases::get_order_by_id).put(controllers::purchases::update_order).delete(controllers::purchases::delete_order))
-                .route("/purchases/orders/{id}/status", put(controllers::purchases::update_order_status))
+                .route("/purchases/orders", get(controllers::purchases::get_orders).post(controllers::purchases::create_direct_order)
+                     // Allow listing orders for viewers, but creating needs edit
+                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "purchases_view"))) 
+                )
+                .route("/purchases/orders/{id}", get(controllers::purchases::get_order_by_id).put(controllers::purchases::update_order).delete(controllers::purchases::delete_order)
+                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "purchases_view")))
+                )
+                .route("/purchases/orders/{id}/status", put(controllers::purchases::update_order_status)
+                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "purchases_edit")))
+                )
                 
                 // Work Orders
                 .route("/work-orders", get(controllers::work_orders::get_work_orders).post(controllers::work_orders::create_work_order))
@@ -185,13 +196,20 @@ async fn main() {
 
                 .layer(axum::middleware::from_fn_with_state(shared_state.clone(), middleware::auth::auth_middleware))
         )
+    let allowed_origins_raw = std::env::var("ALLOWED_ORIGINS")
+        .unwrap_or_else(|_| "http://localhost:5173,http://127.0.0.1:5173".into());
+    
+    let allowed_origins: Vec<axum::http::HeaderValue> = allowed_origins_raw
+        .split(',')
+        .map(|s| s.trim().parse().unwrap())
+        .collect();
+
+    let app = Router::new()
+        // ... (el resto del router)
         .nest_service("/uploads", ServeDir::new("uploads"))
         .layer(
             tower_http::cors::CorsLayer::new()
-                .allow_origin([
-                    "http://localhost:5173".parse().unwrap(),
-                    "http://127.0.0.1:5173".parse().unwrap()
-                ])
+                .allow_origin(allowed_origins)
                 .allow_methods([axum::http::Method::GET, axum::http::Method::POST, axum::http::Method::PUT, axum::http::Method::DELETE, axum::http::Method::OPTIONS])
                 .allow_credentials(true)
                 .allow_headers([

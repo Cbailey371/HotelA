@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-    ArrowUpRight, ArrowDownRight, TrendingUp, Upload, Download, Plus, Search, Edit2, Trash2, MapPin, AlertCircle, History, Package, X
+    ArrowUpRight, ArrowDownRight, TrendingUp, Upload, Download, Plus, Search, Edit2, Trash2, MapPin, AlertCircle, History, Package, X, ZoomIn
 } from 'lucide-react';
 import { inventoryService } from '../services/inventoryService';
 import api from '../services/api';
@@ -21,7 +21,9 @@ const InventoryPage = () => {
     const [filterStock, setFilterStock] = useState('all');
     const [filterLocation, setFilterLocation] = useState('');
     const [filterBrand, setFilterBrand] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
     const [isDirty, setIsDirty] = useState(false);
+    const [previewImage, setPreviewImage] = useState(null);
 
     // Config Data
     const [brandsList, setBrandsList] = useState([]);
@@ -43,7 +45,8 @@ const InventoryPage = () => {
         imagen_url: '',
         proveedor_id: '',
         fecha_vencimiento: '',
-        compatibilidad: ''
+        compatibilidad: '',
+        estado: 'activo'
     };
     const [formData, setFormData] = useState(initialForm);
 
@@ -156,7 +159,7 @@ const InventoryPage = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('¿Eliminar este repuesto del inventario?')) {
+        if (window.confirm('¿Está seguro de dar de baja este repuesto?')) {
             try {
                 await inventoryService.delete(id);
                 fetchParts();
@@ -184,7 +187,6 @@ const InventoryPage = () => {
         setEditingPart(null);
         setFormData({
             ...initialForm,
-            // codigo_repuesto: generateCode('REP-') // Removed: Auto-generated in backend
         });
         setIsDirty(false);
         setShowModal(true);
@@ -208,9 +210,9 @@ const InventoryPage = () => {
             imagen: part.imagen,
             proveedor_id: part.proveedor_id || '',
             fecha_vencimiento: part.fecha_vencimiento || '',
-            compatibilidad: part.compatibilidad || ''
+            compatibilidad: part.compatibilidad || '',
+            estado: part.estado || 'activo'
         });
-        // If has bodega_id, fetch locations
         if (part.bodega_id) {
             fetchWarehouseLocations(part.bodega_id);
         } else {
@@ -240,7 +242,7 @@ const InventoryPage = () => {
             ...prev,
             ubicacion_almacen: warehouseName,
             bodega_id: warehouse ? warehouse.id : null,
-            ubicacion_bodega_id: null // Reset location when warehouse changes
+            ubicacion_bodega_id: null
         }));
         setIsDirty(true);
 
@@ -260,7 +262,8 @@ const InventoryPage = () => {
         const matchesStock = filterStock === 'all' ||
             (filterStock === 'critical' && p.stock <= p.stock_minimo) ||
             (filterStock === 'ok' && p.stock > p.stock_minimo);
-        return matchesSearch && matchesCategory && matchesStock && matchesLocation && matchesBrand;
+        const matchesStatus = filterStatus === '' || p.estado === filterStatus;
+        return matchesSearch && matchesCategory && matchesStock && matchesLocation && matchesBrand && matchesStatus;
     });
 
     const uniqueLocations = [...new Set(parts.map(p => p.ubicacion).filter(Boolean))];
@@ -356,6 +359,15 @@ const InventoryPage = () => {
                             <option key={mark} value={mark}>{mark}</option>
                         ))}
                     </select>
+                    <select
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                        className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm outline-none font-bold text-slate-600 dark:text-slate-300 shadow-sm"
+                    >
+                        <option value="">Todos los Estados</option>
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
                 </div>
                 <table className="w-full text-left">
                     <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 text-xs uppercase font-semibold">
@@ -366,6 +378,7 @@ const InventoryPage = () => {
                             <th className="px-6 py-4">Stock Actual</th>
                             <th className="px-6 py-4">Precio Unit.</th>
                             <th className="px-6 py-4">Ubicación</th>
+                            <th className="px-6 py-4">Estado</th>
                             <th className="px-6 py-4 text-right">Acciones</th>
                         </tr>
                     </thead>
@@ -375,14 +388,20 @@ const InventoryPage = () => {
                         ) : filtered.length === 0 ? (
                             <tr><td colSpan="6" className="text-center py-8 text-slate-400 font-medium">No se encontraron suministros.</td></tr>
                         ) : filtered.map((p) => (
-                            <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-600">
+                                        <div
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (p.imagen) setPreviewImage(`http://localhost:3000${p.imagen}`);
+                                            }}
+                                            className={`w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-600 flex-shrink-0 group-hover:border-blue-400 transition-colors ${p.imagen ? 'cursor-zoom-in' : ''}`}
+                                        >
                                             {p.imagen ? (
                                                 <img src={`http://localhost:3000${p.imagen}`} alt={p.nombre} className="w-full h-full object-cover" />
                                             ) : (
-                                                <Package className="w-5 h-5 text-slate-400" />
+                                                <Package className="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors" />
                                             )}
                                         </div>
                                         <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
@@ -408,11 +427,18 @@ const InventoryPage = () => {
                                         {p.ubicacion || 'ALM-GRAL'}
                                     </div>
                                 </td>
+                                <td className="px-6 py-4">
+                                    <span className={`px-2 py-1 rounded-md text-xs font-semibold uppercase ${p.estado === 'activo' || !p.estado ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' :
+                                        'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400'
+                                        }`}>
+                                        {(p.estado || 'activo').toUpperCase()}
+                                    </span>
+                                </td>
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex justify-end gap-2">
                                         <button onClick={() => openHistoryModal(p)} className="p-2 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg text-blue-600" title="Ver Historial"><History className="w-4 h-4" /></button>
                                         <button onClick={() => openEditModal(p)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><Edit2 className="w-4 h-4" /></button>
-                                        <button onClick={() => handleDelete(p.id)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-red-500"><Trash2 className="w-4 h-4" /></button>
+                                        <button onClick={() => handleDelete(p.id)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-red-500" title="Dar de baja"><Trash2 className="w-4 h-4" /></button>
                                     </div>
                                 </td>
                             </tr>
@@ -437,17 +463,15 @@ const InventoryPage = () => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-1">
-                            {/* Code generation is now automatic in backend */}
-                            {/* Placeholder for alignment or remove div */}
-                            <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Código Repuesto (Auto)</label>
+                            <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Código Repuesto (Auto)</label>
                             <input disabled value="Generado al guardar" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none text-slate-400 cursor-not-allowed italic" />
                         </div>
                         <div className="col-span-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Nombre del Repuesto</label>
+                            <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Nombre del Repuesto</label>
                             <input required name="nombre_repuesto" value={formData.nombre_repuesto} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none focus:border-blue-500 transition-colors" />
                         </div>
                         <div className="col-span-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Categoría</label>
+                            <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Categoría</label>
                             <select name="categoria" value={formData.categoria} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none">
                                 <option value="Mecánico">Mecánico</option>
                                 <option value="Eléctrico">Eléctrico</option>
@@ -459,7 +483,7 @@ const InventoryPage = () => {
                         <div className="col-span-1">
                             <SearchableSelect
                                 label="Marca / Fabricante"
-                                name="marca" // Fixed name
+                                name="marca"
                                 placeholder="Seleccionar o escribir..."
                                 options={brandsList}
                                 value={formData.marca}
@@ -470,15 +494,15 @@ const InventoryPage = () => {
                             />
                         </div>
                         <div className="col-span-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Stock Actual</label>
+                            <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Stock Actual</label>
                             <input type="number" name="stock_actual" value={formData.stock_actual} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none" />
                         </div>
                         <div className="col-span-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Stock Mínimo</label>
+                            <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Stock Mínimo</label>
                             <input type="number" name="stock_minimo" value={formData.stock_minimo} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none" />
                         </div>
                         <div className="col-span-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Precio Unitario ($)</label>
+                            <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Precio Unitario ($)</label>
                             <input type="number" step="0.01" name="precio_unitario" value={formData.precio_unitario} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none" />
                         </div>
                         <div className="col-span-1">
@@ -492,7 +516,7 @@ const InventoryPage = () => {
                             />
                         </div>
                         <div className="col-span-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Ubicación (Rack/Estante)</label>
+                            <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Ubicación (Rack/Estante)</label>
                             <select
                                 name="ubicacion_bodega_id"
                                 value={formData.ubicacion_bodega_id || ''}
@@ -510,19 +534,22 @@ const InventoryPage = () => {
                             </select>
                         </div>
                         <div className="col-span-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Ubicación Detallada (Bin/Caja)</label>
+                            <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Ubicación Detallada (Bin/Caja)</label>
                             <input name="ubicacion_detallada" value={formData.ubicacion_detallada} onChange={handleInputChange} placeholder="ej. Nivel 3, Caja 4" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none" />
                         </div>
                         <div className="col-span-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Proveedor ID</label>
+                            <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Proveedor ID</label>
                             <input type="number" name="proveedor_id" value={formData.proveedor_id} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none" />
                         </div>
                         <div className="col-span-1">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Fecha Vencimiento</label>
-                            <input type="date" name="fecha_vencimiento" value={formData.fecha_vencimiento} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none" />
+                            <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Estado</label>
+                            <select name="estado" value={formData.estado} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none">
+                                <option value="activo">Activo</option>
+                                <option value="inactivo">Inactivo</option>
+                            </select>
                         </div>
                         <div className="col-span-2">
-                            <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Compatibilidad Modelos</label>
+                            <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Compatibilidad Modelos</label>
                             <input name="compatibilidad" value={formData.compatibilidad} onChange={handleInputChange} placeholder="ej. Modelo X, Modelo Y" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none" />
                         </div>
                     </div>
@@ -530,19 +557,29 @@ const InventoryPage = () => {
                         <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Imagen del Repuesto</label>
                         <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:border-blue-500 transition-colors bg-slate-50 dark:bg-[#0f172a]">
                             {formData.imagen_preview || formData.imagen ? (
-                                <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-slate-200">
+                                <div
+                                    onClick={() => {
+                                        const imgUrl = formData.imagen_preview || `http://localhost:3000${formData.imagen}`;
+                                        setPreviewImage(imgUrl);
+                                    }}
+                                    className="relative w-32 h-32 rounded-lg overflow-hidden border border-slate-200 cursor-zoom-in group"
+                                >
                                     <img
                                         src={formData.imagen_preview || `http://localhost:3000${formData.imagen}`}
                                         alt="Preview"
                                         className="w-full h-full object-cover"
                                     />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all">
+                                        <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100" />
+                                    </div>
                                     <button
                                         type="button"
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                            e.stopPropagation();
                                             setFormData(prev => ({ ...prev, imagen: null, imagen_file: null, imagen_preview: null }));
                                             setIsDirty(true);
                                         }}
-                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 z-10"
                                     >
                                         <X className="w-3 h-3" />
                                     </button>
@@ -575,9 +612,6 @@ const InventoryPage = () => {
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 pt-6">
-                        {/* We use standard close from Modal, but duplicate button here just in case? No, Modal has top X. */}
-                        {/* But the original had Cancel/Guardar buttons. We should keep them. */}
-                        {/* Cancel should just call onClose (which might trigger dirty check if we used onSave but here we are inside, manual cancel can use raw click) */}
                         <button type="button" onClick={() => setShowModal(false)} className="px-6 py-2.5 text-slate-500 font-bold uppercase text-[11px] tracking-widest hover:text-slate-800 transition-colors">Cancelar</button>
                         <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-2.5 rounded-xl font-black uppercase text-[11px] tracking-widest shadow-xl shadow-blue-500/30 transition-all">Guardar SKU</button>
                     </div>
@@ -628,6 +662,31 @@ const InventoryPage = () => {
                     <button onClick={() => setShowHistoryModal(false)} className="bg-slate-800 text-white px-6 py-2 rounded-xl font-black uppercase text-[10px] tracking-widest">Cerrar</button>
                 </div>
             </Modal>
+
+            {/* Image Preview Modal */}
+            {previewImage && (
+                <div
+                    className="fixed inset-0 bg-slate-900/90 dark:bg-black/95 backdrop-blur-md flex items-center justify-center z-[100] p-4 cursor-zoom-out"
+                    onClick={() => setPreviewImage(null)}
+                >
+                    <button
+                        className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors"
+                        onClick={() => setPreviewImage(null)}
+                    >
+                        <X className="w-8 h-8" />
+                    </button>
+                    <div
+                        className="max-w-5xl max-h-[90vh] flex items-center justify-center relative shadow-2xl rounded-2xl overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <img
+                            src={previewImage}
+                            alt="Preview"
+                            className="max-w-full max-h-[90vh] object-contain"
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

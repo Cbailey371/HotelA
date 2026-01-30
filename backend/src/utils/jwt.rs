@@ -23,7 +23,7 @@ pub fn generate_jwt(user_id: i32, username: String, role: String) -> String {
         role,
     };
 
-    let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "secret_desarrollo_muy_largo_y_seguro_123".to_string());
+    let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
     encode(
         &Header::default(), 
         &claims, 
@@ -32,7 +32,7 @@ pub fn generate_jwt(user_id: i32, username: String, role: String) -> String {
 }
 
 pub fn decode_jwt(token: &str) -> Result<Claims, Error> {
-    let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "secret_desarrollo_muy_largo_y_seguro_123".to_string());
+    let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
     let token_data = decode::<Claims>(
         token,
         &DecodingKey::from_secret(secret.as_bytes()),

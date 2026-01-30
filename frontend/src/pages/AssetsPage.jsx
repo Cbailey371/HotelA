@@ -122,6 +122,7 @@ const AssetsPage = () => {
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+            setTimeout(() => window.URL.revokeObjectURL(url), 100);
         } catch (error) {
             console.error("Error downloading template", error);
         }
@@ -411,6 +412,7 @@ const AssetsPage = () => {
                     <option value="">Todos los Estados</option>
                     <option value="activo">Activo</option>
                     <option value="en_reparacion">En Reparación</option>
+                    <option value="inactivo">Inactivo</option>
                     <option value="baja">De Baja</option>
                 </select>
 
@@ -502,7 +504,8 @@ const AssetsPage = () => {
                                     <td className="px-6 py-4">
                                         <span className={`px-2 py-1 rounded-md text-xs font-semibold ${asset.estado === 'activo' ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' :
                                             asset.estado === 'en_reparacion' ? 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400' :
-                                                'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                                                asset.estado === 'inactivo' ? 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400' :
+                                                    'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
                                             }`}>
                                             {asset.estado ? asset.estado.replace('_', ' ').toUpperCase() : 'N/A'}
                                         </span>
@@ -618,6 +621,7 @@ const AssetsPage = () => {
                                 <select name="estado" value={formData.estado} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
                                     <option value="activo">Activo</option>
                                     <option value="en_reparacion">En Reparación</option>
+                                    <option value="inactivo">Inactivo</option>
                                     <option value="baja">De Baja</option>
                                 </select>
                             </div>

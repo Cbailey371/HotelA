@@ -36,7 +36,7 @@ pub async fn send_email(
 
     // Build transport. Note: For simple MVP we try relay logic or standard.
     // Lettre AsyncTokio1Executor is needed.
-    let mailer = SmtpTransport::relay(&host)
+    let mailer = SmtpTransport::starttls_relay(&host)
         .map_err(|e| format!("Error relay: {}", e))?
         .credentials(creds)
         .port(port_str.parse().unwrap_or(587))

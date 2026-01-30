@@ -564,27 +564,25 @@ pub async fn receive_order_items(
 
         // Update Inventory (ActivosRepuestos)
         
-        // Fetch Model first to get current stock safely
-        let part_model = ActivosRepuestos::find_by_id(repuesto_id)
-            .one(&txn)
-            .await
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-            .ok_or((StatusCode::NOT_FOUND, "Part not found".to_string()))?;
+        // Update Inventory (ActivosRepuestos) - Atomic Update to prevent race conditions
+        use sea_orm::{sea_query::Expr, DbBackend};
+        
+        let mut update_query = activos_repuestos::Entity::update_many()
+            .col_expr(
+                activos_repuestos::Column::StockActual,
+                Expr::col(activos_repuestos::Column::StockActual).add(item.cantidad_recibir)
+            )
+            .filter(activos_repuestos::Column::IdRepuesto.eq(repuesto_id));
 
-        let current_stock = part_model.stock_actual.unwrap_or(0);
-        let mut part: activos_repuestos::ActiveModel = part_model.into();
-        
-        part.stock_actual = Set(Some(current_stock + item.cantidad_recibir));
-        
         // Update location if provided
         if let Some(bid) = item.bodega_id {
-            part.bodega_id = Set(Some(bid));
+            update_query = update_query.col_expr(activos_repuestos::Column::BodegaId, Expr::val(bid).into());
         }
         if let Some(ubid) = item.ubicacion_bodega_id {
-            part.ubicacion_bodega_id = Set(Some(ubid));
+            update_query = update_query.col_expr(activos_repuestos::Column::UbicacionBodegaId, Expr::val(ubid).into());
         }
 
-        part.update(&txn).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        update_query.exec(&txn).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
         // Log Movement in inventario_movimientos
         let movement = inventario_movimientos::ActiveModel {

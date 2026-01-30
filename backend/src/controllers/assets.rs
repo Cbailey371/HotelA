@@ -3,7 +3,7 @@ use axum_extra::extract::Multipart;
 use serde::{Deserialize, Serialize};
 use crate::entities::{activos_equipos, mantenimiento_historial, historial_repuestos, activos_repuestos, tecnicos, activos_documentos};
 use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, RelationTrait};
-use crate::utils::{jwt, audit, code_generator::generate_next_code};
+use crate::utils::{jwt, audit, code_generator::generate_next_code, error::AppError};
 
 #[derive(Deserialize)]
 pub struct CreateAssetRequest {
@@ -124,9 +124,8 @@ pub async fn create_asset(
     State(db): State<DatabaseConnection>,
     Extension(claims): Extension<jwt::Claims>,
     Json(payload): Json<CreateAssetRequest>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let codigo_equipo = generate_next_code(&db, "activos_equipos", "codigo_equipo", "ACT-").await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+) -> Result<impl IntoResponse, AppError> {
+    let codigo_equipo = generate_next_code(&db, "activos_equipos", "codigo_equipo", "ACT-").await?;
 
     let new_asset = activos_equipos::ActiveModel {
         codigo_equipo: Set(codigo_equipo),
@@ -263,12 +262,11 @@ fn map_asset_to_dto_full(
 
 pub async fn get_assets(
     State(db): State<DatabaseConnection>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let assets = activos_equipos::Entity::find()
         .filter(activos_equipos::Column::Estado.ne("baja"))
         .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     let dtos: Vec<AssetDto> = assets.into_iter().map(|a| map_asset_to_dto(a, vec![], vec![])).collect();
 
@@ -278,16 +276,16 @@ pub async fn get_assets(
 pub async fn get_asset_by_id(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     tracing::info!("Fetching asset by id: {}", id);
     let asset = activos_equipos::Entity::find_by_id(id)
         .one(&db)
         .await
         .map_err(|e| {
             tracing::error!("Error finding asset: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+            AppError::Internal(e.to_string())
         })?
-        .ok_or((StatusCode::NOT_FOUND, "Asset not found".to_string()))?;
+        .ok_or_else(|| AppError::NotFound("Activo no encontrado".to_string()))?;
 
     tracing::info!("Asset found, fetching maintenance history");
 
@@ -348,12 +346,11 @@ pub async fn update_asset(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
     Json(payload): Json<UpdateAssetRequest>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let mut asset: activos_equipos::ActiveModel = activos_equipos::Entity::find_by_id(id)
         .one(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "Asset not found".to_string()))?
+        .await?
+        .ok_or_else(|| AppError::NotFound("Activo no encontrado".to_string()))?
         .into();
 
     if let Some(v) = payload.codigo_administrativo { asset.codigo_administrativo = Set(Some(v)); }
@@ -395,12 +392,11 @@ pub async fn delete_asset(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
     Extension(claims): Extension<jwt::Claims>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let mut asset: activos_equipos::ActiveModel = activos_equipos::Entity::find_by_id(id)
         .one(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "Asset not found".to_string()))?
+        .await?
+        .ok_or_else(|| AppError::NotFound("Activo no encontrado".to_string()))?
         .into();
 
     asset.estado = Set(Some("baja".to_string()));
@@ -426,7 +422,7 @@ pub async fn import_assets_csv(
     State(db): State<DatabaseConnection>,
     Extension(claims): Extension<jwt::Claims>,
     mut multipart: Multipart,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let mut count = 0;
     
     while let Some(field) = multipart.next_field().await.map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))? {

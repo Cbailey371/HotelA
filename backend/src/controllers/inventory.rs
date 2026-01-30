@@ -3,7 +3,7 @@ use axum_extra::extract::Multipart;
 use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QueryOrder};
 use serde::{Deserialize, Serialize};
 use crate::entities::{activos_repuestos, historial_repuestos, activos_equipos, mantenimiento_calendario};
-use crate::utils::{jwt, audit};
+use crate::utils::{jwt, audit, error::AppError};
 use sea_orm::prelude::Decimal;
 use std::str::FromStr;
 use tokio::fs;
@@ -30,6 +30,7 @@ pub struct CreatePartRequest {
     pub compatibilidad: Option<String>,
     pub bodega_id: Option<i32>,
     pub ubicacion_bodega_id: Option<i32>,
+    pub estado: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -53,15 +54,16 @@ pub struct PartDto {
     pub compatibilidad: Option<String>,
     pub bodega_id: Option<i32>,
     pub ubicacion_bodega_id: Option<i32>,
+    pub estado: Option<String>,
 }
 
 pub async fn get_parts(
     State(db): State<DatabaseConnection>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let parts = activos_repuestos::Entity::find()
+        .filter(activos_repuestos::Column::Estado.ne("baja"))
         .order_by_asc(activos_repuestos::Column::CodigoRepuesto)
-        .all(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .all(&db).await?;
 
     let dtos: Vec<PartDto> = parts.into_iter().map(|p| PartDto {
         id: p.id_repuesto,
@@ -83,6 +85,7 @@ pub async fn get_parts(
         compatibilidad: p.compatibilidad_modelos,
         bodega_id: p.bodega_id,
         ubicacion_bodega_id: p.ubicacion_bodega_id,
+        estado: p.estado,
     }).collect();
 
     Ok(Json(dtos))
@@ -91,10 +94,9 @@ pub async fn get_parts(
 pub async fn create_part(
     State(db): State<DatabaseConnection>,
     Json(payload): Json<CreatePartRequest>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     // Generate sequential code (default prefix REP-)
-    let next_code = crate::utils::code_generator::generate_next_code(&db, "activos_repuestos", "codigo_repuesto", "REP-").await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let next_code = crate::utils::code_generator::generate_next_code(&db, "activos_repuestos", "codigo_repuesto", "REP-").await?;
 
     let new_part = activos_repuestos::ActiveModel {
         codigo_repuesto: Set(next_code),
@@ -114,6 +116,7 @@ pub async fn create_part(
         compatibilidad_modelos: Set(payload.compatibilidad),
         bodega_id: Set(payload.bodega_id),
         ubicacion_bodega_id: Set(payload.ubicacion_bodega_id),
+        estado: Set(payload.estado.or(Some("activo".to_string()))),
         ..Default::default()
     };
 
@@ -140,6 +143,7 @@ pub async fn create_part(
         compatibilidad: p.compatibilidad_modelos,
         bodega_id: p.bodega_id,
         ubicacion_bodega_id: p.ubicacion_bodega_id,
+        estado: p.estado,
     }))
 }
 
@@ -147,12 +151,11 @@ pub async fn update_part(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
     Json(payload): Json<CreatePartRequest>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let mut part: activos_repuestos::ActiveModel = activos_repuestos::Entity::find_by_id(id)
         .one(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "Part not found".to_string()))?
+        .await?
+        .ok_or_else(|| AppError::NotFound("Repuesto no encontrado".to_string()))?
         .into();
 
     part.nombre_repuesto = Set(payload.nombre_repuesto);
@@ -171,6 +174,7 @@ pub async fn update_part(
     if let Some(v) = payload.compatibilidad { part.compatibilidad_modelos = Set(Some(v)); }
     part.bodega_id = Set(payload.bodega_id);
     part.ubicacion_bodega_id = Set(payload.ubicacion_bodega_id);
+    if let Some(v) = payload.estado { part.estado = Set(Some(v)); }
 
     let updated = part.update(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -195,29 +199,50 @@ pub async fn update_part(
         compatibilidad: updated.compatibilidad_modelos,
         bodega_id: updated.bodega_id,
         ubicacion_bodega_id: updated.ubicacion_bodega_id,
+        estado: updated.estado,
     }))
 }
 
 pub async fn delete_part(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
-    activos_repuestos::Entity::delete_by_id(id).exec(&db).await
+    Extension(claims): Extension<jwt::Claims>,
+) -> Result<impl IntoResponse, AppError> {
+    let mut part: activos_repuestos::ActiveModel = activos_repuestos::Entity::find_by_id(id)
+        .one(&db)
+        .await?
+        .ok_or_else(|| AppError::NotFound("Repuesto no encontrado".to_string()))?
+        .into();
+
+    let part_nombre = part.nombre_repuesto.clone().unwrap();
+    part.estado = Set(Some("baja".to_string()));
+
+    part.update(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-    Ok(Json("Part deleted".to_string()))
+
+    audit::log_action(
+        &db, 
+        claims.user_id, 
+        "DELETE_SOFT", 
+        "activos_repuestos", 
+        Some(id), 
+        Some(format!("Dado de baja repuesto: {}", part_nombre)),
+        None
+    ).await;
+
+    Ok(Json("Part deleted (soft)".to_string()))
 }
 
 pub async fn upload_part_image(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
     mut multipart: Multipart,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     // Check if part exists
     let mut part: activos_repuestos::ActiveModel = activos_repuestos::Entity::find_by_id(id)
         .one(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "Part not found".to_string()))?
+        .await?
+        .ok_or_else(|| AppError::NotFound("Repuesto no encontrado".to_string()))?
         .into();
 
     while let Some(field) = multipart.next_field().await.map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))? {

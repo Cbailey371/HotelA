@@ -289,27 +289,44 @@ async fn generate_report_data(
     filters: Option<serde_json::Value>,
 ) -> Result<Vec<serde_json::Value>, (StatusCode, String)> {
     let mut results = Vec::new();
-
-    // Extract date filters
-    let (date_field, start_date, end_date) = if let Some(f) = &filters {
-        (
-            f.get("date_field").and_then(|v| v.as_str()),
-            f.get("start_date").and_then(|v| v.as_str()).and_then(|s| NaiveDate::parse_from_str(s, "%Y-%m-%d").ok()),
-            f.get("end_date").and_then(|v| v.as_str()).and_then(|s| NaiveDate::parse_from_str(s, "%Y-%m-%d").ok()),
-        )
-    } else {
-        (None, None, None)
-    };
+    
+    let empty_vec = Vec::new();
+    let conditions = filters.as_ref()
+        .and_then(|f| f.get("conditions"))
+        .and_then(|c| c.as_array())
+        .unwrap_or(&empty_vec);
 
     match report_type {
         "Inventario" => {
             let mut query = activos_repuestos::Entity::find();
             
-            // Apply filtering if applicable (e.g. Last Purchase > X)
-            if let (Some("fecha_ultima_compra"), Some(start), Some(end)) = (date_field, start_date, end_date) {
-                 query = query.filter(activos_repuestos::Column::FechaUltimaCompra.between(start, end));
-            } else if let (Some("fecha_vencimiento"), Some(start), Some(end)) = (date_field, start_date, end_date) {
-                 query = query.filter(activos_repuestos::Column::FechaVencimiento.between(start, end));
+            for cond in conditions {
+                let field = cond.get("field").and_then(|v| v.as_str()).unwrap_or("");
+                let operator = cond.get("operator").and_then(|v| v.as_str()).unwrap_or("eq");
+                let value = cond.get("value").and_then(|v| v.as_str()).unwrap_or("");
+
+                tracing::info!("Applying filter: {} {} {}", field, operator, value);
+
+                if field.is_empty() || value.is_empty() { continue; }
+
+                let column = match field {
+                    "ID" => activos_repuestos::Column::IdRepuesto,
+                    "Nombre" => activos_repuestos::Column::NombreRepuesto,
+                    "SKU" => activos_repuestos::Column::CodigoRepuesto,
+                    "Categoría" => activos_repuestos::Column::TipoRepuesto,
+                    "Estado" => activos_repuestos::Column::Estado,
+                    "Stock Actual" => activos_repuestos::Column::StockActual,
+                    "Stock Mínimo" => activos_repuestos::Column::StockMinimo,
+                    "Ubicación" => activos_repuestos::Column::UbicacionAlmacen,
+                    "Fecha Última Compra" => activos_repuestos::Column::FechaUltimaCompra,
+                    "Fecha Vencimiento" => activos_repuestos::Column::FechaVencimiento,
+                    _ => {
+                        tracing::warn!("Field not found for mapping: {}", field);
+                        continue;
+                    },
+                };
+
+                query = apply_filter(query, column, operator, value);
             }
 
             let parts = query.all(db).await
@@ -321,6 +338,7 @@ async fn generate_report_data(
                     "Nombre": part.nombre_repuesto,
                     "SKU": part.codigo_repuesto,
                     "Categoría": part.tipo_repuesto.unwrap_or_default(),
+                    "Estado": part.estado.unwrap_or_default(),
                     "Stock Actual": part.stock_actual.unwrap_or(0),
                     "Stock Mínimo": part.stock_minimo.unwrap_or(0),
                     "Costo Unitario": part.costo_unitario.unwrap_or_default().to_string(),
@@ -334,15 +352,26 @@ async fn generate_report_data(
              let mut query = mantenimiento_historial::Entity::find()
                 .order_by_desc(mantenimiento_historial::Column::FechaEjecucion);
 
-             if let (Some("fecha_ejecucion"), Some(start), Some(end)) = (date_field, start_date, end_date) {
-                 query = query.filter(mantenimiento_historial::Column::FechaEjecucion.between(start, end));
-             } else if let (Some("created_at"), Some(start), Some(end)) = (date_field, start_date, end_date) {
-                 // Convert NaiveDate to DateTimeWithTimeZone for filtering if needed, or just specific range
-                 // This matches timestamps, might need casting or full day range logic
-                 let start_dt = start.and_hms_opt(0, 0, 0).unwrap().and_utc();
-                 let end_dt = end.and_hms_opt(23, 59, 59).unwrap().and_utc();
-                 query = query.filter(mantenimiento_historial::Column::CreatedAt.between(start_dt, end_dt));
-             }
+            for cond in conditions {
+                let field = cond.get("field").and_then(|v| v.as_str()).unwrap_or("");
+                let operator = cond.get("operator").and_then(|v| v.as_str()).unwrap_or("eq");
+                let value = cond.get("value").and_then(|v| v.as_str()).unwrap_or("");
+
+                if field.is_empty() || value.is_empty() { continue; }
+
+                let column = match field {
+                    "ID" => mantenimiento_historial::Column::IdMantenimiento,
+                    "Técnico" => mantenimiento_historial::Column::TecnicoResponsable,
+                    "Resultado" => mantenimiento_historial::Column::Resultado,
+                    "Costo Total" => mantenimiento_historial::Column::CostoTotal,
+                    "Fecha Ejecución" => mantenimiento_historial::Column::FechaEjecucion,
+                    "Fecha Inicio" => mantenimiento_historial::Column::FechaInicio,
+                    "Fecha Fin" => mantenimiento_historial::Column::FechaFin,
+                    _ => continue,
+                };
+
+                query = apply_filter(query, column, operator, value);
+            }
 
              let history = query.all(db).await
                 .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -363,10 +392,26 @@ async fn generate_report_data(
              }
         },
         "Depreciación" => {
-            // Depreciacion usually is a snapshot, but could filter by purchase date
             let mut query = activos_equipos::Entity::find();
-            if let (Some("fecha_adquisicion"), Some(start), Some(end)) = (date_field, start_date, end_date) {
-                 query = query.filter(activos_equipos::Column::FechaAdquisicion.between(start, end));
+            
+            for cond in conditions {
+                let field = cond.get("field").and_then(|v| v.as_str()).unwrap_or("");
+                let operator = cond.get("operator").and_then(|v| v.as_str()).unwrap_or("eq");
+                let value = cond.get("value").and_then(|v| v.as_str()).unwrap_or("");
+
+                if field.is_empty() || value.is_empty() { continue; }
+
+                let column = match field {
+                    "ID" => activos_equipos::Column::IdEquipo,
+                    "Activo" => activos_equipos::Column::NombreEquipo,
+                    "Modelo" => activos_equipos::Column::Modelo,
+                    "Serie" => activos_equipos::Column::NumeroSerie,
+                    "Fecha Compra" => activos_equipos::Column::FechaAdquisicion,
+                    "Estado" => activos_equipos::Column::Estado,
+                    _ => continue,
+                };
+
+                query = apply_filter(query, column, operator, value);
             }
 
             let assets = query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -407,15 +452,23 @@ async fn generate_report_data(
             use crate::entities::orden_compra_repuesto;
             let mut query = orden_compra_repuesto::Entity::find();
             
-            // Filtering
-            if let (Some("fecha_solicitud"), Some(start), Some(end)) = (date_field, start_date, end_date) {
-                 query = query.filter(orden_compra_repuesto::Column::FechaSolicitud.between(start, end));
-            } else if let (Some("fecha_entrega"), Some(start), Some(end)) = (date_field, start_date, end_date) {
-                 query = query.filter(orden_compra_repuesto::Column::FechaEntrega.between(start, end));
-            } else if let (Some("created_at"), Some(start), Some(end)) = (date_field, start_date, end_date) {
-                 let start_dt = start.and_hms_opt(0, 0, 0).unwrap().and_utc();
-                 let end_dt = end.and_hms_opt(23, 59, 59).unwrap().and_utc();
-                 query = query.filter(orden_compra_repuesto::Column::CreatedAt.between(start_dt, end_dt));
+            for cond in conditions {
+                let field = cond.get("field").and_then(|v| v.as_str()).unwrap_or("");
+                let operator = cond.get("operator").and_then(|v| v.as_str()).unwrap_or("eq");
+                let value = cond.get("value").and_then(|v| v.as_str()).unwrap_or("");
+
+                if field.is_empty() || value.is_empty() { continue; }
+
+                let column = match field {
+                    "Código" => orden_compra_repuesto::Column::CodigoCompra,
+                    "Estado" => orden_compra_repuesto::Column::Estado,
+                    "Fecha Solicitud" => orden_compra_repuesto::Column::FechaSolicitud,
+                    "Fecha Entrega" => orden_compra_repuesto::Column::FechaEntrega,
+                    "Recepción" => orden_compra_repuesto::Column::EstadoRecepcion,
+                    _ => continue,
+                };
+
+                query = apply_filter(query, column, operator, value);
             }
 
             let orders = query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -436,16 +489,22 @@ async fn generate_report_data(
             use crate::entities::orden_trabajo;
             let mut query = orden_trabajo::Entity::find();
 
-            if let (Some("created_at"), Some(start), Some(end)) = (date_field, start_date, end_date) {
-                 let start_dt = start.and_hms_opt(0, 0, 0).unwrap().and_utc();
-                 let end_dt = end.and_hms_opt(23, 59, 59).unwrap().and_utc();
-                 query = query.filter(orden_trabajo::Column::CreatedAt.between(start_dt, end_dt));
-            } else if let (Some("fecha_inicio_real"), Some(start), Some(end)) = (date_field, start_date, end_date) {
-                // Need to match DateTime for start/end or just dates? Column is DateTime (naive or tz?)
-                // Assuming standard DateTime logic
-                let start_dt = start.and_hms_opt(0,0,0).unwrap();
-                let end_dt = end.and_hms_opt(23,59,59).unwrap();
-                query = query.filter(orden_trabajo::Column::FechaInicioReal.between(start_dt, end_dt));
+            for cond in conditions {
+                let field = cond.get("field").and_then(|v| v.as_str()).unwrap_or("");
+                let operator = cond.get("operator").and_then(|v| v.as_str()).unwrap_or("eq");
+                let value = cond.get("value").and_then(|v| v.as_str()).unwrap_or("");
+
+                if field.is_empty() || value.is_empty() { continue; }
+
+                let column = match field {
+                    "Código" => orden_trabajo::Column::CodigoOt,
+                    "Prioridad" => orden_trabajo::Column::Prioridad,
+                    "Estado" => orden_trabajo::Column::Estado,
+                    "Fecha Inicio Real" => orden_trabajo::Column::FechaInicioReal,
+                    _ => continue,
+                };
+
+                query = apply_filter(query, column, operator, value);
             }
 
             let wos = query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -463,18 +522,41 @@ async fn generate_report_data(
             }
         },
         "ProveedoresTecnicos" => {
-            // Combine both? Or just list them separately. Let's do a combined list with "Tipo" 
-            
-            // 1. Proveedores
             use crate::entities::{proveedores, tecnicos};
+            
+            // Mixed filtering is complex, let's just apply it to providers for now or shared fields
             let mut prov_query = proveedores::Entity::find();
-             if let (Some("created_at"), Some(start), Some(end)) = (date_field, start_date, end_date) {
-                 let start_dt = start.and_hms_opt(0, 0, 0).unwrap().and_utc();
-                 let end_dt = end.and_hms_opt(23, 59, 59).unwrap().and_utc();
-                 prov_query = prov_query.filter(proveedores::Column::CreatedAt.between(start_dt, end_dt));
-             }
-            let providers = prov_query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            let mut tech_query = tecnicos::Entity::find();
 
+            for cond in conditions {
+                let field = cond.get("field").and_then(|v| v.as_str()).unwrap_or("");
+                let operator = cond.get("operator").and_then(|v| v.as_str()).unwrap_or("eq");
+                let value = cond.get("value").and_then(|v| v.as_str()).unwrap_or("");
+
+                if field.is_empty() || value.is_empty() { continue; }
+
+                match field {
+                    "Nombre" => {
+                        prov_query = apply_filter(prov_query, proveedores::Column::NombreProveedor, operator, value);
+                        tech_query = apply_filter(tech_query, tecnicos::Column::Nombre, operator, value);
+                    },
+                    "Email" => {
+                        prov_query = apply_filter(prov_query, proveedores::Column::Email, operator, value);
+                        tech_query = apply_filter(tech_query, tecnicos::Column::Email, operator, value);
+                    },
+                    "Teléfono" => {
+                        prov_query = apply_filter(prov_query, proveedores::Column::Telefono, operator, value);
+                        tech_query = apply_filter(tech_query, tecnicos::Column::Telefono, operator, value);
+                    },
+                    "Estado" => {
+                        prov_query = apply_filter(prov_query, proveedores::Column::Estado, operator, value);
+                        tech_query = apply_filter(tech_query, tecnicos::Column::Estado, operator, value);
+                    },
+                    _ => {},
+                }
+            }
+
+            let providers = prov_query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
             for p in providers {
                 results.push(serde_json::json!({
                     "Tipo": "Proveedor",
@@ -487,20 +569,12 @@ async fn generate_report_data(
                 }));
             }
 
-            // 2. Tecnicos
-            let mut tech_query = tecnicos::Entity::find();
-             if let (Some("created_at"), Some(start), Some(end)) = (date_field, start_date, end_date) {
-                 let start_dt = start.and_hms_opt(0, 0, 0).unwrap().and_utc();
-                 let end_dt = end.and_hms_opt(23, 59, 59).unwrap().and_utc();
-                 tech_query = tech_query.filter(tecnicos::Column::CreatedAt.between(start_dt, end_dt));
-             }
             let techs = tech_query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
             for t in techs {
                  results.push(serde_json::json!({
                     "Tipo": "Técnico",
                     "Nombre": format!("{} {}", t.nombre, t.apellido),
-                    "Identificador": t.especialidad.unwrap_or_default(), // Using specialidad as generic info
+                    "Identificador": t.especialidad.unwrap_or_default(), 
                     "Email": t.email.unwrap_or_default(),
                     "Teléfono": t.telefono.unwrap_or_default(),
                     "Estado": t.estado,
@@ -512,6 +586,32 @@ async fn generate_report_data(
     }
 
     Ok(results)
+}
+
+fn apply_filter<E, C>(query: Select<E>, column: C, operator: &str, value: &str) -> Select<E>
+where
+    E: EntityTrait,
+    C: ColumnTrait,
+{
+    // Tentative helper to handle parsing and filtering
+    let sea_val: sea_orm::Value = if let Ok(n) = value.parse::<i32>() {
+        n.into()
+    } else if let Ok(d) = value.parse::<f64>() {
+        d.into()
+    } else if let Ok(dt) = NaiveDate::parse_from_str(value, "%Y-%m-%d") {
+        dt.into()
+    } else {
+        value.to_string().into()
+    };
+
+    match operator {
+        "eq" => query.filter(column.eq(sea_val)),
+        "neq" => query.filter(column.ne(sea_val)),
+        "contains" => query.filter(column.contains(value)), // Contains works only on strings
+        "gt" => query.filter(column.gt(sea_val)),
+        "lt" => query.filter(column.lt(sea_val)),
+        _ => query,
+    }
 }
 
 
@@ -561,18 +661,37 @@ pub async fn execute_scheduled_report(
             _ => (today, today) // Fallback
         };
 
-        // Determine date field based on report type to apply range to
-        let date_field = match report.tipo_reporte.as_str() {
-            "OrdenesTrabajo" | "Mantenimiento" => "created_at", // or fecha_ejecucion
-            "OrdenesCompra" => "fecha_solicitud",
-            "Depreciación" => "fecha_adquisicion",
-             _ => "created_at"
+        // Determine date field UI label based on report type
+        let date_label = match report.tipo_reporte.as_str() {
+            "Mantenimiento" => "Fecha Ejecución",
+            "Inventario" => "Fecha Última Compra",
+            "OrdenesCompra" => "Fecha Solicitud",
+            "Depreciación" => "Fecha Compra",
+            "OrdenesTrabajo" => "Fecha Inicio Real",
+             _ => "Fecha Ejecución"
         };
         
         if dynamic_range != "" {
-             filters_json["date_field"] = serde_json::Value::String(date_field.to_string());
-             filters_json["start_date"] = serde_json::Value::String(start_date.to_string());
-             filters_json["end_date"] = serde_json::Value::String(end_date.to_string());
+             let mut conditions = filters_json.get("conditions")
+                .and_then(|c| c.as_array())
+                .cloned()
+                .unwrap_or_default();
+             
+             // Add Start Date condition
+             conditions.push(serde_json::json!({
+                 "field": date_label,
+                 "operator": "gt",
+                 "value": start_date.to_string()
+             }));
+
+             // Add End Date condition
+             conditions.push(serde_json::json!({
+                 "field": date_label,
+                 "operator": "lt",
+                 "value": end_date.to_string()
+             }));
+
+             filters_json["conditions"] = serde_json::Value::Array(conditions);
         }
     }
 
