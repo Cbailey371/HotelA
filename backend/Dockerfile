@@ -13,9 +13,12 @@ COPY migration/Cargo.toml ./migration/
 # Ahora copiamos el resto del código
 COPY . .
 
+# Configuración para reducir uso de memoria durante el enlace
+ENV RUSTFLAGS="-C debuginfo=0 -C strip=symbols"
+ENV CARGO_INCREMENTAL=0
+
 # Compilamos en modo release. 
-# Si el servidor tiene 8GB, esto debería funcionar perfectamente.
-RUN cargo build --release
+RUN cargo build --release --verbose
 
 # Production stage
 FROM debian:bookworm-slim
