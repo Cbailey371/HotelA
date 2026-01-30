@@ -7,7 +7,7 @@ Esta guía detalla el proceso para subir el proyecto a producción utilizando Do
 Actualice el sistema e instale las dependencias base:
 ```bash
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl git apt-transport-https ca-certificates software-properties-common
+sudo apt install -y curl git apt-transport-https ca-certificates software-properties-common nano
 ```
 
 ### 2. Instalación de Docker y Docker Compose
