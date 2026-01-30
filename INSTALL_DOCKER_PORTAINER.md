@@ -64,6 +64,7 @@ Una vez dentro del entorno "local", verás el menú completo:
 2. Nombre: `hotela-app`.
 3. Build method: **Repository**.
 4. **Repository URL**: Pega la URL de tu repo de GitHub (ej: `https://github.com/tu-usuario/HotelA.git`).
+   *   *Nota*: Si el repositorio es **privado**, activa **Authentication** y usa un "Personal Access Token" de GitHub como contraseña.
 6. **Repository reference**: Escribe `refs/heads/main` (esto indica que use la rama principal).
 7. **Compose path**: Asegúrate de que diga `docker-compose.yml`.
 8. Activa **"Automatic updates"**: Esto hará que Portainer revise GitHub cada cierto tiempo y actualice la app si hay cambios.
