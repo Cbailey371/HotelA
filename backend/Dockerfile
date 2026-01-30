@@ -1,5 +1,6 @@
 # Build stage
-FROM rust:1.80-slim as builder
+# Build stage
+FROM rust:1.85-slim as builder
 
 WORKDIR /usr/src/app
 COPY . .
