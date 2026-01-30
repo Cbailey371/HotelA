@@ -1,38 +1,55 @@
-# Build stage - Usamos Rust 1.85 que es la versión oficial con soporte para 2024
-FROM rust:1.85-bookworm as builder
-
-# Instalar dependencias necesarias para enlazar (OpenSSL, etc.)
-RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
+# =========================
+# Build stage
+# =========================
+FROM rust:1.85-bookworm AS builder
 
 WORKDIR /usr/src/app
 
-# Copiamos primero los archivos de dependencias para aprovechar el cache de Docker
-COPY Cargo.toml Cargo.lock ./
-COPY migration/Cargo.toml ./migration/
+# Dependencias del sistema (CRÍTICAS) - Necesarias para compilar librerías de PDF y seguridad
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    ca-certificates \
+    libfreetype6-dev \
+    libfontconfig1-dev \
+    libharfbuzz-dev \
+    libpng-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Ahora copiamos el resto del código
+# Copiamos TODO el proyecto (asegura que Cargo.lock y dependencias estén sincronizadas)
 COPY . .
 
-# Configuración para reducir uso de memoria durante el enlace
-ENV RUSTFLAGS="-C debuginfo=0 -C strip=symbols"
+# Optimización de Memoria (Evita el Error 101 al reducir la carga del enlazador)
+ENV RUSTFLAGS="-C debuginfo=0"
 ENV CARGO_INCREMENTAL=0
 
-# Compilamos en modo release. 
+# Compilación en modo release con logs detallados
 RUN cargo build --release --verbose
 
-# Production stage
+# =========================
+# Runtime stage
+# =========================
 FROM debian:bookworm-slim
-
-RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/local/bin
 
-# Copiamos el binario final
+# Librerías de ejecución necesarias para el binario final
+RUN apt-get update && apt-get install -y \
+    libssl3 \
+    ca-certificates \
+    libfreetype6 \
+    libfontconfig1 \
+    libharfbuzz0b \
+    libpng16-16 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiamos el binario compilado
 COPY --from=builder /usr/src/app/target/release/backend ./hotel-backend
 
+# Variables de entorno por defecto
 ENV HOST=0.0.0.0
 ENV PORT=3000
-
 EXPOSE 3000
 
 CMD ["./hotel-backend"]
