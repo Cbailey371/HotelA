@@ -19,10 +19,13 @@ ALLOWED_ORIGINS="http://localhost"
 
 echo -e "${GREEN}--- Iniciando instalación nativa de HotelA ---${NC}"
 
-# 0. Asegurar permisos del directorio actual
-# Esto es crítico si el proyecto está en /opt o carpetas administradas por root
-echo -e "${GREEN}[0/7] Asegurando permisos del directorio del proyecto...${NC}"
+# 0. Asegurar permisos y limpieza (CRÍTICO)
+echo -e "${GREEN}[0/7] Limpiando y asegurando permisos...${NC}"
+# Forzar que el usuario actual sea el dueño de TODO en la carpeta del proyecto
 sudo chown -R $(whoami):$(id -gn) .
+
+# Eliminar carpetas que suelen causar errores de permisos si fueron creadas por root
+sudo rm -rf backend/target frontend/node_modules frontend/dist
 
 # 1. Actualizar sistema y dependencias de compilación
 echo -e "${GREEN}[1/7] Actualizando sistema y dependencias gráficas...${NC}"
