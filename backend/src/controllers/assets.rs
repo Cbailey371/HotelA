@@ -179,6 +179,8 @@ pub async fn create_asset(
     ).await;
 
     // Fetch documents to return in DTO
+    let documentos = crate::entities::activos_documentos::Entity::find()
+        .filter(crate::entities::activos_documentos::Column::ActivoId.eq(asset.id_equipo))
         .all(&db)
         .await?;
 

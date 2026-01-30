@@ -195,7 +195,7 @@ async fn main() {
                 )
 
                 .layer(axum::middleware::from_fn_with_state(shared_state.clone(), middleware::auth::auth_middleware))
-        )
+        );
     let allowed_origins_raw = std::env::var("ALLOWED_ORIGINS")
         .unwrap_or_else(|_| "http://localhost:5173,http://127.0.0.1:5173".into());
     
@@ -204,8 +204,7 @@ async fn main() {
         .map(|s| s.trim().parse().unwrap())
         .collect();
 
-    let app = Router::new()
-        // ... (el resto del router)
+    let app = app
         .nest_service("/uploads", ServeDir::new("uploads"))
         .layer(
             tower_http::cors::CorsLayer::new()

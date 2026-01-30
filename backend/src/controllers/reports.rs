@@ -103,7 +103,7 @@ pub async fn get_maintenance_roi(
         let maintenance_cost = mantenimiento_historial::Entity::find()
             .filter(mantenimiento_historial::Column::EquipoId.eq(asset.id_equipo))
             .all(&db)
-            .await?;
+            .await?
             .iter()
             .map(|h| h.costo_total.unwrap_or_default().to_string().parse::<f64>().unwrap_or(0.0))
             .sum::<f64>();
@@ -128,7 +128,7 @@ pub async fn get_maintenance_roi(
 
     results.sort_by(|a, b| b.cost_ratio_percentage.partial_cmp(&a.cost_ratio_percentage).unwrap_or(std::cmp::Ordering::Equal));
     
-    Ok(Json(results.into_iter().take(20).collect()))
+    Ok(Json(results.into_iter().take(20).collect::<Vec<_>>()))
 }
 
 #[derive(Serialize)]
