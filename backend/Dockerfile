@@ -17,9 +17,8 @@ RUN cargo fetch
 # Copiar el código fuente real
 COPY . .
 
-# Compilar en modo release con un solo hilo (-j 1)
-# Esto evita que el compilador consuma demasiada RAM y cause el error 101 (panic) en la VM
-RUN cargo build --release -j 1
+# Compilar en modo release
+RUN cargo build --release
 
 # Production stage
 FROM debian:bookworm-slim

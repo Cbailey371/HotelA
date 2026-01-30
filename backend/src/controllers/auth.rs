@@ -51,15 +51,16 @@ pub async fn login(
         .await?;
 
     let mut role_name = "USUARIO".to_string();
-    let has_super = user_roles.iter().any(|(_, r)| r.as_ref().map(|v| v.nombre_rol.as_str()) == Some("SUPER-ADMIN"));
-    let has_admin = user_roles.iter().any(|(_, r)| r.as_ref().map(|v| v.nombre_rol.as_str()) == Some("ADMIN"));
-
-    if has_super {
-        role_name = "SUPER-ADMIN".to_string();
-    } else if has_admin {
-        role_name = "ADMIN".to_string();
-    } else if let Some((_, Some(role))) = user_roles.first() {
-        role_name = role.nombre_rol.clone();
+    
+    for (_, role_opt) in &user_roles {
+        if let Some(role) = role_opt {
+            if role.nombre_rol == "SUPER-ADMIN" {
+                role_name = "SUPER-ADMIN".to_string();
+                break;
+            } else if role.nombre_rol == "ADMIN" && role_name != "SUPER-ADMIN" {
+                role_name = "ADMIN".to_string();
+            }
+        }
     }
 
     // 4. Generate Token
