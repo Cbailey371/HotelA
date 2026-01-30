@@ -129,40 +129,52 @@ sudo systemctl restart hotela-backend
 # 6. Compilar Frontend
 echo -e "${GREEN}[6/7] Compilando Frontend...${NC}"
 cd ../frontend
-npm install
+
+# Corregir permisos de carpetas de npm para el usuario actual
+sudo chown -R $(whoami) ~/.npm ~/.config 2>/dev/null || true
+
+# Ejecutar npm install con banderas de seguridad para evitar fallos de permisos
+npm install --unsafe-perm
 npm run build
 
 # 7. Configurar Nginx para servir el Frontend y Proxy al Backend
 echo -e "${GREEN}[7/7] Configurando Nginx...${NC}"
 FRONTEND_DIST=$(pwd)/dist
 
-sudo bash -c "cat <<EOF > /etc/nginx/sites-available/hotela
+# Escribir configuración a un archivo temporal y luego moverlo con sudo
+cat <<'EOF' > /tmp/hotela_nginx
 server {
     listen 80;
     server_name _;
 
-    root $FRONTEND_DIST;
+    root __FRONTEND_DIST__;
     index index.html;
 
     location / {
-        try_files \$uri \$uri/ /index.html;
+        try_files $uri $uri/ /index.html;
     }
 
     location /api/ {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
     }
 
     location /uploads/ {
-        alias $(pwd)/../backend/uploads/;
+        alias __BACKEND_UPLOADS__;
     }
 }
-EOF"
+EOF
 
+# Reemplazar los placeholders en el archivo temporal
+sed -i "s|__FRONTEND_DIST__|$FRONTEND_DIST|g" /tmp/hotela_nginx
+sed -i "s|__BACKEND_UPLOADS__|$(pwd)/../backend/uploads/|g" /tmp/hotela_nginx
+
+# Mover el archivo a sitios disponibles de nginx
+sudo mv /tmp/hotela_nginx /etc/nginx/sites-available/hotela
 sudo ln -sf /etc/nginx/sites-available/hotela /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl restart nginx
