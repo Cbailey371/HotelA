@@ -1,21 +1,25 @@
-# Build stage
-FROM rust:1.84-slim as builder
+# Build stage - Usamos el canal nightly que soporta 2024 nativamente
+FROM rustlang/rust:nightly-bookworm-slim as builder
 
-# Instalar dependencias esenciales
+# Instalar dependencias esenciales para compilación
 RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
 
-# Copiamos todo de una vez para evitar conflictos de workspace/ediciones
+# Copiar archivos de configuración para pre-compilar dependencias
+COPY Cargo.toml Cargo.lock ./
+COPY migration/Cargo.toml ./migration/
+
+# Copiar todo el código fuente
 COPY . .
 
-# Compilar en modo release (simplificado para evitar Error 101)
+# Compilar en modo release forzando el soporte de 2024
 RUN cargo build --release
 
 # Production stage
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y libssl3 ca-certificates curl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/local/bin
 
