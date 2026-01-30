@@ -38,10 +38,10 @@ Portainer te permitirá ver y actualizar la app desde tu navegador sin usar coma
 
 ```bash
 # Crear volumen para los datos de Portainer
-docker volume create portainer_data
+sudo docker volume create portainer_data
 
 # Instalar Portainer
-docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always \
+sudo docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v portainer_data:/data \
     portainer/portainer-ce:latest
@@ -53,18 +53,20 @@ docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always \
 1. Abre tu navegador y ve a: `https://TU_IP_VM:9443` (Acepta el certificado de seguridad).
 2. Crea tu usuario **Admin** y contraseña.
 3. Selecciona **"Get Started"** para conectar al entorno local de Docker.
+4. **IMPORTANTE**: En la pantalla principal ("Home"), haz clic en el entorno llamado **"local"** (el recuadro con el icono de Docker). Esto activará el menú completo de gestión en la izquierda.
 
 ---
 
 ### Paso 4: Desplegar la App desde GitHub (Portainer Stack)
-Esto es lo que permite que la app se actualice sola desde Git:
+Una vez dentro del entorno "local", verás el menú completo:
 
-1. En Portainer, ve a **Stacks** > **Add stack**.
+1. En el menú de la izquierda, selecciona **Stacks** y luego haz clic en el botón **+ Add stack**.
 2. Nombre: `hotela-app`.
 3. Build method: **Repository**.
 4. **Repository URL**: Pega la URL de tu repo de GitHub (ej: `https://github.com/tu-usuario/HotelA.git`).
-5. **Compose path**: Asegúrate de que diga `docker-compose.yml`.
-6. Activa **"Automatic updates"**: Esto hará que Portainer revise GitHub cada cierto tiempo y actualice la app si hay cambios.
+6. **Repository reference**: Escribe `refs/heads/main` (esto indica que use la rama principal).
+7. **Compose path**: Asegúrate de que diga `docker-compose.yml`.
+8. Activa **"Automatic updates"**: Esto hará que Portainer revise GitHub cada cierto tiempo y actualice la app si hay cambios.
 
 ---
 

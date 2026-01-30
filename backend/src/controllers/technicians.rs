@@ -1,8 +1,9 @@
-use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode};
-use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait};
+use axum::{Json, extract::{State, Path}, response::IntoResponse};
+use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, ColumnTrait};
 use serde::{Deserialize, Serialize};
 use crate::entities::tecnicos;
 use sea_orm::prelude::Decimal;
+use crate::utils::error::AppError;
 
 #[derive(Deserialize)]
 pub struct TechnicianRequest {
@@ -33,9 +34,8 @@ pub struct TechnicianDto {
 
 pub async fn get_technicians(
     State(db): State<DatabaseConnection>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let list = tecnicos::Entity::find().all(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+) -> Result<impl IntoResponse, AppError> {
+    let list = tecnicos::Entity::find().all(&db).await?;
 
     let dtos: Vec<TechnicianDto> = list.into_iter().map(|t| TechnicianDto {
         id: t.id_tecnico,
@@ -55,10 +55,8 @@ pub async fn get_technicians(
 pub async fn create_technician(
     State(db): State<DatabaseConnection>,
     Json(payload): Json<TechnicianRequest>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
-    // Generate sequential code
-    let next_code = crate::utils::code_generator::generate_next_code(&db, "tecnicos", "codigo_tecnico", "TEC-").await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+) -> Result<impl IntoResponse, AppError> {
+    let next_code = crate::utils::code_generator::generate_next_code(&db, "tecnicos", "codigo_tecnico", "TEC-").await?;
 
     let new_tech = tecnicos::ActiveModel {
         nombre: Set(payload.nombre),
@@ -74,8 +72,7 @@ pub async fn create_technician(
         ..Default::default()
     };
 
-    let t = new_tech.insert(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let t = new_tech.insert(&db).await?;
 
     Ok(Json(TechnicianDto {
         id: t.id_tecnico,
@@ -94,13 +91,13 @@ pub async fn update_technician(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
     Json(payload): Json<TechnicianRequest>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let mut tech: tecnicos::ActiveModel = tecnicos::Entity::find_by_id(id)
-        .one(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "Technician not found".to_string()))?
+) -> Result<impl IntoResponse, AppError> {
+    let tech: tecnicos::ActiveModel = tecnicos::Entity::find_by_id(id)
+        .one(&db).await?
+        .ok_or_else(|| AppError::NotFound("Technician not found".to_string()))?
         .into();
 
+    let mut tech = tech;
     tech.nombre = Set(payload.nombre);
     tech.apellido = Set(payload.apellido);
     tech.telefono = Set(payload.telefono);
@@ -112,8 +109,7 @@ pub async fn update_technician(
     if let Some(st) = payload.estado { tech.estado = Set(st); }
     tech.codigo_tecnico = Set(payload.codigo_tecnico);
 
-    let updated = tech.update(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let updated = tech.update(&db).await?;
 
     Ok(Json(TechnicianDto {
         id: updated.id_tecnico,
@@ -131,16 +127,15 @@ pub async fn update_technician(
 pub async fn delete_technician(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let mut tech: tecnicos::ActiveModel = tecnicos::Entity::find_by_id(id)
-        .one(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "Technician not found".to_string()))?
+) -> Result<impl IntoResponse, AppError> {
+    let tech: tecnicos::ActiveModel = tecnicos::Entity::find_by_id(id)
+        .one(&db).await?
+        .ok_or_else(|| AppError::NotFound("Technician not found".to_string()))?
         .into();
 
+    let mut tech = tech;
     tech.estado = Set("inactivo".to_string());
-    tech.update(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    tech.update(&db).await?;
 
     Ok(Json("Technician inactivated".to_string()))
 }

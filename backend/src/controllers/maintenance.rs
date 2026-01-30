@@ -1,10 +1,10 @@
-use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode};
+use axum::{Json, extract::{State, Path}, response::IntoResponse};
 use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QuerySelect, RelationTrait, JoinType, QueryOrder};
 use serde::{Deserialize, Serialize};
 use crate::entities::{mantenimiento_calendario, mantenimiento_historial, mantenimiento_tipo, activos_equipos, tecnicos, orden_trabajo, mantenimiento_repuestos};
 
 use chrono::NaiveDate;
-use crate::utils::code_generator::generate_next_code;
+use crate::utils::{code_generator::generate_next_code, error::AppError};
 use crate::controllers::inventory_transaction;
 use sea_orm::TransactionTrait;
 
@@ -51,8 +51,6 @@ pub struct ScheduleDto {
     pub responsable_id: Option<i32>,
 }
 
-
-
 #[derive(Deserialize)]
 pub struct ExecuteMaintenanceRequest {
     pub fecha_ejecucion: String,
@@ -64,27 +62,22 @@ pub struct ExecuteMaintenanceRequest {
 
 pub async fn get_schedules(
     State(db): State<DatabaseConnection>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let schedules = mantenimiento_calendario::Entity::find()
         .find_also_related(activos_equipos::Entity)
         .order_by_asc(mantenimiento_calendario::Column::IdMantenimientoCalendario)
         .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
-    // Fetch maintenance types separately to map names
     let m_types = mantenimiento_tipo::Entity::find()
         .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
-    // Fetch related OTs manually to avoid complex joins
     use std::collections::HashMap;
     let ots = orden_trabajo::Entity::find()
         .filter(orden_trabajo::Column::IdCalendario.is_not_null())
         .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     let ot_map: HashMap<i32, i32> = ots.into_iter()
         .filter_map(|ot| ot.id_calendario.map(|cal_id| (cal_id, ot.id_ot)))
@@ -122,17 +115,14 @@ pub async fn get_schedules(
         }
     }).collect();
 
-
-
     Ok(Json(dtos))
 }
 
 pub async fn create_schedule(
     State(db): State<DatabaseConnection>,
     Json(payload): Json<CreateScheduleRequest>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let codigo = generate_next_code(&db, "mantenimiento_calendario", "codigo_mantenimiento", "MNT-").await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+) -> Result<impl IntoResponse, AppError> {
+    let codigo = generate_next_code(&db, "mantenimiento_calendario", "codigo_mantenimiento", "MNT-").await?;
 
     let fecha = payload.fecha_programada.and_then(|f| NaiveDate::parse_from_str(&f, "%Y-%m-%d").ok());
     
@@ -141,7 +131,7 @@ pub async fn create_schedule(
 
     let new_schedule = mantenimiento_calendario::ActiveModel {
         equipo_id: Set(payload.equipo_id),
-        tipo_mantenimiento_id: Set(payload.tipo_mantenimiento_id.unwrap_or(1)), // Default to 1 if not sent
+        tipo_mantenimiento_id: Set(payload.tipo_mantenimiento_id.unwrap_or(1)),
         frecuencia: Set(payload.frecuencia),
         fecha_programada: Set(fecha),
         responsable_id: Set(payload.responsable_id),
@@ -159,8 +149,7 @@ pub async fn create_schedule(
         ..Default::default()
     };
 
-    let s = new_schedule.insert(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let s = new_schedule.insert(&db).await?;
 
     Ok(Json(s.id_mantenimiento_calendario))
 }
@@ -188,12 +177,11 @@ pub async fn update_schedule(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
     Json(payload): Json<UpdateScheduleRequest>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let schedule = mantenimiento_calendario::Entity::find_by_id(id)
         .one(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "Schedule not found".to_string()))?;
+        .await?
+        .ok_or_else(|| AppError::NotFound("Schedule not found".to_string()))?;
 
     let mut schedule_active: mantenimiento_calendario::ActiveModel = schedule.into();
 
@@ -221,8 +209,7 @@ pub async fn update_schedule(
     if let Some(v) = payload.responsable_interno_email { schedule_active.responsable_interno_email = Set(Some(v)); }
     if let Some(v) = payload.estado { schedule_active.estado = Set(Some(v)); }
 
-    schedule_active.update(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    schedule_active.update(&db).await?;
 
     Ok(Json("Schedule updated successfully"))
 }
@@ -230,11 +217,10 @@ pub async fn update_schedule(
 pub async fn delete_schedule(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     mantenimiento_calendario::Entity::delete_by_id(id)
         .exec(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     Ok(Json("Schedule deleted successfully"))
 }
@@ -243,23 +229,20 @@ pub async fn execute_maintenance(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
     Json(payload): Json<ExecuteMaintenanceRequest>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     use sea_orm::prelude::Decimal;
     use std::str::FromStr;
 
-    let txn = db.begin().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let txn = db.begin().await?;
 
-    // 1. Find schedule
     let schedule = mantenimiento_calendario::Entity::find_by_id(id)
         .one(&txn)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "Schedule not found".to_string()))?;
+        .await?
+        .ok_or_else(|| AppError::NotFound("Schedule not found".to_string()))?;
 
     let fecha_e = NaiveDate::parse_from_str(&payload.fecha_ejecucion, "%Y-%m-%d")
-        .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid date format".to_string()))?;
+        .map_err(|_| AppError::BadRequest("Invalid date format".to_string()))?;
 
-    // 2. Create history record
     let history = mantenimiento_historial::ActiveModel {
         calendario_id: Set(Some(schedule.id_mantenimiento_calendario)),
         equipo_id: Set(schedule.equipo_id),
@@ -274,33 +257,24 @@ pub async fn execute_maintenance(
         ..Default::default()
     };
 
-    history.insert(&txn).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    history.insert(&txn).await?;
 
-    // 3. Update schedule status
     let mut schedule_active: mantenimiento_calendario::ActiveModel = schedule.clone().into();
     schedule_active.estado = Set(Some("completado".to_string()));
     schedule_active.fecha_ultima_ejecucion = Set(Some(fecha_e));
-    schedule_active.update(&txn).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    schedule_active.update(&txn).await?;
 
-    // 4. Consume parts (Inventory Integration)
-    // Fetch parts planned for this maintenance
     let planned_parts = mantenimiento_repuestos::Entity::find()
         .filter(mantenimiento_repuestos::Column::MantenimientoId.eq(schedule.id_mantenimiento_calendario))
         .all(&txn)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     for part_usage in planned_parts {
         let qty_used = part_usage.cantidad_estimada.to_string().parse::<i32>().unwrap_or(0);
         
-        // Use custom transaction helper to consume reserved stock
-        // Use user 1 as placeholder for now
         inventory_transaction::consume_reserved_stock(&txn, part_usage.repuesto_id, qty_used, schedule.id_mantenimiento_calendario, 1)
-            .await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            .await?;
 
-        // 4.2 Record in historial_repuestos (Legacy compatibility)
         let usage_record = crate::entities::historial_repuestos::ActiveModel {
             repuesto_id: Set(part_usage.repuesto_id),
             equipo_id: Set(Some(schedule.equipo_id)),
@@ -311,11 +285,9 @@ pub async fn execute_maintenance(
             motivo: Set(Some("Ejecución de Mantenimiento".to_string())),
             ..Default::default()
         };
-        usage_record.insert(&txn).await
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        usage_record.insert(&txn).await?;
     }
 
-    // 5. If recurrent, schedule next
     if schedule.recurrente {
         let next_date = match schedule.frecuencia.as_deref() {
             Some("Mensual") => Some(fecha_e + chrono::Months::new(1)),
@@ -345,27 +317,25 @@ pub async fn execute_maintenance(
                 responsable_interno_email: Set(schedule.responsable_interno_email.clone()),
                 ..Default::default()
             };
-            next_schedule.insert(&txn).await
-                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            next_schedule.insert(&txn).await?;
         }
     }
 
-    txn.commit().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    txn.commit().await?;
 
     Ok(Json("Maintenance executed and recorded".to_string()))
 }
 
 pub async fn get_maintenance_types(
     State(db): State<DatabaseConnection>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let types = mantenimiento_tipo::Entity::find().all(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+) -> Result<impl IntoResponse, AppError> {
+    let types = mantenimiento_tipo::Entity::find().all(&db).await?;
     Ok(Json(types))
 }
 
 #[derive(Serialize)]
 pub struct MaintenancePartDto {
-    pub id: i32, // ID de la relación
+    pub id: i32,
     pub repuesto_id: i32,
     pub nombre: String,
     pub codigo: String,
@@ -383,19 +353,16 @@ pub struct AddPartRequest {
 pub async fn get_maintenance_parts(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let parts = mantenimiento_repuestos::Entity::find()
         .filter(mantenimiento_repuestos::Column::MantenimientoId.eq(id))
         .find_also_related(crate::entities::activos_repuestos::Entity)
         .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     let dtos: Vec<MaintenancePartDto> = parts.into_iter().map(|(mr, r)| {
         let repuesto = r.unwrap();
         use sea_orm::prelude::Decimal;
-        
-        // Helper to convert Decimal to f64
         let to_f64 = |d: Decimal| d.to_string().parse::<f64>().unwrap_or_default();
 
         MaintenancePartDto {
@@ -416,22 +383,20 @@ pub async fn add_maintenance_part(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
     Json(payload): Json<AddPartRequest>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     use sea_orm::prelude::Decimal;
     use std::str::FromStr;
 
-    let txn = db.begin().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let txn = db.begin().await?;
 
-    // Check if relation already exists
     let existing = mantenimiento_repuestos::Entity::find()
         .filter(mantenimiento_repuestos::Column::MantenimientoId.eq(id))
         .filter(mantenimiento_repuestos::Column::RepuestoId.eq(payload.repuesto_id))
         .one(&txn)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     let cantidad_decimal = Decimal::from_str(&payload.cantidad.to_string()).unwrap_or_default();
-    let cantidad_int = payload.cantidad as i32; // Assuming integer quantity for stock logic roughly
+    let cantidad_int = payload.cantidad as i32;
 
     if let Some(record) = existing {
         let old_qty_decimal = record.cantidad_estimada;
@@ -441,24 +406,21 @@ pub async fn add_maintenance_part(
 
         let mut active: mantenimiento_repuestos::ActiveModel = record.into();
         active.cantidad_estimada = Set(cantidad_decimal);
-        active.update(&txn).await
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        active.update(&txn).await?;
         
         if diff > 0 {
-             inventory_transaction::reserve_stock(&txn, payload.repuesto_id, diff, id, 1) // User 1 as placeholder system/admin
-                .await.map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+             inventory_transaction::reserve_stock(&txn, payload.repuesto_id, diff, id, 1)
+                .await.map_err(|e| AppError::BadRequest(e.to_string()))?;
         } else if diff < 0 {
              inventory_transaction::release_reservation(&txn, payload.repuesto_id, -diff, id, 1)
-                .await.map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+                .await.map_err(|e| AppError::BadRequest(e.to_string()))?;
         }
 
     } else {
-        // Fetch part to get current cost
         let part = crate::entities::activos_repuestos::Entity::find_by_id(payload.repuesto_id)
             .one(&txn)
-            .await
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-            .ok_or((StatusCode::NOT_FOUND, "Repuesto no encontrado".to_string()))?;
+            .await?
+            .ok_or_else(|| AppError::NotFound("Repuesto no encontrado".to_string()))?;
 
         let cost = part.costo_unitario.unwrap_or_default();
 
@@ -469,29 +431,27 @@ pub async fn add_maintenance_part(
             costo_estimado: Set(cost),
             ..Default::default()
         };
-        new_record.insert(&txn).await
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        new_record.insert(&txn).await?;
         
         inventory_transaction::reserve_stock(&txn, payload.repuesto_id, cantidad_int, id, 1)
-            .await.map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+            .await.map_err(|e| AppError::BadRequest(e.to_string()))?;
     }
 
-    txn.commit().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    txn.commit().await?;
 
     Ok(Json("Repuesto agregado y reservado".to_string()))
 }
 
 pub async fn remove_maintenance_part(
     State(db): State<DatabaseConnection>,
-    Path(id_relation): Path<i32>, // This is the relationship ID (mantenimiento_repuestos.id)
-) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let txn = db.begin().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    Path(id_relation): Path<i32>,
+) -> Result<impl IntoResponse, AppError> {
+    let txn = db.begin().await?;
 
     let record = mantenimiento_repuestos::Entity::find_by_id(id_relation)
         .one(&txn)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "Record not found".to_string()))?;
+        .await?
+        .ok_or_else(|| AppError::NotFound("Record not found".to_string()))?;
 
     let qty = record.cantidad_estimada.to_string().parse::<f64>().unwrap_or_default() as i32;
     let repuesto_id = record.repuesto_id;
@@ -499,13 +459,12 @@ pub async fn remove_maintenance_part(
 
     mantenimiento_repuestos::Entity::delete_by_id(id_relation)
         .exec(&txn)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     inventory_transaction::release_reservation(&txn, repuesto_id, qty, mantenimiento_id, 1)
-        .await.map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+        .await.map_err(|e| AppError::BadRequest(e.to_string()))?;
 
-    txn.commit().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    txn.commit().await?;
 
     Ok(Json("Repuesto removido y reserva liberada".to_string()))
 }

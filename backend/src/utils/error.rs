@@ -31,12 +31,12 @@ impl IntoResponse for AppError {
         let (status, message) = match self {
             AppError::Internal(msg) => {
                 tracing::error!("INTERNAL_ERROR: {}", msg);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Ha ocurrido un error interno en el servidor")
+                (StatusCode::INTERNAL_SERVER_ERROR, "Ha ocurrido un error interno en el servidor".to_string())
             }
-            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg.as_str()),
-            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg.as_str()),
-            AppError::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, msg.as_str()),
-            AppError::Forbidden(msg) => (StatusCode::FORBIDDEN, msg.as_str()),
+            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
+            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
+            AppError::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, msg),
+            AppError::Forbidden(msg) => (StatusCode::FORBIDDEN, msg),
         };
 
         let body = Json(json!({

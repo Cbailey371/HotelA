@@ -1,6 +1,7 @@
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
+    response::IntoResponse,
     Json,
 };
 use sea_orm::*;
@@ -8,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use chrono::{Utc, Datelike, NaiveDate, NaiveTime};
 use crate::entities::{prelude::*, *};
+use crate::utils::error::AppError;
 
 
 #[derive(Serialize)]
@@ -33,7 +35,7 @@ pub struct InventoryFilter {
 pub async fn get_inventory_status(
     State(db): State<DatabaseConnection>,
     Query(params): Query<InventoryFilter>,
-) -> Result<Json<InventoryStatusDto>, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let mut query = activos_repuestos::Entity::find();
 
     if let Some(cat) = params.category {
@@ -42,7 +44,7 @@ pub async fn get_inventory_status(
         }
     }
 
-    let all_parts = query.all(&db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let all_parts = query.all(&db).await?;
     
     let mut total_items = 0;
     let mut total_value = 0.0;
@@ -91,8 +93,8 @@ pub struct MaintenanceRoiDto {
 
 pub async fn get_maintenance_roi(
     State(db): State<DatabaseConnection>,
-) -> Result<Json<Vec<MaintenanceRoiDto>>, (StatusCode, String)> {
-    let assets = activos_equipos::Entity::find().all(&db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+) -> Result<impl IntoResponse, AppError> {
+    let assets = activos_equipos::Entity::find().all(&db).await?;
 
     let mut results = Vec::new();
 
@@ -101,8 +103,7 @@ pub async fn get_maintenance_roi(
         let maintenance_cost = mantenimiento_historial::Entity::find()
             .filter(mantenimiento_historial::Column::EquipoId.eq(asset.id_equipo))
             .all(&db)
-            .await
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+            .await?;
             .iter()
             .map(|h| h.costo_total.unwrap_or_default().to_string().parse::<f64>().unwrap_or(0.0))
             .sum::<f64>();
@@ -140,8 +141,8 @@ pub struct AssetDepreciationDto {
 
 pub async fn get_asset_depreciation(
     State(db): State<DatabaseConnection>,
-) -> Result<Json<AssetDepreciationDto>, (StatusCode, String)> {
-    let assets = activos_equipos::Entity::find().all(&db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+) -> Result<impl IntoResponse, AppError> {
+    let assets = activos_equipos::Entity::find().all(&db).await?;
 
     let mut total_purchase = 0.0;
     let mut total_current = 0.0;
@@ -187,12 +188,11 @@ pub async fn get_asset_depreciation(
 
 pub async fn get_scheduled_reports(
     State(db): State<DatabaseConnection>,
-) -> Result<Json<Vec<reportes_programados::Model>>, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let reports = reportes_programados::Entity::find()
         .order_by_desc(reportes_programados::Column::CreatedAt)
         .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
     Ok(Json(reports))
 }
 
@@ -211,7 +211,7 @@ pub struct CreateScheduledReportDto {
 pub async fn create_scheduled_report(
     State(db): State<DatabaseConnection>,
     Json(payload): Json<CreateScheduledReportDto>,
-) -> Result<Json<reportes_programados::Model>, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let new_report = reportes_programados::ActiveModel {
         nombre: Set(payload.nombre),
         tipo_reporte: Set(payload.tipo_reporte),
@@ -225,7 +225,7 @@ pub async fn create_scheduled_report(
         ..Default::default()
     };
 
-    let saved = new_report.insert(&db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let saved = new_report.insert(&db).await?;
     Ok(Json(saved))
 }
 
@@ -233,13 +233,12 @@ pub async fn update_scheduled_report(
     Path(id): Path<i32>,
     State(db): State<DatabaseConnection>,
     Json(payload): Json<CreateScheduledReportDto>,
-) -> Result<Json<reportes_programados::Model>, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let report: Option<reportes_programados::Model> = reportes_programados::Entity::find_by_id(id)
         .one(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
-    let report = report.ok_or((StatusCode::NOT_FOUND, "Report not found".to_string()))?;
+    let report = report.ok_or_else(|| AppError::NotFound("Report not found".to_string()))?;
     let mut report: reportes_programados::ActiveModel = report.into();
 
     report.nombre = Set(payload.nombre);
@@ -252,18 +251,17 @@ pub async fn update_scheduled_report(
     report.hora_ejecucion = Set(payload.hora_ejecucion);
     report.updated_at = Set(Some(Utc::now().into()));
 
-    let updated = report.update(&db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let updated = report.update(&db).await?;
     Ok(Json(updated))
 }
 
 pub async fn delete_scheduled_report(
     Path(id): Path<i32>,
     State(db): State<DatabaseConnection>,
-) -> Result<StatusCode, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     reportes_programados::Entity::delete_by_id(id)
         .exec(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -277,7 +275,7 @@ pub struct GenerateReportRequest {
 pub async fn generate_report(
     State(db): State<DatabaseConnection>,
     Json(payload): Json<GenerateReportRequest>,
-) -> Result<Json<Vec<serde_json::Value>>, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let results = generate_report_data(&db, payload.report_type.as_str(), payload.filters).await?;
     Ok(Json(results))
 }
@@ -287,7 +285,7 @@ async fn generate_report_data(
     db: &DatabaseConnection,
     report_type: &str,
     filters: Option<serde_json::Value>,
-) -> Result<Vec<serde_json::Value>, (StatusCode, String)> {
+) -> Result<Vec<serde_json::Value>, AppError> {
     let mut results = Vec::new();
     
     let empty_vec = Vec::new();
@@ -329,8 +327,7 @@ async fn generate_report_data(
                 query = apply_filter(query, column, operator, value);
             }
 
-            let parts = query.all(db).await
-                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            let parts = query.all(db).await?;
             
             for part in parts {
                 results.push(serde_json::json!({
@@ -373,8 +370,7 @@ async fn generate_report_data(
                 query = apply_filter(query, column, operator, value);
             }
 
-             let history = query.all(db).await
-                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+             let history = query.all(db).await?;
 
              for record in history {
                 results.push(serde_json::json!({
@@ -414,7 +410,7 @@ async fn generate_report_data(
                 query = apply_filter(query, column, operator, value);
             }
 
-            let assets = query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            let assets = query.all(db).await?;
             let now = Utc::now().naive_utc().date();
 
             for asset in assets {
@@ -471,7 +467,7 @@ async fn generate_report_data(
                 query = apply_filter(query, column, operator, value);
             }
 
-            let orders = query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            let orders = query.all(db).await?;
             for order in orders {
                 results.push(serde_json::json!({
                     "Código": order.codigo_compra.unwrap_or_default(),
@@ -507,7 +503,7 @@ async fn generate_report_data(
                 query = apply_filter(query, column, operator, value);
             }
 
-            let wos = query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            let wos = query.all(db).await?;
             for wo in wos {
                 results.push(serde_json::json!({
                     "Código": wo.codigo_ot.unwrap_or_default(),
@@ -556,7 +552,7 @@ async fn generate_report_data(
                 }
             }
 
-            let providers = prov_query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            let providers = prov_query.all(db).await?;
             for p in providers {
                 results.push(serde_json::json!({
                     "Tipo": "Proveedor",
@@ -569,7 +565,7 @@ async fn generate_report_data(
                 }));
             }
 
-            let techs = tech_query.all(db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            let techs = tech_query.all(db).await?;
             for t in techs {
                  results.push(serde_json::json!({
                     "Tipo": "Técnico",
@@ -582,7 +578,7 @@ async fn generate_report_data(
                 }));
             }
         },
-        _ => return Err((StatusCode::BAD_REQUEST, "Invalid report type".to_string())),
+        _ => return Err(AppError::BadRequest("Invalid report type".to_string())),
     }
 
     Ok(results)
@@ -618,13 +614,13 @@ where
 pub async fn execute_scheduled_report(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
-) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     // 1. Fetch Report
     let report = reportes_programados::Entity::find_by_id(id)
         .one(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
-        .ok_or((StatusCode::NOT_FOUND, "Report not found".to_string()))?;
+        .await?;
+
+    let report = report.ok_or_else(|| AppError::NotFound("Report not found".to_string()))?;
 
     // 2. Process Dynamic Filters
     let mut filters_json = report.filtros.clone().unwrap_or(serde_json::json!({}));

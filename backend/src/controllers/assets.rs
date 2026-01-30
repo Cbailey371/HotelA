@@ -153,8 +153,7 @@ pub async fn create_asset(
         ..Default::default()
     };
 
-    let asset = new_asset.insert(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let asset = new_asset.insert(&db).await?;
 
     // Insert documents if any
     if let Some(docs) = payload.documentos {
@@ -165,8 +164,7 @@ pub async fn create_asset(
                 url_archivo: Set(doc_req.url_archivo),
                 ..Default::default()
             };
-            new_doc.insert(&db).await
-                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            new_doc.insert(&db).await?;
         }
     }
 
@@ -181,11 +179,8 @@ pub async fn create_asset(
     ).await;
 
     // Fetch documents to return in DTO
-    let documentos = activos_documentos::Entity::find()
-        .filter(activos_documentos::Column::ActivoId.eq(asset.id_equipo))
         .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     Ok(Json(map_asset_to_dto_full(asset, vec![], vec![], documentos)))
 }
@@ -293,11 +288,7 @@ pub async fn get_asset_by_id(
         .filter(mantenimiento_historial::Column::EquipoId.eq(id))
         .find_also_related(tecnicos::Entity)
         .all(&db)
-        .await
-        .map_err(|e| {
-            tracing::error!("Error fetching maintenance history: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
-        })?;
+        .await?;
 
     tracing::info!("Maintenance history fetched (count: {}), fetching spare parts", history_items.len());
 
@@ -313,11 +304,7 @@ pub async fn get_asset_by_id(
         .filter(historial_repuestos::Column::EquipoId.eq(id))
         .find_also_related(activos_repuestos::Entity)
         .all(&db)
-        .await
-        .map_err(|e| {
-            tracing::error!("Error fetching spare parts history: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
-        })?;
+        .await?;
 
     tracing::info!("Spare parts history fetched (count: {}), fetching documents", spare_items.len());
 
@@ -331,11 +318,7 @@ pub async fn get_asset_by_id(
     let documentos = activos_documentos::Entity::find()
         .filter(activos_documentos::Column::ActivoId.eq(id))
         .all(&db)
-        .await
-        .map_err(|e| {
-            tracing::error!("Error fetching documents: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
-        })?;
+        .await?;
 
     tracing::info!("Documents fetched (count: {}), mapping to DTO", documentos.len());
 
@@ -376,14 +359,12 @@ pub async fn update_asset(
     if let Some(v) = payload.fecha_instalacion { asset.fecha_instalacion = Set(chrono::NaiveDate::parse_from_str(&v, "%Y-%m-%d").ok()); }
     if let Some(v) = payload.fecha_adquisicion { asset.fecha_adquisicion = Set(chrono::NaiveDate::parse_from_str(&v, "%Y-%m-%d").ok()); }
 
-    let updated = asset.update(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let updated = asset.update(&db).await?;
 
     let documentos = activos_documentos::Entity::find()
         .filter(activos_documentos::Column::ActivoId.eq(id))
         .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     Ok(Json(map_asset_to_dto_full(updated, vec![], vec![], documentos)))
 }
@@ -402,8 +383,7 @@ pub async fn delete_asset(
     asset.estado = Set(Some("baja".to_string()));
     let asset_nombre = asset.nombre_equipo.clone().unwrap();
 
-    asset.update(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    asset.update(&db).await?;
 
     audit::log_action(
         &db, 
@@ -425,23 +405,22 @@ pub async fn import_assets_csv(
 ) -> Result<impl IntoResponse, AppError> {
     let mut count = 0;
     
-    while let Some(field) = multipart.next_field().await.map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))? {
+    while let Some(field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
         if field.name() == Some("file") {
-            let data = field.bytes().await.map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+            let data = field.bytes().await.map_err(|e| AppError::BadRequest(e.to_string()))?;
             let mut reader = csv::Reader::from_reader(&data[..]);
             
             for result in reader.deserialize() {
-                let record: CreateAssetRequest = result.map_err(|e| (StatusCode::BAD_REQUEST, format!("CSV format error: {}", e)))?;
+                let record: CreateAssetRequest = result.map_err(|e| AppError::BadRequest(format!("CSV format error: {}", e)))?;
                 
                 // Buscar si existe por código para actualizar, o crear
                 // Buscar si existe por código para actualizar, o crear
-                let codigo_equipo = record.codigo_equipo.clone().ok_or((StatusCode::BAD_REQUEST, "Código de equipo es requerido".to_string()))?;
+                let codigo_equipo = record.codigo_equipo.clone().ok_or_else(|| AppError::BadRequest("Código de equipo es requerido".to_string()))?;
 
                 let existing = activos_equipos::Entity::find()
                     .filter(activos_equipos::Column::CodigoEquipo.eq(codigo_equipo.clone()))
                     .one(&db)
-                    .await
-                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+                    .await?;
 
                 let mut active_model = if let Some(asset) = existing {
                     asset.into()
@@ -474,9 +453,9 @@ pub async fn import_assets_csv(
                 active_model.fecha_adquisicion = Set(record.fecha_adquisicion.as_deref().and_then(|d| chrono::NaiveDate::parse_from_str(d, "%Y-%m-%d").ok()));
 
                 if active_model.id_equipo.is_set() {
-                    active_model.update(&db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+                    active_model.update(&db).await?;
                 } else {
-                    active_model.insert(&db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+                    active_model.insert(&db).await?;
                 }
                 count += 1;
             }
@@ -512,7 +491,7 @@ pub async fn add_asset_document(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
     Json(payload): Json<AddDocumentRequest>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let new_doc = activos_documentos::ActiveModel {
         activo_id: Set(id),
         nombre_archivo: Set(payload.nombre_archivo),
@@ -520,8 +499,7 @@ pub async fn add_asset_document(
         ..Default::default()
     };
 
-    let doc = new_doc.insert(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let doc = new_doc.insert(&db).await?;
 
     Ok(Json(doc))
 }
@@ -529,11 +507,10 @@ pub async fn add_asset_document(
 pub async fn delete_asset_document(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     activos_documentos::Entity::delete_by_id(id)
         .exec(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     Ok(Json("Documento eliminado".to_string()))
 }

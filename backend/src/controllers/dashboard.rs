@@ -1,9 +1,10 @@
-use axum::{Json, extract::State, response::IntoResponse, http::StatusCode};
-use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait, PaginatorTrait, QuerySelect, QueryOrder, Condition, DbErr};
+use axum::{Json, extract::State, response::IntoResponse};
+use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait, PaginatorTrait, QuerySelect, QueryOrder};
 use serde::Serialize;
 use crate::entities::{activos_equipos, mantenimiento_calendario, activos_repuestos, mantenimiento_historial, orden_compra_repuesto};
-use chrono::{Utc, Local, NaiveDate, Datelike};
+use chrono::{Local, NaiveDate, Datelike};
 use std::collections::HashMap;
+use crate::utils::error::AppError;
 
 #[derive(Serialize)]
 pub struct MonthlyCostDto {
@@ -35,27 +36,24 @@ pub struct DashboardStats {
 
 pub async fn get_stats(
     State(db): State<DatabaseConnection>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     // 1. Total Active Assets (KPI 1)
     let total_assets = activos_equipos::Entity::find()
         .filter(activos_equipos::Column::Estado.eq("activo"))
         .count(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     // 2. Active Maintenance (KPI 2 - En curso/Pendiente)
     let active_maintenance = mantenimiento_calendario::Entity::find()
         .filter(mantenimiento_calendario::Column::Estado.is_in(vec!["pendiente", "programado", "en_proceso"]))
         .count(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     // 3. Pending Purchase Orders (KPI 3 - Prioridad Alta/Pendientes)
     let pending_orders = orden_compra_repuesto::Entity::find()
         .filter(orden_compra_repuesto::Column::Estado.is_in(vec!["pendiente", "aprobada", "parcial"]))
         .count(&db)
-        .await
-        .map_err(|e: DbErr| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     // 4. Upcoming Events (7 days) (KPI 4)
     let today = Local::now().date_naive();
@@ -67,33 +65,27 @@ pub async fn get_stats(
         .filter(mantenimiento_calendario::Column::FechaProgramada.gte(today))
         .filter(mantenimiento_calendario::Column::FechaProgramada.lte(next_week))
         .count(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     // 5. Low Stock Items (Legacy but useful)
-    let parts = activos_repuestos::Entity::find().all(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let parts = activos_repuestos::Entity::find().all(&db).await?;
     
     let low_stock_items = parts.into_iter()
         .filter(|p| p.stock_actual.unwrap_or(0) <= p.stock_minimo.unwrap_or(0))
         .count() as u64;
 
     // 6. Monthly Costs (Last 6 months)
-    // Fetch history for last 180 days roughly
     let six_months_ago = today - chrono::Duration::days(180);
     let history = mantenimiento_historial::Entity::find()
         .filter(mantenimiento_historial::Column::FechaEjecucion.gte(six_months_ago))
         .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     let mut distinct_months: Vec<String> = Vec::new();
-    // Helper to get month name
     let month_names = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
     
-    // Initialize map with 0 for last 6 months to ensure continuity
     let mut costs_map: HashMap<String, f64> = HashMap::new();
-    let mut chronology: Vec<String> = Vec::new(); // To keep order
+    let mut chronology: Vec<String> = Vec::new();
 
     for i in (0..6).rev() {
         let d = today - chrono::Months::new(i);
@@ -106,12 +98,8 @@ pub async fn get_stats(
         if let Some(date) = h.fecha_ejecucion {
              let key = format!("{} {}", month_names[date.month0() as usize], date.year());
              if let Some(val) = costs_map.get_mut(&key) {
-                 // Sum labor cost + parts (if we had parts cost in history easily accessbile, 
-                 // currently history has cost_mano_obra directly, parts are likely separate or need simpler logic).
-                 // Use cost_mano_obra for now as proxy or total if it includes it.
-                 // In execute_maintenance we only set cost_mano_obra explicitly.
-                 let cost = h.costo_mano_obra.map(|d| d.to_string().parse::<f64>().unwrap_or(0.0)).unwrap_or(0.0);
-                 *val += cost;
+                  let cost = h.costo_mano_obra.map(|d| d.to_string().parse::<f64>().unwrap_or(0.0)).unwrap_or(0.0);
+                  *val += cost;
              }
         }
     }
@@ -123,7 +111,7 @@ pub async fn get_stats(
         })
         .collect();
 
-    // NEW: Daily Costs (Current Month) for clearer chart visualization
+    // NEW: Daily Costs (Current Month)
     let start_current_month = NaiveDate::from_ymd_opt(today.year(), today.month(), 1).unwrap();
     let end_current_month = if today.month() == 12 {
         NaiveDate::from_ymd_opt(today.year() + 1, 1, 1).unwrap()
@@ -135,16 +123,14 @@ pub async fn get_stats(
         .filter(mantenimiento_historial::Column::FechaEjecucion.gte(start_current_month))
         .filter(mantenimiento_historial::Column::FechaEjecucion.lt(end_current_month))
         .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     let mut daily_map: HashMap<String, f64> = HashMap::new();
-    // Pre-fill all days of month
     let mut current_d = start_current_month;
     let mut daily_keys: Vec<String> = Vec::new();
     
     while current_d < end_current_month {
-        let label = format!("{} {}", current_d.day(), month_names[current_d.month0() as usize]); // "1 Ene"
+        let label = format!("{} {}", current_d.day(), month_names[current_d.month0() as usize]);
         daily_map.insert(label.clone(), 0.0);
         daily_keys.push(label);
         current_d = current_d.succ_opt().unwrap();
@@ -161,7 +147,7 @@ pub async fn get_stats(
     }
 
     let daily_costs: Vec<MonthlyCostDto> = daily_keys.into_iter().map(|k| MonthlyCostDto {
-        month: k.clone(), // Reusing struct for simplicity, 'month' field holds label
+        month: k.clone(),
         amount: *daily_map.get(&k).unwrap_or(&0.0),
     }).collect();
 
@@ -174,8 +160,7 @@ pub async fn get_stats(
         .limit(5)
         .find_also_related(activos_equipos::Entity)
         .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     let upcoming_maintenance: Vec<UpcomingEventDto> = upcoming_tasks.into_iter().map(|(task, equipment)| {
         UpcomingEventDto {
@@ -187,8 +172,7 @@ pub async fn get_stats(
         }
     }).collect();
 
-    // 8. Calendar Events (Broader Range for Navigation)
-    // Fetch +/- 6 months from today to allow client-side navigation
+    // 8. Calendar Events
     let start_date = today - chrono::Months::new(6);
     let end_date = today + chrono::Months::new(6);
     
@@ -197,8 +181,7 @@ pub async fn get_stats(
         .filter(mantenimiento_calendario::Column::FechaProgramada.lte(end_date))
         .find_also_related(activos_equipos::Entity)
         .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     let calendar_events: Vec<UpcomingEventDto> = calendar_tasks.into_iter().map(|(task, equipment)| {
         UpcomingEventDto {

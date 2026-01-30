@@ -120,8 +120,7 @@ pub async fn create_part(
         ..Default::default()
     };
 
-    let p = new_part.insert(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let p = new_part.insert(&db).await?;
 
     Ok(Json(PartDto {
         id: p.id_repuesto,
@@ -176,8 +175,7 @@ pub async fn update_part(
     part.ubicacion_bodega_id = Set(payload.ubicacion_bodega_id);
     if let Some(v) = payload.estado { part.estado = Set(Some(v)); }
 
-    let updated = part.update(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let updated = part.update(&db).await?;
 
     Ok(Json(PartDto {
         id: updated.id_repuesto,
@@ -217,8 +215,7 @@ pub async fn delete_part(
     let part_nombre = part.nombre_repuesto.clone().unwrap();
     part.estado = Set(Some("baja".to_string()));
 
-    part.update(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    part.update(&db).await?;
 
     audit::log_action(
         &db, 
@@ -245,24 +242,23 @@ pub async fn upload_part_image(
         .ok_or_else(|| AppError::NotFound("Repuesto no encontrado".to_string()))?
         .into();
 
-    while let Some(field) = multipart.next_field().await.map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))? {
+    while let Some(field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
         let name = field.name().unwrap_or("file").to_string();
         
         if name == "file" {
             let file_name = field.file_name().unwrap_or("unknown").to_string();
-            let data = field.bytes().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            let data = field.bytes().await.map_err(|e| AppError::Internal(e.to_string()))?;
             
             let ext = std::path::Path::new(&file_name).extension().and_then(|s| s.to_str()).unwrap_or("png");
             let new_filename = format!("part_{}_{}.{}", id, Uuid::new_v4(), ext);
             let upload_path = format!("uploads/{}", new_filename);
 
             fs::write(&upload_path, data).await
-                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to save file: {}", e)))?;
+                .map_err(|e| AppError::Internal(format!("Failed to save file: {}", e)))?;
 
             let url = format!("/uploads/{}", new_filename);
             part.imagen = Set(Some(url.clone()));
-            part.update(&db).await
-                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+            part.update(&db).await?;
 
             return Ok(Json(json!({
                 "url": url
@@ -270,7 +266,7 @@ pub async fn upload_part_image(
         }
     }
 
-    Err((StatusCode::BAD_REQUEST, "No file provided".to_string()))
+    Err(AppError::BadRequest("No file provided".to_string()))
 }
 
 pub async fn get_inventory_template() -> impl IntoResponse {
@@ -289,18 +285,18 @@ pub async fn import_inventory_csv(
     State(db): State<DatabaseConnection>,
     Extension(claims): Extension<jwt::Claims>,
     mut multipart: Multipart,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let mut count = 0;
     
-    while let Some(field) = multipart.next_field().await.map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))? {
+    while let Some(field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
         if field.name() == Some("file") {
-            let data = field.bytes().await.map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+            let data = field.bytes().await.map_err(|e| AppError::BadRequest(e.to_string()))?;
             let mut reader = csv::Reader::from_reader(&data[..]);
             
             for result in reader.deserialize() {
                 // Reuse CreatePartRequest for CSV rows, assuming columns match struct fields (mapped by serde)
                 // Note: CSV headers must match struct field names exactly.
-                let record: CreatePartRequest = result.map_err(|e| (StatusCode::BAD_REQUEST, format!("CSV format error: {}", e)))?;
+                let record: CreatePartRequest = result.map_err(|e| AppError::BadRequest(format!("CSV format error: {}", e)))?;
                 
                 let new_part = activos_repuestos::ActiveModel {
                     codigo_repuesto: Set(format!("REP-{}", chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0) % 100000)), // Simple unique code gen
@@ -317,7 +313,7 @@ pub async fn import_inventory_csv(
                     ..Default::default()
                 };
 
-                new_part.insert(&db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+                new_part.insert(&db).await?;
                 count += 1;
             }
         }
@@ -348,13 +344,12 @@ pub struct UsageHistoryDto {
 pub async fn get_part_history(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<impl IntoResponse, AppError> {
     let history = historial_repuestos::Entity::find()
         .filter(historial_repuestos::Column::RepuestoId.eq(id))
         .find_also_related(activos_equipos::Entity)
         .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .await?;
 
     let dtos: Vec<UsageHistoryDto> = history.into_iter().map(|(h, e)| UsageHistoryDto {
         id: h.id_historial_repuesto,
