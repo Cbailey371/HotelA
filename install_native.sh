@@ -11,11 +11,11 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-# Configuración del Usuario (EDITABLE)
-DB_USER="admin_hoteladmin"
-DB_PASSWORD="tupassword"
-DB_NAME="dbadmin"
-JWT_SECRET="clave secreta"
+# Configuración del Usuario (EDITABLE LOCALMENTE EN EL SERVIDOR)
+DB_USER="nombre_usuario"
+DB_PASSWORD="tu_password_segura"
+DB_NAME="nombre_base_datos"
+JWT_SECRET="clave_secreta_aleatoria"
 ALLOWED_ORIGINS="http://localhost"
 
 echo -e "${GREEN}--- Iniciando instalación nativa de HotelA ---${NC}"
