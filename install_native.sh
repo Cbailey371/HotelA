@@ -107,6 +107,11 @@ EOF
 
 cargo build --release --bin backend
 
+# 5.1 Ejecutar Migraciones (CRÍTICO para crear tablas)
+echo -e "${GREEN}[5.1/7] Ejecutando migraciones de base de datos...${NC}"
+# Usamos el módulo de migración directamente para asegurar que las tablas se creen
+DATABASE_URL="postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME" cargo run --manifest-path migration/Cargo.toml -- up
+
 # Crear servicio de Systemd para el Backend
 echo -e "${GREEN}Configurando servicio de sistema para el Backend...${NC}"
 BACKEND_PATH=$(pwd)/target/release/backend
