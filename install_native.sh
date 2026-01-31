@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # =====================================================================
 # Script de Instalación Nativa Profesional para HotelA
