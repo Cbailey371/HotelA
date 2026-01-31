@@ -16,7 +16,7 @@ const AuditPage = () => {
 
     const fetchLogs = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/api/audit');
+            const res = await axios.get('/api/audit');
             setLogs(res.data);
         } catch (error) {
             console.error("Error fetching audit logs", error);

@@ -35,7 +35,7 @@ const PurchasesPage = () => {
     const fetchRequests = async () => {
         setLoading(true);
         try {
-            const res = await axios.get('http://localhost:3000/api/purchases/requests');
+            const res = await axios.get('/api/purchases/requests');
             setRequests(res.data);
         } catch (error) {
             console.error("Error fetching requests", error);
@@ -60,7 +60,7 @@ const PurchasesPage = () => {
                     repuesto_id: null // Assuming text-based requests for MVP
                 }))
             };
-            await axios.post('http://localhost:3000/api/purchases/requests', payload);
+            await axios.post('/api/purchases/requests', payload);
             setShowModal(false);
             setFormData({ motivo: '', prioridad: 'NORMAL', items: [{ descripcion: '', cantidad: 1 }] });
             setIsDirty(false);
@@ -75,7 +75,7 @@ const PurchasesPage = () => {
 
     const handleStatusChange = async (id, newStatus) => {
         try {
-            await axios.put(`http://localhost:3000/api/purchases/requests/${id}/status`, { estado: newStatus });
+            await axios.put(`/api/purchases/requests/${id}/status`, { estado: newStatus });
             fetchRequests();
             if (selectedRequest && selectedRequest.id === id) {
                 setSelectedRequest(prev => ({ ...prev, estado: newStatus }));
@@ -108,7 +108,7 @@ const PurchasesPage = () => {
 
         setGeneratingOrder(true);
         try {
-            await axios.post(`http://localhost:3000/api/purchases/orders/from-request/${selectedRequest.id}`, {
+            await axios.post(`/api/purchases/orders/from-request/${selectedRequest.id}`, {
                 proveedor_id: parseInt(selectedProviderId)
             });
             alert("Orden de Compra generada exitosamente");
@@ -126,7 +126,7 @@ const PurchasesPage = () => {
 
     const fetchRequestDetails = async (id) => {
         try {
-            const res = await axios.get(`http://localhost:3000/api/purchases/requests/${id}`);
+            const res = await axios.get(`/api/purchases/requests/${id}`);
             setSelectedRequest(res.data);
             setShowDetailModal(true);
         } catch (error) {

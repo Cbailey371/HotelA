@@ -938,7 +938,7 @@ const MaintenancePage = () => {
                                 >
                                     <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center flex-shrink-0 relative overflow-hidden border border-slate-200 dark:border-slate-700">
                                         {p.imagen ? (
-                                            <img src={`http://localhost:3000${p.imagen}`} alt={p.nombre} className="w-full h-full object-cover" />
+                                            <img src={`${p.imagen}`} alt={p.nombre} className="w-full h-full object-cover" />
                                         ) : (
                                             <Settings className="w-5 h-5 text-slate-400" />
                                         )}
@@ -1069,7 +1069,7 @@ const MaintenancePage = () => {
                                 >
                                     <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center flex-shrink-0 relative overflow-hidden border border-slate-200 dark:border-slate-700">
                                         {a.imagen_url ? (
-                                            <img src={`http://localhost:3000${a.imagen_url}`} alt={a.nombre} className="w-full h-full object-cover" />
+                                            <img src={`${a.imagen_url}`} alt={a.nombre} className="w-full h-full object-cover" />
                                         ) : (
                                             <Settings className="w-6 h-6 text-slate-400" />
                                         )}

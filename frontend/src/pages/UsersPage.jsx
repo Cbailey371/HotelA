@@ -37,7 +37,7 @@ const UsersPage = () => {
 
     const fetchRoles = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/api/roles');
+            const res = await axios.get('/api/roles');
             setRoles(res.data);
         } catch (error) {
             console.error("Error fetching roles", error);
@@ -48,7 +48,7 @@ const UsersPage = () => {
         setLoading(true);
         setError(null);
         try {
-            const res = await axios.get('http://localhost:3000/api/users');
+            const res = await axios.get('/api/users');
             setUsers(res.data);
         } catch (error) {
             console.error("Error fetching users", error);
@@ -84,7 +84,7 @@ const UsersPage = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("¿Estás seguro de que deseas eliminar este usuario?")) return;
         try {
-            await axios.delete(`http://localhost:3000/api/users/${id}`);
+            await axios.delete(`/api/users/${id}`);
             fetchUsers();
         } catch (error) {
             console.error("Error deleting user", error);
@@ -107,7 +107,7 @@ const UsersPage = () => {
                 estado: newStatus
             };
 
-            await axios.put(`http://localhost:3000/api/users/${user.id}`, payload);
+            await axios.put(`/api/users/${user.id}`, payload);
             fetchUsers();
         } catch (error) {
             console.error("Error toggling status", error);
@@ -124,9 +124,9 @@ const UsersPage = () => {
             };
 
             if (editingId) {
-                await axios.put(`http://localhost:3000/api/users/${editingId}`, payload);
+                await axios.put(`/api/users/${editingId}`, payload);
             } else {
-                await axios.post('http://localhost:3000/api/users', payload);
+                await axios.post('/api/users', payload);
             }
             setShowModal(false);
             resetForm();

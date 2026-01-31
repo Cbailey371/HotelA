@@ -60,7 +60,7 @@ const AssetsPage = () => {
 
     const fetchAssets = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/api/assets');
+            const res = await axios.get('/api/assets');
             setAssets(res.data);
         } catch (error) {
             console.error("Error fetching assets", error);
@@ -72,9 +72,9 @@ const AssetsPage = () => {
     const fetchConfig = async () => {
         try {
             const [catsRes, typesRes, locsRes] = await Promise.all([
-                axios.get('http://localhost:3000/api/asset-config/categories', { withCredentials: true }),
-                axios.get('http://localhost:3000/api/asset-config/types', { withCredentials: true }),
-                axios.get('http://localhost:3000/api/asset-config/locations', { withCredentials: true })
+                axios.get('/api/asset-config/categories', { withCredentials: true }),
+                axios.get('/api/asset-config/types', { withCredentials: true }),
+                axios.get('/api/asset-config/locations', { withCredentials: true })
             ]);
             setCategoriesList(catsRes.data);
             setTypesList(typesRes.data);
@@ -99,7 +99,7 @@ const AssetsPage = () => {
 
         setUploading(true);
         try {
-            const res = await axios.post('http://localhost:3000/api/upload', uploadData, {
+            const res = await axios.post('/api/upload', uploadData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setFormData(prev => ({ ...prev, imagen_url: res.data.url }));
@@ -163,7 +163,7 @@ const AssetsPage = () => {
         uploadData.append('file', file);
 
         try {
-            const res = await axios.post('http://localhost:3000/api/upload/manual', uploadData, {
+            const res = await axios.post('/api/upload/manual', uploadData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             const newDoc = {
@@ -173,7 +173,7 @@ const AssetsPage = () => {
 
             if (editingAsset) {
                 // If editing, save immediately to backend
-                const docRes = await axios.post(`http://localhost:3000/api/assets/${editingAsset.id}/documents`, newDoc);
+                const docRes = await axios.post(`/api/assets/${editingAsset.id}/documents`, newDoc);
                 setFormData(prev => ({
                     ...prev,
                     documentos: [...prev.documentos, docRes.data]
@@ -198,7 +198,7 @@ const AssetsPage = () => {
         try {
             if (doc.id) {
                 // If it has an ID, it's already in DB
-                await axios.delete(`http://localhost:3000/api/assets/documents/${doc.id}`);
+                await axios.delete(`/api/assets/documents/${doc.id}`);
             }
             // Remove from local state
             setFormData(prev => ({
@@ -214,7 +214,7 @@ const AssetsPage = () => {
 
     const fetchAssetById = async (id) => {
         try {
-            const response = await axios.get(`http://localhost:3000/api/assets/${id}`);
+            const response = await axios.get(`/api/assets/${id}`);
             const asset = response.data;
             setFormData({
                 ...initialFormState, // Start with initial state to clear any previous form data
@@ -286,9 +286,9 @@ const AssetsPage = () => {
 
         try {
             if (editingAsset) {
-                await axios.put(`http://localhost:3000/api/assets/${editingAsset.id}`, sanitizedData);
+                await axios.put(`/api/assets/${editingAsset.id}`, sanitizedData);
             } else {
-                await axios.post('http://localhost:3000/api/assets', sanitizedData);
+                await axios.post('/api/assets', sanitizedData);
             }
             setShowModal(false);
             setIsDirty(false);
@@ -304,7 +304,7 @@ const AssetsPage = () => {
     const handleDelete = async (id) => {
         if (window.confirm('¿Está seguro de dar de baja este activo?')) {
             try {
-                await axios.delete(`http://localhost:3000/api/assets/${id}`);
+                await axios.delete(`/api/assets/${id}`);
                 fetchAssets();
             } catch (error) {
                 console.error("Error deleting asset", error);
@@ -460,12 +460,12 @@ const AssetsPage = () => {
                                             <div
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    if (asset.imagen_url) setPreviewImage(`http://localhost:3000${asset.imagen_url}`);
+                                                    if (asset.imagen_url) setPreviewImage(`${asset.imagen_url}`);
                                                 }}
                                                 className={`w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 flex-shrink-0 group-hover:border-blue-400 transition-colors ${asset.imagen_url ? 'cursor-zoom-in' : ''}`}
                                             >
                                                 {asset.imagen_url ? (
-                                                    <img src={`http://localhost:3000${asset.imagen_url}`} alt={asset.nombre} className="w-full h-full object-cover" />
+                                                    <img src={`${asset.imagen_url}`} alt={asset.nombre} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <Box className="w-6 h-6 text-slate-400 group-hover:text-blue-500 transition-colors" />
                                                 )}
@@ -550,13 +550,13 @@ const AssetsPage = () => {
                         <div className="md:w-1/3 flex flex-col items-center">
                             <div
                                 onClick={() => {
-                                    if (formData.imagen_url) setPreviewImage(`http://localhost:3000${formData.imagen_url}`);
+                                    if (formData.imagen_url) setPreviewImage(`${formData.imagen_url}`);
                                 }}
                                 className={`w-full aspect-square bg-slate-100 dark:bg-[#0f172a] rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center overflow-hidden relative group transition-colors ${formData.imagen_url ? 'cursor-zoom-in border-solid hover:border-blue-500' : 'cursor-pointer hover:border-blue-500'}`}
                             >
                                 {formData.imagen_url ? (
                                     <>
-                                        <img src={`http://localhost:3000${formData.imagen_url}`} alt="Preview" className="w-full h-full object-cover" />
+                                        <img src={`${formData.imagen_url}`} alt="Preview" className="w-full h-full object-cover" />
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all">
                                             <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100" />
                                         </div>
@@ -720,7 +720,7 @@ const AssetsPage = () => {
                                                             <FileText className="w-4 h-4" />
                                                         </div>
                                                         <a
-                                                            href={`http://localhost:3000${doc.url_archivo}`}
+                                                            href={`${doc.url_archivo}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 truncate max-w-[200px]"

@@ -394,12 +394,12 @@ const InventoryPage = () => {
                                         <div
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (p.imagen) setPreviewImage(`http://localhost:3000${p.imagen}`);
+                                                if (p.imagen) setPreviewImage(`${p.imagen}`);
                                             }}
                                             className={`w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-600 flex-shrink-0 group-hover:border-blue-400 transition-colors ${p.imagen ? 'cursor-zoom-in' : ''}`}
                                         >
                                             {p.imagen ? (
-                                                <img src={`http://localhost:3000${p.imagen}`} alt={p.nombre} className="w-full h-full object-cover" />
+                                                <img src={`${p.imagen}`} alt={p.nombre} className="w-full h-full object-cover" />
                                             ) : (
                                                 <Package className="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors" />
                                             )}
@@ -559,13 +559,13 @@ const InventoryPage = () => {
                             {formData.imagen_preview || formData.imagen ? (
                                 <div
                                     onClick={() => {
-                                        const imgUrl = formData.imagen_preview || `http://localhost:3000${formData.imagen}`;
+                                        const imgUrl = formData.imagen_preview || `${formData.imagen}`;
                                         setPreviewImage(imgUrl);
                                     }}
                                     className="relative w-32 h-32 rounded-lg overflow-hidden border border-slate-200 cursor-zoom-in group"
                                 >
                                     <img
-                                        src={formData.imagen_preview || `http://localhost:3000${formData.imagen}`}
+                                        src={formData.imagen_preview || `${formData.imagen}`}
                                         alt="Preview"
                                         className="w-full h-full object-cover"
                                     />

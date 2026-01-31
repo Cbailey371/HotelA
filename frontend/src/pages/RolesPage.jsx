@@ -25,8 +25,8 @@ const RolesPage = () => {
         setLoading(true);
         try {
             const [rolesRes, permsRes] = await Promise.all([
-                axios.get('http://localhost:3000/api/roles'),
-                axios.get('http://localhost:3000/api/permissions')
+                axios.get('/api/roles'),
+                axios.get('/api/permissions')
             ]);
             setRoles(rolesRes.data);
             setPermissions(permsRes.data);
@@ -60,7 +60,7 @@ const RolesPage = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("¿Eliminar este rol? Los usuarios asignados podrían perder acceso.")) return;
         try {
-            await axios.delete(`http://localhost:3000/api/roles/${id}`);
+            await axios.delete(`/api/roles/${id}`);
             fetchData();
         } catch (error) {
             console.error(error);
@@ -72,9 +72,9 @@ const RolesPage = () => {
         if (e) e.preventDefault();
         try {
             if (editingRole) {
-                await axios.put(`http://localhost:3000/api/roles/${editingRole.id}`, formData);
+                await axios.put(`/api/roles/${editingRole.id}`, formData);
             } else {
-                await axios.post('http://localhost:3000/api/roles', formData);
+                await axios.post('/api/roles', formData);
             }
             setShowModal(false);
             setIsDirty(false);

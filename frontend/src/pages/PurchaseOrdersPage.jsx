@@ -611,7 +611,7 @@ const PurchaseOrdersPage = () => {
                                     <div className="flex items-center gap-4">
                                         <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-700">
                                             {part.imagen ? (
-                                                <img src={`http://localhost:3000${part.imagen}`} alt="" className="w-10 h-10 object-cover rounded shadow-sm" />
+                                                <img src={`${part.imagen}`} alt="" className="w-10 h-10 object-cover rounded shadow-sm" />
                                             ) : (
                                                 <Package className="w-6 h-6 text-slate-400" />
                                             )}

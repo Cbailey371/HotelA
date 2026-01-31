@@ -20,7 +20,7 @@ const AssetDetailPage = () => {
 
     const fetchAssetDetail = async () => {
         try {
-            const res = await axios.get(`http://localhost:3000/api/assets/${id}`);
+            const res = await axios.get(`/api/assets/${id}`);
             setAsset(res.data);
         } catch (error) {
             console.error("Error fetching asset details", error);
@@ -75,7 +75,7 @@ const AssetDetailPage = () => {
                 <div className="lg:w-1/3 aspect-square lg:aspect-auto bg-slate-50 dark:bg-[#0f172a] relative border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-800 p-8 flex items-center justify-center">
                     {asset.imagen_url ? (
                         <img
-                            src={`http://localhost:3000${asset.imagen_url}`}
+                            src={`${asset.imagen_url}`}
                             alt={asset.nombre}
                             className="w-full h-full object-contain rounded-xl shadow-2xl"
                         />
