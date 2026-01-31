@@ -89,15 +89,16 @@ sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
 # 5. Compilar Backend
 echo -e "${GREEN}[5/7] Compilando Backend...${NC}"
 cd backend
-if [ ! -f .env ]; then
-    cp .env.example .env
-fi
+
+# Obtener la IP del servidor para el CORS
+SERVER_IP=$(hostname -I | awk '{print $1}')
 
 # Configurar archivo .env de forma dinámica
+# Permitimos tanto localhost como la IP detectada
 cat <<EOF > .env
 DATABASE_URL="postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME"
 JWT_SECRET="$JWT_SECRET"
-ALLOWED_ORIGINS="$ALLOWED_ORIGINS"
+ALLOWED_ORIGINS="$ALLOWED_ORIGINS,http://$SERVER_IP,http://localhost"
 PORT=3000
 HOST=0.0.0.0
 RUST_LOG=info
