@@ -95,11 +95,11 @@ cd backend
 SERVER_IP=$(hostname -I | awk '{print $1}')
 
 # Configurar archivo .env de forma dinámica
-# Permitimos tanto localhost como la IP detectada
+# Usamos comillas simples en el cat para evitar expansión accidental
 cat <<EOF > .env
-DATABASE_URL="postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME"
-JWT_SECRET="$JWT_SECRET"
-ALLOWED_ORIGINS="$ALLOWED_ORIGINS,http://$SERVER_IP,http://localhost"
+DATABASE_URL='postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME'
+JWT_SECRET='$JWT_SECRET'
+ALLOWED_ORIGINS='$ALLOWED_ORIGINS,http://$SERVER_IP,http://localhost'
 PORT=3000
 HOST=0.0.0.0
 RUST_LOG=info
@@ -116,26 +116,29 @@ DATABASE_URL="postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME" cargo 
 echo -e "${GREEN}Configurando servicio de sistema para el Backend...${NC}"
 BACKEND_PATH=$(pwd)/target/release/backend
 USER_NAME=$(whoami)
+WORKING_DIR=$(pwd)
 
-sudo bash -c "cat <<EOF > /etc/systemd/system/hotela-backend.service
-[Unit]
+# Generar archivo de servicio en buffer para evitar problemas de expansión con sudo
+SERVICE_CONTENT="[Unit]
 Description=HotelA Backend Service
 After=network.target postgresql.service
 
 [Service]
 Type=simple
 User=$USER_NAME
-WorkingDirectory=$(pwd)
+WorkingDirectory=$WORKING_DIR
 ExecStart=$BACKEND_PATH
 Restart=always
-Environment=DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME
-Environment=JWT_SECRET=$JWT_SECRET
-Environment=ALLOWED_ORIGINS=$ALLOWED_ORIGINS
-Environment=RUST_LOG=info
+Environment='DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME'
+Environment='JWT_SECRET=$JWT_SECRET'
+Environment='ALLOWED_ORIGINS=$ALLOWED_ORIGINS,http://$SERVER_IP,http://localhost'
+Environment='RUST_LOG=info'
 
 [Install]
-WantedBy=multi-user.target
-EOF"
+WantedBy=multi-user.target"
+
+echo "$SERVICE_CONTENT" > /tmp/hotela-backend.service
+sudo mv /tmp/hotela-backend.service /etc/systemd/system/hotela-backend.service
 
 sudo systemctl daemon-reload
 sudo systemctl enable hotela-backend
