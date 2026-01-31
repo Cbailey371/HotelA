@@ -148,6 +148,9 @@ sudo systemctl restart hotela-backend
 echo -e "${GREEN}[6/7] Compilando Frontend...${NC}"
 cd ../frontend
 
+# Eliminar archivos .env que puedan forzar URLs de localhost (CRÍTICO para CORS)
+rm -f .env
+
 # Corregir permisos de carpetas de npm para el usuario actual
 sudo chown -R $(whoami) ~/.npm ~/.config 2>/dev/null || true
 
