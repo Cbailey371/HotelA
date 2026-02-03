@@ -235,6 +235,7 @@ const ProvidersPage = () => {
                             </select>
                         </div>
                         <div>
+                            <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Contacto</label>
                             <input name="contacto_nombre" value={formData.contacto_nombre} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" placeholder="Nombre Contacto" />
                         </div>
                     </div>
