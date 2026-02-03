@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ZoomIn, Image as ImageIcon, Upload, FileText, X } from 'lucide-react';
 import Modal from './Modal';
+import DatePicker from './DatePicker';
 
 const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
     const [loading, setLoading] = useState(false);
@@ -394,12 +395,20 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
                                 <input name="numero_chasis" value={formData.numero_chasis} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
                             </div>
                             <div className="col-span-1">
-                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">F. Adquisición</label>
-                                <input type="date" name="fecha_adquisicion" value={formData.fecha_adquisicion} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                                <DatePicker
+                                    label="F. Adquisición"
+                                    name="fecha_adquisicion"
+                                    value={formData.fecha_adquisicion}
+                                    onChange={handleInputChange}
+                                />
                             </div>
                             <div className="col-span-1">
-                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">F. Instalación</label>
-                                <input type="date" name="fecha_instalacion" value={formData.fecha_instalacion} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                                <DatePicker
+                                    label="F. Instalación"
+                                    name="fecha_instalacion"
+                                    value={formData.fecha_instalacion}
+                                    onChange={handleInputChange}
+                                />
                             </div>
                             <div className="col-span-2">
                                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Ubicación Detallada</label>
