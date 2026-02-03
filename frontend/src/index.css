@@ -6,15 +6,11 @@
     filter: invert(1);
   }
 
-  /* Hide number input spinners (Chrome, Safari, Edge, Opera) */
-  input[type="number"]::-webkit-outer-spin-button,
-  input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  /* Hide number input spinners (Firefox) */
-  input[type="number"] {
-    -moz-appearance: textfield;
+  /* Force number input spinners to be always visible (Chrome, Safari, Edge, Opera) */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    display: block;
+    cursor: pointer;
   }
 }
