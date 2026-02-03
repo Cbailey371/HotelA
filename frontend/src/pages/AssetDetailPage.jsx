@@ -6,8 +6,8 @@ import {
     ShieldCheck, Activity, Hash, Clock, AlertTriangle, FileText,
     ChevronRight, ExternalLink, Upload, Download, Edit2, Info
 } from 'lucide-react';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import AssetFormModal from '../components/AssetFormModal';
 
 const AssetDetailPage = () => {
@@ -95,7 +95,7 @@ const AssetDetailPage = () => {
             ['Último Mantenimiento', lastMaintenance ? `${lastMaintenance.fecha} (${lastMaintenance.tecnico})` : 'Sin registros']
         ];
 
-        doc.autoTable({
+        autoTable(doc, {
             startY: 50,
             head: [['Atributo', 'Valor', 'Atributo', 'Valor']],
             body: details,
@@ -113,7 +113,7 @@ const AssetDetailPage = () => {
                 h.tarea || h.observaciones
             ]);
 
-            doc.autoTable({
+            autoTable(doc, {
                 startY: doc.lastAutoTable.finalY + 20,
                 head: [['Fecha', 'Técnico', 'Tarea/Observaciones']],
                 body: historyRows,
@@ -132,7 +132,7 @@ const AssetDetailPage = () => {
                 r.cantidad
             ]);
 
-            doc.autoTable({
+            autoTable(doc, {
                 startY: doc.lastAutoTable.finalY + 20,
                 head: [['Fecha', 'Repuesto', 'Cantidad']],
                 body: partsRows,
