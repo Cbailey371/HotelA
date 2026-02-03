@@ -16,6 +16,7 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
     const [categoriesList, setCategoriesList] = useState([]);
     const [typesList, setTypesList] = useState([]);
     const [locationsList, setLocationsList] = useState([]);
+    const [brandsList, setBrandsList] = useState([]);
 
     const initialFormState = {
         codigo_equipo: '',
@@ -74,14 +75,16 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
 
     const fetchConfig = async () => {
         try {
-            const [catsRes, typesRes, locsRes] = await Promise.all([
+            const [catsRes, typesRes, locsRes, brandsRes] = await Promise.all([
                 axios.get('/api/asset-config/categories'),
                 axios.get('/api/asset-config/types'),
-                axios.get('/api/asset-config/locations')
+                axios.get('/api/asset-config/locations'),
+                axios.get('/api/settings/brands')
             ]);
             setCategoriesList(catsRes.data);
             setTypesList(typesRes.data);
             setLocationsList(locsRes.data);
+            setBrandsList(brandsRes.data);
         } catch (error) {
             console.error("Error fetching config", error);
         }
@@ -337,7 +340,12 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
                             </div>
                             <div className="col-span-1">
                                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Marca</label>
-                                <input name="marca" value={formData.marca} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                                <select name="marca" value={formData.marca} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
+                                    <option value="">Seleccionar...</option>
+                                    {brandsList.map(item => (
+                                        <option key={item.id} value={item.nombre}>{item.nombre}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="col-span-1">
                                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Modelo</label>
