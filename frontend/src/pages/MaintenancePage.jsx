@@ -55,7 +55,10 @@ const MaintenancePage = () => {
         tecnico_id: '',
         tarea_tipo_id: '',
         recurrente: false,
-        responsable_interno_email: ''
+        responsable_interno_email: '',
+        hora: '08',
+        minutos: '00',
+        periodo: 'AM'
     });
 
     const [executeForm, setExecuteForm] = useState({
@@ -182,6 +185,16 @@ const MaintenancePage = () => {
             else if (sanitizedData[field] !== null) sanitizedData[field] = parseFloat(sanitizedData[field]);
         });
 
+        // Append time to observations
+        const timeStr = `${scheduleForm.hora}:${scheduleForm.minutos} ${scheduleForm.periodo}`;
+        const obs = sanitizedData.observaciones || '';
+        sanitizedData.observaciones = `${obs} [Hora: ${timeStr}]`.trim();
+
+        // Remove temp fields
+        delete sanitizedData.hora;
+        delete sanitizedData.minutos;
+        delete sanitizedData.periodo;
+
         try {
             if (editingId) {
                 await api.put(`/maintenance/schedule/${editingId}`, sanitizedData);
@@ -269,13 +282,29 @@ const MaintenancePage = () => {
     const openScheduleModal = async (schedule = null) => {
         if (schedule) {
             setEditingId(schedule.id);
+
+            // Parse time from observations
+            let obs = schedule.observaciones || '';
+            let hora = '08';
+            let minutos = '00';
+            let periodo = 'AM';
+
+            const timeMatch = obs.match(/\[Hora: (\d{2}):(\d{2}) (AM|PM)\]/);
+            if (timeMatch) {
+                hora = timeMatch[1];
+                minutos = timeMatch[2];
+                periodo = timeMatch[3];
+                // Remove the tag from display
+                obs = obs.replace(timeMatch[0], '').trim();
+            }
+
             setScheduleForm({
                 equipo_id: schedule.equipo_id,
                 tipo_mantenimiento_id: schedule.tipo_mantenimiento_id,
                 frecuencia: schedule.frecuencia || 'Mensual',
                 fecha_programada: schedule.fecha ? new Date(schedule.fecha).toISOString().split('T')[0] : '',
                 responsable_id: schedule.responsable_id || '',
-                observaciones: schedule.observaciones || '',
+                observaciones: obs,
                 prioridad: schedule.prioridad || 'media',
                 costo_estimado: schedule.costo_estimado || 0,
                 dias_anticipacion: schedule.dias_anticipacion || 0,
@@ -284,7 +313,8 @@ const MaintenancePage = () => {
                 tarea_tipo_id: schedule.tarea_tipo_id || '',
                 recurrente: schedule.recurrente || false,
                 responsable_interno_email: schedule.responsable_interno_email || '',
-                estado: schedule.estado
+                estado: schedule.estado,
+                hora, minutos, periodo
             });
             await fetchMaintenanceParts(schedule.id);
         } else {
@@ -306,7 +336,10 @@ const MaintenancePage = () => {
                 tarea_tipo_id: '',
                 recurrente: false,
                 responsable_interno_email: '',
-                estado: 'programado'
+                estado: 'programado',
+                hora: '08',
+                minutos: '00',
+                periodo: 'AM'
             });
         }
         setIsDirty(false);
@@ -575,15 +608,48 @@ const MaintenancePage = () => {
                                 {taskTypes.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
                             </select>
                         </div>
-                        <div className="col-span-1">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Fecha Planeada</label>
-                            <input
-                                required
-                                type="date"
-                                value={scheduleForm.fecha_programada}
-                                onChange={(e) => handleScheduleChange('fecha_programada', e.target.value)}
-                                className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
-                            />
+                        <div className="col-span-1 grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Fecha Planeada</label>
+                                <input
+                                    required
+                                    type="date"
+                                    value={scheduleForm.fecha_programada}
+                                    onChange={(e) => handleScheduleChange('fecha_programada', e.target.value)}
+                                    className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Hora (12h)</label>
+                                <div className="flex gap-1">
+                                    <select
+                                        value={scheduleForm.hora}
+                                        onChange={(e) => handleScheduleChange('hora', e.target.value)}
+                                        className="bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none flex-1 text-center appearance-none"
+                                    >
+                                        {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).map(h => (
+                                            <option key={h} value={h}>{h}</option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        value={scheduleForm.minutos}
+                                        onChange={(e) => handleScheduleChange('minutos', e.target.value)}
+                                        className="bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none flex-1 text-center appearance-none"
+                                    >
+                                        {['00', '15', '30', '45'].map(m => (
+                                            <option key={m} value={m}>{m}</option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        value={scheduleForm.periodo}
+                                        onChange={(e) => handleScheduleChange('periodo', e.target.value)}
+                                        className="bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none flex-1 text-center appearance-none"
+                                    >
+                                        <option value="AM">AM</option>
+                                        <option value="PM">PM</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                         <div className="col-span-1">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Costo Estimado ($)</label>
