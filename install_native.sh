@@ -107,7 +107,11 @@ EOF
 
 cargo build --release --bin backend
 
-# 5.1 Ejecutar Migraciones (CRÍTICO para crear tablas)
+# 5.1 Asegurar directorio de uploads
+mkdir -p uploads
+chmod 755 uploads
+
+# 5.2 Ejecutar Migraciones (CRÍTICO para crear tablas)
 echo -e "${GREEN}[5.1/7] Ejecutando migraciones de base de datos...${NC}"
 # Usamos el módulo de migración directamente para asegurar que las tablas se creen
 DATABASE_URL="postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME" cargo run --manifest-path migration/Cargo.toml -- up
