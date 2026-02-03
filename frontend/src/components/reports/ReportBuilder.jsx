@@ -18,6 +18,7 @@ const ReportBuilder = ({ reportType, onBack, categories }) => {
     const REPORT_COLUMNS = {
         'Inventario': ['SKU', 'Nombre', 'Categoría', 'Stock Actual', 'Stock Mínimo', 'Costo Unitario', 'Ubicación', 'Fecha Última Compra', 'Fecha Vencimiento'],
         'Mantenimiento': ['ID', 'Fecha Ejecución', 'Fecha Inicio', 'Fecha Fin', 'Técnico', 'Descripción', 'Resultado', 'Costo Total', 'Observaciones', 'Fecha Creación'],
+        'PlanMantenimiento': ['ID', 'Activo', 'Fecha Programada', 'Próxima Fecha', 'Frecuencia', 'Estado', 'Prioridad', 'Costo Estimado', 'Observaciones'],
         'Depreciación': ['Activo', 'Modelo', 'Serie', 'Fecha Compra', 'Fin Vida Útil', 'Valor Compra', 'Valor Actual', 'Depreciación Acumulada'],
         'OrdenesCompra': ['Código', 'Estado', 'Fecha Solicitud', 'Fecha Entrega', 'Recepción', 'Total', 'Notas', 'Creado'],
         'OrdenesTrabajo': ['Código', 'Prioridad', 'Estado', 'Costo Estimado', 'Activo ID', 'Fecha Inicio Real', 'Creado', 'Observaciones'],
@@ -49,6 +50,9 @@ const ReportBuilder = ({ reportType, onBack, categories }) => {
             case 'Mantenimiento': return [
                 { value: 'fecha_ejecucion', label: 'Fecha Ejecución' },
                 { value: 'created_at', label: 'Fecha Creación' }
+            ];
+            case 'PlanMantenimiento': return [
+                { value: 'fecha_programada', label: 'Fecha Programada' }
             ];
             case 'OrdenesCompra': return [
                 { value: 'fecha_solicitud', label: 'Fecha Solicitud' },

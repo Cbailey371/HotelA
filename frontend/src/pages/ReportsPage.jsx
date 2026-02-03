@@ -288,7 +288,8 @@ const ReportsPage = () => {
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tipo</label>
                             <select className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 theme-input" value={newReport.tipo_reporte} onChange={e => { setNewReport({ ...newReport, tipo_reporte: e.target.value }); setIsDirty(true) }}>
                                 <option value="Inventario">Inventario</option>
-                                <option value="Mantenimiento">Mantenimiento</option>
+                                <option value="PlanMantenimiento">Plan de Mantenimiento</option>
+                                <option value="Mantenimiento">Mantenimiento (Ejecutado)</option>
                                 <option value="Depreciación">Depreciación</option>
                                 <option value="OrdenesCompra">Ordenes de Compra</option>
                                 <option value="OrdenesTrabajo">Ordenes de Trabajo</option>

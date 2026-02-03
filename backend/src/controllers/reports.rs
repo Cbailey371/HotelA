@@ -387,6 +387,48 @@ async fn generate_report_data(
                 }));
              }
         },
+        "PlanMantenimiento" => {
+            let mut query = mantenimiento_calendario::Entity::find()
+                .find_also_related(activos_equipos::Entity)
+                .order_by_asc(mantenimiento_calendario::Column::FechaProgramada);
+
+            for cond in conditions {
+                let field = cond.get("field").and_then(|v| v.as_str()).unwrap_or("");
+                let operator = cond.get("operator").and_then(|v| v.as_str()).unwrap_or("eq");
+                let value = cond.get("value").and_then(|v| v.as_str()).unwrap_or("");
+
+                if field.is_empty() || value.is_empty() { continue; }
+
+                let column = match field {
+                    "ID" => mantenimiento_calendario::Column::IdMantenimientoCalendario,
+                    "Estado" => mantenimiento_calendario::Column::Estado,
+                    "Prioridad" => mantenimiento_calendario::Column::Prioridad,
+                    "Fecha Programada" => mantenimiento_calendario::Column::FechaProgramada,
+                    "Frecuencia" => mantenimiento_calendario::Column::Frecuencia,
+                    _ => continue,
+                };
+
+                query = apply_filter(query, column, operator, value);
+            }
+
+            let calendar_items = query.all(db).await?;
+
+            for (item, asset) in calendar_items {
+                let asset_name = asset.map(|a| a.nombre_equipo).unwrap_or("Activo Desconocido".to_string());
+                
+                results.push(serde_json::json!({
+                    "ID": item.id_mantenimiento_calendario,
+                    "Activo": asset_name,
+                    "Fecha Programada": item.fecha_programada,
+                    "Próxima Fecha": item.proxima_fecha,
+                    "Frecuencia": item.frecuencia.unwrap_or_default(),
+                    "Estado": item.estado.unwrap_or_default(),
+                    "Prioridad": item.prioridad.unwrap_or_default(),
+                    "Costo Estimado": item.costo_estimado.unwrap_or_default().to_string(),
+                    "Observaciones": item.observaciones.unwrap_or_default(),
+                }));
+            }
+        },
         "Depreciación" => {
             let mut query = activos_equipos::Entity::find();
             
@@ -659,7 +701,9 @@ pub async fn execute_scheduled_report(
 
         // Determine date field UI label based on report type
         let date_label = match report.tipo_reporte.as_str() {
+        let date_label = match report.tipo_reporte.as_str() {
             "Mantenimiento" => "Fecha Ejecución",
+            "PlanMantenimiento" => "Fecha Programada",
             "Inventario" => "Fecha Última Compra",
             "OrdenesCompra" => "Fecha Solicitud",
             "Depreciación" => "Fecha Compra",

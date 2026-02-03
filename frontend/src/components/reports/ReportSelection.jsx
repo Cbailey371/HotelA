@@ -7,7 +7,9 @@ import {
     Building2,
     TrendingDown,
     FileText,
-    ArrowRight
+    FileText,
+    ArrowRight,
+    Calendar
 } from 'lucide-react';
 
 const ReportSelection = ({ onSelect }) => {
@@ -29,6 +31,15 @@ const ReportSelection = ({ onSelect }) => {
             color: 'text-orange-500',
             bg: 'bg-orange-50 dark:bg-orange-900/20',
             borderColor: 'hover:border-orange-500/50'
+        },
+        {
+            id: 'PlanMantenimiento',
+            title: 'Plan de Mantenimiento',
+            description: 'Cronograma de servicios programados.',
+            icon: Calendar,
+            color: 'text-cyan-500',
+            bg: 'bg-cyan-50 dark:bg-cyan-900/20',
+            borderColor: 'hover:border-cyan-500/50'
         },
         {
             id: 'OrdenesTrabajo',
