@@ -6,7 +6,7 @@ import {
     ShieldCheck, Activity, Hash, Clock, AlertTriangle, FileText,
     ChevronRight, ExternalLink, Upload, Download, Edit2, Info
 } from 'lucide-react';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import AssetFormModal from '../components/AssetFormModal';
 
@@ -206,13 +206,7 @@ const AssetDetailPage = () => {
                     <ArrowLeft className="w-4 h-4" /> Volver al Inventario
                 </button>
                 <div className="flex gap-2 relative">
-                    <button
-                        onClick={fetchAssetDetail}
-                        className="p-2 text-slate-400 hover:text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                        title="Recargar"
-                    >
-                        <Activity className="w-5 h-5" />
-                    </button>
+
 
                     <div ref={menuRef} className="relative">
                         <button
