@@ -66,6 +66,42 @@ pub async fn create_payment_term(
     }))
 }
 
+pub async fn update_payment_term(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+    Extension(claims): Extension<jwt::Claims>,
+    Json(payload): Json<CreatePaymentTermRequest>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let item = terminos_pago::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Payment term not found".to_string()))?;
+
+    let mut item: terminos_pago::ActiveModel = item.into();
+    item.nombre = Set(payload.nombre.clone());
+    item.dias = Set(payload.dias);
+
+    let updated = item.update(&db).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    audit::log_action(
+        &db, 
+        claims.user_id, 
+        "UPDATE", 
+        "terminos_pago", 
+        Some(updated.id), 
+        Some(format!("Actualizado término pago: {}", payload.nombre)),
+        None
+    ).await;
+
+    Ok(Json(PaymentTermDto {
+        id: updated.id,
+        nombre: updated.nombre,
+        dias: updated.dias,
+    }))
+}
+
 pub async fn delete_payment_term(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,

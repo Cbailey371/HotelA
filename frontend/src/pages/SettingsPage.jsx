@@ -40,6 +40,8 @@ const SettingsPage = () => {
     const [newItemLocation, setNewItemLocation] = useState('');
     const [editingWarehouse, setEditingWarehouse] = useState(null);
     const [editingLocation, setEditingLocation] = useState(null);
+    const [editingConfigItem, setEditingConfigItem] = useState(null);
+    const [editingPaymentTerm, setEditingPaymentTerm] = useState(null);
 
     const [configLoading, setConfigLoading] = useState(false);
 
@@ -313,34 +315,52 @@ const SettingsPage = () => {
 
         if (activeTab === 'payment-terms') {
             try {
-                await api.post('/settings/payment-terms', {
-                    nombre: newItemName,
-                    dias: parseInt(newItemDias) || 0
-                });
+                if (editingPaymentTerm) {
+                    await api.put(`/settings/payment-terms/${editingPaymentTerm.id}`, {
+                        nombre: newItemName,
+                        dias: parseInt(newItemDias) || 0
+                    });
+                    setMessage({ type: 'success', text: 'Término de pago actualizado' });
+                    setEditingPaymentTerm(null);
+                } else {
+                    await api.post('/settings/payment-terms', {
+                        nombre: newItemName,
+                        dias: parseInt(newItemDias) || 0
+                    });
+                    setMessage({ type: 'success', text: 'Término de pago creado' });
+                }
                 setNewItemName('');
                 setNewItemDias(0);
-                setMessage({ type: 'success', text: 'Término de pago creado' });
                 fetchPaymentTerms();
             } catch (error) {
-                console.error("Error creating payment term", error);
-                setMessage({ type: 'error', text: 'Error creando término de pago' });
+                console.error("Error saving payment term", error);
+                setMessage({ type: 'error', text: 'Error guardando término de pago' });
             }
             return;
         }
 
         if (activeTab === 'brands') {
             try {
-                await api.post('/settings/brands', {
-                    nombre: newItemName,
-                    descripcion: newItemDesc
-                });
+                if (editingConfigItem) {
+                    await api.put(`/settings/brands/${editingConfigItem.id}`, {
+                        nombre: newItemName,
+                        descripcion: newItemDesc
+                    });
+                    setMessage({ type: 'success', text: 'Marca actualizada correctamente' });
+                    setEditingConfigItem(null);
+                } else {
+                    await api.post('/settings/brands', {
+                        nombre: newItemName,
+                        descripcion: newItemDesc
+                    });
+                    setMessage({ type: 'success', text: 'Marca creada correctamente' });
+                }
                 setNewItemName('');
                 setNewItemDesc('');
-                setMessage({ type: 'success', text: 'Marca creada correctamente' });
                 fetchBrands();
             } catch (error) {
-                console.error("Error creating brand", error);
-                setMessage({ type: 'error', text: 'Error creando marca' });
+                console.error("Error saving brand", error);
+                setMessage({ type: 'error', text: 'Error guardando marca' });
             }
             return;
         }
@@ -377,22 +397,31 @@ const SettingsPage = () => {
 
         const endpoint = activeTab === 'categories' ? 'categories' : (activeTab === 'types' ? 'types' : (activeTab === 'locations' ? 'locations' : 'maintenance-tasks'));
         try {
-            await api.post(`/asset-config/${endpoint}`, {
-                nombre: newItemName,
-                descripcion: newItemDesc
-            });
+            if (editingConfigItem) {
+                await api.put(`/asset-config/${endpoint}/${editingConfigItem.id}`, {
+                    nombre: newItemName,
+                    descripcion: newItemDesc
+                });
+                setMessage({ type: 'success', text: 'Elemento actualizado correctamente' });
+                setEditingConfigItem(null);
+            } else {
+                await api.post(`/asset-config/${endpoint}`, {
+                    nombre: newItemName,
+                    descripcion: newItemDesc
+                });
+                setMessage({ type: 'success', text: 'Elemento creado correctamente' });
+            }
 
             setNewItemName('');
             setNewItemDesc('');
-            setMessage({ type: 'success', text: 'Elemento creado correctamente' });
 
             if (activeTab === 'categories') fetchCategories();
             else if (activeTab === 'types') fetchTypes();
             else if (activeTab === 'locations') fetchLocations();
             else fetchTaskTypes();
         } catch (error) {
-            console.error("Error creating item", error);
-            setMessage({ type: 'error', text: 'Error creando elemento' });
+            console.error("Error saving item", error);
+            setMessage({ type: 'error', text: 'Error guardando elemento' });
         }
     };
 
@@ -668,7 +697,23 @@ const SettingsPage = () => {
     const renderConfigTable = (items, entityName) => (
         <div className="space-y-6">
             <div className="bg-slate-50 dark:bg-[#0f172a] p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-bold text-slate-700 dark:text-white uppercase mb-4">Agregar {entityName}</h3>
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-sm font-bold text-slate-700 dark:text-white uppercase">
+                        {editingConfigItem ? `Editar ${entityName}` : `Agregar ${entityName}`}
+                    </h3>
+                    {editingConfigItem && (
+                        <button
+                            onClick={() => {
+                                setEditingConfigItem(null);
+                                setNewItemName('');
+                                setNewItemDesc('');
+                            }}
+                            className="text-xs text-red-500 hover:underline"
+                        >
+                            Cancelar Edición
+                        </button>
+                    )}
+                </div>
                 <form onSubmit={handleCreateConfigItem} className="flex gap-4 items-end">
                     <div className="flex-1">
                         <label className="block text-xs font-medium text-slate-500 mb-1">Nombre</label>
@@ -694,9 +739,10 @@ const SettingsPage = () => {
                     <button
                         type="submit"
                         disabled={!newItemName.trim()}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 h-[38px] disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={`px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 h-[38px] disabled:opacity-50 disabled:cursor-not-allowed ${editingConfigItem ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-700'}`}
                     >
-                        <Plus className="w-4 h-4" /> Agregar
+                        {editingConfigItem ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                        {editingConfigItem ? 'Actualizar' : 'Agregar'}
                     </button>
                 </form>
             </div>
@@ -720,6 +766,18 @@ const SettingsPage = () => {
                                 <td className="px-6 py-4 font-medium text-slate-800 dark:text-white">{item.nombre}</td>
                                 <td className="px-6 py-4 text-slate-500 text-sm">{item.descripcion || '-'}</td>
                                 <td className="px-6 py-4 text-right">
+                                    <button
+                                        onClick={() => {
+                                            setEditingConfigItem(item);
+                                            setNewItemName(item.nombre);
+                                            setNewItemDesc(item.descripcion || '');
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                        className="text-slate-400 hover:text-amber-500 p-2 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors mr-1"
+                                        title="Editar"
+                                    >
+                                        <Pencil className="w-4 h-4" />
+                                    </button>
                                     <button
                                         onClick={() => handleDeleteConfigItem(item.id)}
                                         className="text-red-500 hover:text-red-600 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
@@ -1008,7 +1066,23 @@ const SettingsPage = () => {
                 {activeTab === 'payment-terms' && (
                     <div className="space-y-6">
                         <div className="bg-slate-50 dark:bg-[#0f172a] p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                            <h3 className="text-sm font-bold text-slate-700 dark:text-white uppercase mb-4">Agregar Término de Pago</h3>
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-sm font-bold text-slate-700 dark:text-white uppercase">
+                                    {editingPaymentTerm ? 'Editar Término de Pago' : 'Agregar Término de Pago'}
+                                </h3>
+                                {editingPaymentTerm && (
+                                    <button
+                                        onClick={() => {
+                                            setEditingPaymentTerm(null);
+                                            setNewItemName('');
+                                            setNewItemDias(0);
+                                        }}
+                                        className="text-xs text-red-500 hover:underline"
+                                    >
+                                        Cancelar Edición
+                                    </button>
+                                )}
+                            </div>
                             <form onSubmit={handleCreateConfigItem} className="flex gap-4 items-end">
                                 <div className="flex-[2]">
                                     <label className="block text-xs font-medium text-slate-500 mb-1">Nombre</label>
@@ -1034,9 +1108,10 @@ const SettingsPage = () => {
                                 <button
                                     type="submit"
                                     disabled={!newItemName.trim()}
-                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 h-[38px] disabled:opacity-50"
+                                    className={`px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 h-[38px] disabled:opacity-50 ${editingPaymentTerm ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-700'}`}
                                 >
-                                    <Plus className="w-4 h-4" /> Agregar
+                                    {editingPaymentTerm ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                                    {editingPaymentTerm ? 'Actualizar' : 'Agregar'}
                                 </button>
                             </form>
                         </div>
@@ -1060,6 +1135,17 @@ const SettingsPage = () => {
                                             <td className="px-6 py-4 font-bold text-slate-800 dark:text-white uppercase tracking-tight">{item.nombre}</td>
                                             <td className="px-6 py-4 text-slate-500 text-sm">{item.dias} {item.dias === 1 ? 'día' : 'días'}</td>
                                             <td className="px-6 py-4 text-right">
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingPaymentTerm(item);
+                                                        setNewItemName(item.nombre);
+                                                        setNewItemDias(item.dias);
+                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                    }}
+                                                    className="text-slate-400 hover:text-amber-500 p-2 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors mr-1"
+                                                >
+                                                    <Pencil className="w-4 h-4" />
+                                                </button>
                                                 <button
                                                     onClick={() => handleDeleteConfigItem(item.id)}
                                                     className="text-red-500 hover:text-red-600 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"

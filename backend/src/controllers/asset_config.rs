@@ -94,6 +94,42 @@ pub async fn delete_category(
     Ok(Json("Category deleted".to_string()))
 }
 
+pub async fn update_category(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+    Extension(claims): Extension<jwt::Claims>,
+    Json(payload): Json<CreateConfigRequest>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let item = categorias_activos::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Category not found".to_string()))?;
+
+    let mut item: categorias_activos::ActiveModel = item.into();
+    item.nombre = Set(payload.nombre.clone());
+    item.descripcion = Set(payload.descripcion.clone());
+
+    let updated = item.update(&db).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    audit::log_action(
+        &db, 
+        claims.user_id, 
+        "UPDATE", 
+        "categorias_activos", 
+        Some(updated.id), 
+        Some(format!("Actualizada categoría: {}", payload.nombre)),
+        None
+    ).await;
+
+    Ok(Json(ConfigItemDto {
+        id: updated.id,
+        nombre: updated.nombre,
+        descripcion: updated.descripcion,
+    }))
+}
+
 // Types
 pub async fn get_types(
     State(db): State<DatabaseConnection>,
@@ -169,6 +205,42 @@ pub async fn delete_type(
     ).await;
 
     Ok(Json("Type deleted".to_string()))
+}
+
+pub async fn update_type(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+    Extension(claims): Extension<jwt::Claims>,
+    Json(payload): Json<CreateConfigRequest>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let item = tipos_activos::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Type not found".to_string()))?;
+
+    let mut item: tipos_activos::ActiveModel = item.into();
+    item.nombre = Set(payload.nombre.clone());
+    item.descripcion = Set(payload.descripcion.clone());
+
+    let updated = item.update(&db).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    audit::log_action(
+        &db, 
+        claims.user_id, 
+        "UPDATE", 
+        "tipos_activos", 
+        Some(updated.id), 
+        Some(format!("Actualizado tipo activo: {}", payload.nombre)),
+        None
+    ).await;
+
+    Ok(Json(ConfigItemDto {
+        id: updated.id,
+        nombre: updated.nombre,
+        descripcion: updated.descripcion,
+    }))
 }
 
 // Locations
@@ -248,6 +320,42 @@ pub async fn delete_location(
     Ok(Json("Location deleted".to_string()))
 }
 
+pub async fn update_location(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+    Extension(claims): Extension<jwt::Claims>,
+    Json(payload): Json<CreateConfigRequest>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let item = ubicaciones::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Location not found".to_string()))?;
+
+    let mut item: ubicaciones::ActiveModel = item.into();
+    item.nombre = Set(payload.nombre.clone());
+    item.descripcion = Set(payload.descripcion.clone());
+
+    let updated = item.update(&db).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    audit::log_action(
+        &db, 
+        claims.user_id, 
+        "UPDATE", 
+        "ubicaciones", 
+        Some(updated.id), 
+        Some(format!("Actualizada ubicación: {}", payload.nombre)),
+        None
+    ).await;
+
+    Ok(Json(ConfigItemDto {
+        id: updated.id,
+        nombre: updated.nombre,
+        descripcion: updated.descripcion,
+    }))
+}
+
 // Maintenance Tasks
 pub async fn get_maintenance_tasks(
     State(db): State<DatabaseConnection>,
@@ -323,4 +431,40 @@ pub async fn delete_maintenance_task(
     ).await;
 
     Ok(Json("Task deleted".to_string()))
+}
+
+pub async fn update_maintenance_task(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+    Extension(claims): Extension<jwt::Claims>,
+    Json(payload): Json<CreateConfigRequest>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let item = mantenimiento_tareas::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Task not found".to_string()))?;
+
+    let mut item: mantenimiento_tareas::ActiveModel = item.into();
+    item.nombre = Set(payload.nombre.clone());
+    item.descripcion = Set(payload.descripcion.clone());
+
+    let updated = item.update(&db).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    audit::log_action(
+        &db, 
+        claims.user_id, 
+        "UPDATE", 
+        "mantenimiento_tareas", 
+        Some(updated.id), 
+        Some(format!("Actualizada tarea mantenimiento: {}", payload.nombre)),
+        None
+    ).await;
+
+    Ok(Json(ConfigItemDto {
+        id: updated.id,
+        nombre: updated.nombre,
+        descripcion: updated.descripcion,
+    }))
 }
