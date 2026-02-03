@@ -388,9 +388,7 @@ async fn generate_report_data(
              }
         },
         "PlanMantenimiento" => {
-            let mut query = mantenimiento_calendario::Entity::find()
-                .find_also_related(activos_equipos::Entity)
-                .order_by_asc(mantenimiento_calendario::Column::FechaProgramada);
+            let mut query = mantenimiento_calendario::Entity::find();
 
             for cond in conditions {
                 let field = cond.get("field").and_then(|v| v.as_str()).unwrap_or("");
@@ -411,7 +409,10 @@ async fn generate_report_data(
                 query = apply_filter(query, column, operator, value);
             }
 
-            let calendar_items = query.all(db).await?;
+            let calendar_items = query
+                .find_also_related(activos_equipos::Entity)
+                .order_by_asc(mantenimiento_calendario::Column::FechaProgramada)
+                .all(db).await?;
 
             for (item, asset) in calendar_items {
                 let asset_name = asset.map(|a| a.nombre_equipo).unwrap_or("Activo Desconocido".to_string());
