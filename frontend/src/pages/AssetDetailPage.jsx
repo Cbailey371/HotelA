@@ -4,8 +4,10 @@ import axios from 'axios';
 import {
     ArrowLeft, Settings, Wrench, Package, Calendar, MapPin,
     ShieldCheck, Activity, Hash, Clock, AlertTriangle, FileText,
-    ChevronRight, ExternalLink
+    ChevronRight, ExternalLink, Upload, Download
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const AssetDetailPage = () => {
     const { id } = useParams();
@@ -13,6 +15,7 @@ const AssetDetailPage = () => {
     const [asset, setAsset] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('info');
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         fetchAssetDetail();
@@ -26,6 +29,122 @@ const AssetDetailPage = () => {
             console.error("Error fetching asset details", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const calculateHealth = () => {
+        if (!asset || !asset.historial) return 100;
+        const maintenanceCount = asset.historial.length;
+        // Simple heuristic: 100% - 2% per maintenance event, capped at 0%
+        return Math.max(0, 100 - (maintenanceCount * 2)).toFixed(1);
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return '---';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+    };
+
+    const handleGeneratePDF = () => {
+        const doc = new jsPDF();
+
+        // Header
+        doc.setFillColor(30, 41, 59); // Slate 800
+        doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(22);
+        doc.text(asset.nombre, 14, 25);
+        doc.setFontSize(12);
+        doc.text(`Código: ${asset.codigo}`, 14, 32);
+
+        // Metadata
+        doc.setTextColor(40, 40, 40);
+        doc.setFontSize(10);
+
+        const details = [
+            ['Marca', asset.marca || '---', 'Modelo', asset.modelo || '---'],
+            ['Serie', asset.serie || '---', 'Ubicación', asset.ubicacion || '---'],
+            ['Año', asset.anio?.toString() || '---', 'Color', asset.color || '---'],
+            ['Motor', asset.numero_motor || '---', 'Chasis', asset.numero_chasis || '---'],
+            ['Instalación', asset.fecha_instalacion || '---', 'Estado', asset.estado || '---']
+        ];
+
+        doc.autoTable({
+            startY: 50,
+            head: [['Atributo', 'Valor', 'Atributo', 'Valor']],
+            body: details,
+            theme: 'grid',
+            headStyles: { fillColor: [59, 130, 246] }
+        });
+
+        // Maintenance History
+        if (asset.historial && asset.historial.length > 0) {
+            doc.text("Historial de Mantenimiento", 14, doc.lastAutoTable.finalY + 15);
+
+            const historyRows = asset.historial.map(h => [
+                h.fecha,
+                h.tecnico,
+                h.tarea || h.observaciones
+            ]);
+
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 20,
+                head: [['Fecha', 'Técnico', 'Tarea/Observaciones']],
+                body: historyRows,
+                theme: 'striped',
+                headStyles: { fillColor: [71, 85, 105] }
+            });
+        }
+
+        // Spare Parts
+        if (asset.repuestos && asset.repuestos.length > 0) {
+            doc.text("Repuestos Utilizados", 14, doc.lastAutoTable.finalY + 15);
+
+            const partsRows = asset.repuestos.map(r => [
+                r.fecha,
+                r.nombre,
+                r.cantidad
+            ]);
+
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 20,
+                head: [['Fecha', 'Repuesto', 'Cantidad']],
+                body: partsRows,
+                theme: 'striped',
+                headStyles: { fillColor: [71, 85, 105] }
+            });
+        }
+
+        doc.save(`Ficha_Tecnica_${asset.codigo}.pdf`);
+    };
+
+    const handleUploadManual = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            // 1. Upload file
+            const uploadRes = await axios.post('/api/upload/manual', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            // 2. Link to asset
+            await axios.post(`/api/assets/${id}/documents`, {
+                nombre_archivo: file.name,
+                url_archivo: uploadRes.data.url
+            });
+
+            // 3. Refresh list
+            fetchAssetDetail();
+        } catch (error) {
+            console.error("Error uploading manual", error);
+            alert("Error al subir el manual");
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -45,7 +164,7 @@ const AssetDetailPage = () => {
         };
         return (
             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${config[status] || config.baja}`}>
-                {status.replace('_', ' ')}
+                {status?.replace('_', ' ') || 'N/A'}
             </span>
         );
     };
@@ -64,7 +183,10 @@ const AssetDetailPage = () => {
                     <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 transition-colors">
                         <Settings className="w-5 h-5" />
                     </button>
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20">
+                    <button
+                        onClick={handleGeneratePDF}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                    >
                         <FileText className="w-4 h-4" /> Generar Ficha
                     </button>
                 </div>
@@ -158,7 +280,7 @@ const AssetDetailPage = () => {
                         <Activity className="w-6 h-6 opacity-30" />
                         <span className="text-[10px] font-bold uppercase tracking-widest opacity-80">Salud del Activo</span>
                     </div>
-                    <div className="text-2xl font-black">94.2%</div>
+                    <div className="text-2xl font-black">{calculateHealth()}%</div>
                     <p className="text-[10px] opacity-70 mt-1 uppercase font-bold tracking-wider">Disponibilidad Operativa Anual</p>
                 </div>
                 <div className="bg-white dark:bg-[#1e293b] p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
@@ -174,7 +296,7 @@ const AssetDetailPage = () => {
                         <Clock className="w-6 h-6 text-blue-500 opacity-30" />
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Próximo Servicio</span>
                     </div>
-                    <div className="text-2xl font-black text-slate-800 dark:text-white">12 Mar 2026</div>
+                    <div className="text-2xl font-black text-slate-800 dark:text-white">{asset.proximo_servicio ? formatDate(asset.proximo_servicio) : 'No programado'}</div>
                     <p className="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider">Preventivo Programado</p>
                 </div>
             </div>
@@ -183,6 +305,7 @@ const AssetDetailPage = () => {
             <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                 <div className="flex border-b border-slate-100 dark:border-slate-800 p-2">
                     {[
+                        { id: 'info', label: 'Detalles' },
                         { id: 'history', label: 'Historial', icon: Clock },
                         { id: 'parts', label: 'Repuestos', icon: Package },
                         { id: 'docs', label: 'Manuales', icon: FileText }
@@ -195,12 +318,18 @@ const AssetDetailPage = () => {
                                 : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
                                 }`}
                         >
-                            <tab.icon className="w-4 h-4" /> {tab.label}
+                            {tab.icon && <tab.icon className="w-4 h-4" />} {tab.label}
                         </button>
                     ))}
                 </div>
 
                 <div className="p-8">
+                    {activeTab === 'info' && (
+                        <div className="text-slate-600 dark:text-slate-400 min-h-[200px] flex items-center justify-center italic">
+                            Seleccione una pestaña para ver más información.
+                        </div>
+                    )}
+
                     {activeTab === 'history' && (
                         <div className="space-y-6">
                             {asset.historial?.length === 0 ? (
@@ -264,13 +393,60 @@ const AssetDetailPage = () => {
                     )}
 
                     {activeTab === 'docs' && (
-                        <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-                            <div className="w-16 h-16 rounded-3xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500">
-                                <AlertTriangle className="w-8 h-8" />
+                        <div className="space-y-6">
+                            {/* Upload Area */}
+                            <div className="bg-blue-50 dark:bg-blue-900/10 border-2 border-dashed border-blue-200 dark:border-blue-900/50 rounded-2xl p-8 text-center hover:bg-blue-100/50 dark:hover:bg-blue-900/20 transition-all cursor-pointer relative">
+                                <input
+                                    type="file"
+                                    onChange={handleUploadManual}
+                                    accept=".pdf,.doc,.docx"
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    disabled={uploading}
+                                />
+                                {uploading ? (
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                                ) : (
+                                    <>
+                                        <Upload className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                                        <h4 className="font-bold text-slate-700 dark:text-blue-100">Subir Manual o Documento</h4>
+                                        <p className="text-xs text-slate-400 mt-1">PDF, Word (Max 10MB)</p>
+                                    </>
+                                )}
                             </div>
-                            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Documentación Técnica Pendiente</h3>
-                            <p className="text-sm text-slate-500 max-w-sm">No hay manuales de usuario o diagramas eléctricos cargados para este equipo.</p>
-                            <button className="bg-blue-600/10 text-blue-600 px-6 py-2 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-blue-600 hover:text-white transition-all">Subir PDF</button>
+
+                            {/* Documents List */}
+                            {asset.documentos?.length === 0 ? (
+                                <div className="text-center py-8 text-slate-400 flex flex-col items-center">
+                                    <AlertTriangle className="w-12 h-12 text-amber-500/20 mb-3" />
+                                    No hay documentos cargados.
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {asset.documentos.map((doc) => (
+                                        <div key={doc.id} className="group relative bg-white dark:bg-[#1e293b] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
+                                            <div className="flex items-start justify-between">
+                                                <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-500/10 flex items-center justify-center text-red-500 mb-3">
+                                                    <FileText className="w-5 h-5" />
+                                                </div>
+                                                <a
+                                                    href={doc.url_archivo}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="p-2 bg-slate-100 hover:bg-blue-100 text-slate-500 hover:text-blue-600 rounded-lg transition-colors"
+                                                >
+                                                    <Download className="w-4 h-4" />
+                                                </a>
+                                            </div>
+                                            <h4 className="font-bold text-slate-800 dark:text-white text-sm line-clamp-2" title={doc.nombre_archivo}>
+                                                {doc.nombre_archivo}
+                                            </h4>
+                                            <p className="text-[10px] text-slate-400 mt-2">
+                                                {doc.created_at ? new Date(doc.created_at).toLocaleDateString() : 'Fecha desconocida'}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

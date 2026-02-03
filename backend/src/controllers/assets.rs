@@ -87,6 +87,7 @@ pub struct AssetDto {
     pub historial: Vec<MaintenanceHistoryItem>,
     pub repuestos: Vec<SparePartHistoryItem>,
     pub documentos: Vec<DocumentoDto>,
+    pub proximo_servicio: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -184,7 +185,7 @@ pub async fn create_asset(
         .all(&db)
         .await?;
 
-    Ok(Json(map_asset_to_dto_full(asset, vec![], vec![], documentos)))
+    Ok(Json(map_asset_to_dto_full(asset, vec![], vec![], documentos, None)))
 }
 
 fn map_asset_to_dto(a: activos_equipos::Model, historial: Vec<MaintenanceHistoryItem>, repuestos: Vec<SparePartHistoryItem>) -> AssetDto {
@@ -214,6 +215,7 @@ fn map_asset_to_dto(a: activos_equipos::Model, historial: Vec<MaintenanceHistory
         historial,
         repuestos,
         documentos: vec![],
+        proximo_servicio: None,
     }
 }
 
@@ -221,7 +223,8 @@ fn map_asset_to_dto_full(
     a: activos_equipos::Model, 
     historial: Vec<MaintenanceHistoryItem>, 
     repuestos: Vec<SparePartHistoryItem>,
-    documentos: Vec<activos_documentos::Model>
+    documentos: Vec<activos_documentos::Model>,
+    proximo_servicio: Option<String>
 ) -> AssetDto {
     AssetDto {
         id: a.id_equipo,
@@ -254,6 +257,7 @@ fn map_asset_to_dto_full(
             url_archivo: d.url_archivo,
             created_at: d.created_at.map(|dt| dt.to_rfc3339()),
         }).collect(),
+        proximo_servicio,
     }
 }
 
@@ -321,10 +325,23 @@ pub async fn get_asset_by_id(
         .filter(activos_documentos::Column::ActivoId.eq(id))
         .all(&db)
         .await?;
+        
+    // Fetch Next Scheduled Maintenance
+    use crate::entities::mantenimiento_calendario;
+    use sea_orm::QueryOrder;
+    
+    let next_maintenance = mantenimiento_calendario::Entity::find()
+        .filter(mantenimiento_calendario::Column::EquipoId.eq(id))
+        .filter(mantenimiento_calendario::Column::Estado.eq("programado"))
+        .order_by_asc(mantenimiento_calendario::Column::FechaProgramada)
+        .one(&db)
+        .await?;
+        
+    let proximo_servicio = next_maintenance.and_then(|m| m.fecha_programada.map(|d| d.to_string()));
 
     tracing::info!("Documents fetched (count: {}), mapping to DTO", documentos.len());
 
-    Ok(Json(map_asset_to_dto_full(asset, historial, repuestos, documentos)))
+    Ok(Json(map_asset_to_dto_full(asset, historial, repuestos, documentos, proximo_servicio)))
 }
 
 pub async fn update_asset(
@@ -368,7 +385,7 @@ pub async fn update_asset(
         .all(&db)
         .await?;
 
-    Ok(Json(map_asset_to_dto_full(updated, vec![], vec![], documentos)))
+    Ok(Json(map_asset_to_dto_full(updated, vec![], vec![], documentos, None)))
 }
 
 pub async fn delete_asset(
