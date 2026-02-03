@@ -701,7 +701,6 @@ pub async fn execute_scheduled_report(
 
         // Determine date field UI label based on report type
         let date_label = match report.tipo_reporte.as_str() {
-        let date_label = match report.tipo_reporte.as_str() {
             "Mantenimiento" => "Fecha Ejecución",
             "PlanMantenimiento" => "Fecha Programada",
             "Inventario" => "Fecha Última Compra",
