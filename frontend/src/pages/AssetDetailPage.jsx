@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
     ArrowLeft, Settings, Wrench, Package, Calendar, MapPin,
     ShieldCheck, Activity, Hash, Clock, AlertTriangle, FileText,
-    ChevronRight, ExternalLink, Upload, Download
+    ChevronRight, ExternalLink, Upload, Download, Edit2, Info
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import AssetFormModal from '../components/AssetFormModal';
 
 const AssetDetailPage = () => {
     const { id } = useParams();
@@ -17,9 +18,27 @@ const AssetDetailPage = () => {
     const [activeTab, setActiveTab] = useState('info');
     const [uploading, setUploading] = useState(false);
 
+    // Actions State
+    const [showMenu, setShowMenu] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const menuRef = useRef(null);
+
     useEffect(() => {
         fetchAssetDetail();
     }, [id]);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setShowMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     const fetchAssetDetail = async () => {
         try {
@@ -46,6 +65,7 @@ const AssetDetailPage = () => {
     };
 
     const handleGeneratePDF = () => {
+        setShowMenu(false);
         const doc = new jsPDF();
 
         // Header
@@ -61,12 +81,18 @@ const AssetDetailPage = () => {
         doc.setTextColor(40, 40, 40);
         doc.setFontSize(10);
 
+        // Find last maintenance
+        const lastMaintenance = asset.historial && asset.historial.length > 0
+            ? asset.historial[0]
+            : null;
+
         const details = [
             ['Marca', asset.marca || '---', 'Modelo', asset.modelo || '---'],
             ['Serie', asset.serie || '---', 'Ubicación', asset.ubicacion || '---'],
             ['Año', asset.anio?.toString() || '---', 'Color', asset.color || '---'],
             ['Motor', asset.numero_motor || '---', 'Chasis', asset.numero_chasis || '---'],
-            ['Instalación', asset.fecha_instalacion || '---', 'Estado', asset.estado || '---']
+            ['Instalación', asset.fecha_instalacion || '---', 'Estado', asset.estado || '---'],
+            ['Último Mantenimiento', lastMaintenance ? `${lastMaintenance.fecha} (${lastMaintenance.tecnico})` : 'Sin registros']
         ];
 
         doc.autoTable({
@@ -179,16 +205,44 @@ const AssetDetailPage = () => {
                 >
                     <ArrowLeft className="w-4 h-4" /> Volver al Inventario
                 </button>
-                <div className="flex gap-2">
-                    <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 transition-colors">
-                        <Settings className="w-5 h-5" />
-                    </button>
+                <div className="flex gap-2 relative">
                     <button
-                        onClick={handleGeneratePDF}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                        onClick={fetchAssetDetail}
+                        className="p-2 text-slate-400 hover:text-blue-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                        title="Recargar"
                     >
-                        <FileText className="w-4 h-4" /> Generar Ficha
+                        <Activity className="w-5 h-5" />
                     </button>
+
+                    <div ref={menuRef} className="relative">
+                        <button
+                            onClick={() => setShowMenu(!showMenu)}
+                            className={`p-2 rounded-lg transition-colors ${showMenu ? 'bg-blue-100 text-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        >
+                            <Settings className="w-5 h-5" />
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {showMenu && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1e293b] rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+                                <button
+                                    onClick={() => {
+                                        setShowEditModal(true);
+                                        setShowMenu(false);
+                                    }}
+                                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
+                                >
+                                    <Edit2 className="w-4 h-4" /> Editar Activo
+                                </button>
+                                <button
+                                    onClick={handleGeneratePDF}
+                                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
+                                >
+                                    <FileText className="w-4 h-4" /> Generar Ficha Técnica
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -451,6 +505,13 @@ const AssetDetailPage = () => {
                     )}
                 </div>
             </div>
+
+            <AssetFormModal
+                isOpen={showEditModal}
+                onClose={() => setShowEditModal(false)}
+                onSaved={fetchAssetDetail}
+                initialData={asset}
+            />
         </div>
     );
 };
