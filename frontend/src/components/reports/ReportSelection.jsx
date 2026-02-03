@@ -7,7 +7,7 @@ import {
     Building2,
     TrendingDown,
     FileText,
-    FileText,
+
     ArrowRight,
     Calendar
 } from 'lucide-react';
