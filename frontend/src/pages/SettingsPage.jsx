@@ -1017,7 +1017,7 @@ const SettingsPage = () => {
                     onClick={() => setActiveTab('locations')}
                     className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'locations' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                 >
-                    <MapPin className="w-4 h-4" /> Ubicaciones
+                    <MapPin className="w-4 h-4" /> Ubicación de Activo
                 </button>
                 <button
                     onClick={() => setActiveTab('types')}
