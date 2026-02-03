@@ -312,14 +312,14 @@ const PurchaseOrdersPage = () => {
                                     {o.id_proveedor ? (providers.find(p => p.id === o.id_proveedor)?.nombre || `Proveedor #${o.id_proveedor}`) : 'N/A'}
                                 </td>
                                 <td className="px-6 py-4 text-slate-500">{o.fecha_solicitud || 'N/A'}</td>
-                                <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-200">${parseFloat(o.total || 0).toLocaleString()}</td>
+                                <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-200">${parseFloat(o.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                 <td className="px-6 py-4">
                                     <select
                                         value={o.estado}
                                         onChange={(e) => handleStatusChange(o.id_orden_compra, e.target.value)}
                                         className={`px-2 py-1 rounded text-[10px] font-bold uppercase outline-none border-none cursor-pointer ${o.estado === 'RECIBIDA' ? 'bg-green-100 text-green-700' :
-                                                o.estado === 'CANCELADA' ? 'bg-red-100 text-red-700' :
-                                                    o.estado === 'APROBADA' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700'
+                                            o.estado === 'CANCELADA' ? 'bg-red-100 text-red-700' :
+                                                o.estado === 'APROBADA' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700'
                                             }`}
                                     >
                                         <option value="PENDIENTE">PENDIENTE</option>
@@ -553,16 +553,16 @@ const PurchaseOrdersPage = () => {
                             <div className="space-y-3">
                                 <div className="flex justify-between text-slate-500">
                                     <span>Subtotal:</span>
-                                    <span>${subtotal.toLocaleString()}</span>
+                                    <span>${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 <div className="flex justify-between text-slate-500">
                                     <span>Impuestos:</span>
-                                    <span>${impuestos.toLocaleString()}</span>
+                                    <span>${impuestos.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 <div className="h-px bg-slate-100 dark:bg-slate-800 my-2"></div>
                                 <div className="flex justify-between text-xl font-black">
                                     <span>Total:</span>
-                                    <span>${total.toLocaleString()}</span>
+                                    <span>${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                             </div>
                             <div className="flex justify-end pt-6">
@@ -629,7 +629,7 @@ const PurchaseOrdersPage = () => {
                                             EST: {part.stock}
                                         </span>
                                         <span className="text-sm font-black text-slate-700 dark:text-slate-300">
-                                            ${parseFloat(part.precio || 0).toLocaleString()} <span className="text-[10px] text-slate-400 font-normal ml-0.5">P/V</span>
+                                            ${parseFloat(part.precio || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-[10px] text-slate-400 font-normal ml-0.5">P/V</span>
                                         </span>
                                     </div>
                                 </button>
