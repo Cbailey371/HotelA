@@ -1,5 +1,5 @@
 use axum::{Json, extract::{State}, response::IntoResponse, http::StatusCode};
-use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait};
+use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait};
 use serde::{Deserialize, Serialize};
 use crate::entities::{configuraciones, config_empresa};
 use crate::utils::mailer;

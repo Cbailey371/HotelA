@@ -248,6 +248,7 @@ pub async fn update_work_order(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
         .ok_or((StatusCode::NOT_FOUND, "Work Order not found".to_string()))?;
 
+    let ot_id = ot.id_ot;
     let mut ot_active: orden_trabajo::ActiveModel = ot.into();
     
     if let Some(tecnico_id) = payload.id_tecnico {
@@ -291,7 +292,7 @@ pub async fn update_work_order(
          // Unlink ALL existing maintenances for this OT
          mantenimiento_calendario::Entity::update_many()
             .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(Option::<i32>::None))
-            .filter(mantenimiento_calendario::Column::OrdenTrabajoId.eq(ot.id_ot))
+            .filter(mantenimiento_calendario::Column::OrdenTrabajoId.eq(ot_id))
             .exec(&db)
             .await
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -299,7 +300,7 @@ pub async fn update_work_order(
          // Link new ones
          if !calendarios.is_empty() {
              mantenimiento_calendario::Entity::update_many()
-                .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot.id_ot))
+                .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot_id))
                 .filter(mantenimiento_calendario::Column::IdMantenimientoCalendario.is_in(calendarios.clone()))
                 .exec(&db)
                 .await
@@ -310,7 +311,7 @@ pub async fn update_work_order(
              // Explicit unlink requested via legacy field ID=null
              mantenimiento_calendario::Entity::update_many()
                 .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(Option::<i32>::None))
-                .filter(mantenimiento_calendario::Column::OrdenTrabajoId.eq(ot.id_ot))
+                .filter(mantenimiento_calendario::Column::OrdenTrabajoId.eq(ot_id))
                 .exec(&db)
                 .await
                 .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
