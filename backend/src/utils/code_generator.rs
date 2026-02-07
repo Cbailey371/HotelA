@@ -22,7 +22,7 @@ where C: ConnectionTrait,
     match db.query_one(stmt).await? {
         Some(res) => {
             // Try to get the MAX value. It might be NULL if no matching rows found.
-            let max_val: Option<i32> = res.try_get("", "max").ok(); 
+            let _max_val: Option<i32> = res.try_get("", "max").ok(); 
             // Note: sea_orm query_one returns raw Row. The column name for aggregate might be tricky.
             // Actually, for raw query, we often alias it. Let's alias it as "max_val".
             

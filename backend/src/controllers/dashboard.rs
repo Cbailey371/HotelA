@@ -81,7 +81,7 @@ pub async fn get_stats(
         .all(&db)
         .await?;
 
-    let mut distinct_months: Vec<String> = Vec::new();
+    let distinct_months: Vec<String> = Vec::new();
     let month_names = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
     
     let mut costs_map: HashMap<String, f64> = HashMap::new();
