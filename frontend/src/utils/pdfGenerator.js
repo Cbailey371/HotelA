@@ -43,19 +43,19 @@ export const pdfGenerator = {
         doc.text(company?.razon_social || '', 105, 32, null, 'center');
         doc.text(`${company?.ruc ? `RUC: ${company.ruc}-${company.dv}` : ''}`, 105, 37, null, 'center');
         doc.text(`${company?.direccion || ''} - ${company?.ciudad || ''}`, 105, 42, null, 'center');
-        doc.text(`Tel: ${company?.telefono || ''} | ${company?.correo || ''}`, 105, 47, null, 'center');
+        doc.text(`Tel: ${company?.telefono || ''} | ${company?.correo || ''}`, 105, 49, null, 'center');
 
         doc.setDrawColor(200);
-        doc.line(14, 52, 196, 52);
+        doc.line(14, 55, 196, 55);
 
         // OT Number and Date
         doc.setFontSize(12);
         doc.setTextColor(40);
         doc.setFont('helvetica', 'bold');
-        doc.text(`OT #: ${workOrder.codigo_ot || workOrder.id_ot}`, 14, 62);
+        doc.text(`OT #: ${workOrder.codigo_ot || workOrder.id_ot}`, 14, 65);
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(10);
-        doc.text(`Fecha Emisión: ${new Date().toLocaleDateString()}`, 160, 62);
+        doc.text(`Fecha Emisión: ${new Date().toLocaleDateString()}`, 160, 65);
 
         // Maintenance List (Multiple) vs Single Asset (Legacy)
         if (workOrder.mantenimientos && workOrder.mantenimientos.length > 0) {
