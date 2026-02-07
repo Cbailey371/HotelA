@@ -23,6 +23,7 @@ const WorkOrdersPage = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [showMaintenanceSelector, setShowMaintenanceSelector] = useState(false);
+    const [selectedMaintenanceIds, setSelectedMaintenanceIds] = useState([]); // New state for multi-select
     const [editingOrder, setEditingOrder] = useState(null);
     const [paymentTerms, setPaymentTerms] = useState([]);
     const [isDirty, setIsDirty] = useState(false);
@@ -38,6 +39,7 @@ const WorkOrdersPage = () => {
         id_activo: '',
         id_tipo_mantenimiento: '',
         id_calendario: null,
+        id_calendarios: [], // New field for multiple
         id_tecnico: '',
         id_proveedor: '',
         prioridad: 'media',
@@ -129,7 +131,8 @@ const WorkOrdersPage = () => {
                     id_tipo_mantenimiento: parseInt(formData.id_tipo_mantenimiento),
                     id_tecnico: formData.id_tecnico ? parseInt(formData.id_tecnico) : null,
                     id_proveedor: formData.id_proveedor ? parseInt(formData.id_proveedor) : null,
-                    id_calendario: formData.id_calendario,
+                    id_calendario: formData.id_calendario, // Can be null if using id_calendarios
+                    id_calendarios: formData.id_calendarios, // Include multiple
                     costo_estimado: formData.costo_estimado !== '' ? parseFloat(formData.costo_estimado) : null
                 });
             }
@@ -440,7 +443,7 @@ const WorkOrdersPage = () => {
             >
                 <div>
                     <div className="flex justify-between items-center mb-6">
-                        {!formData.id_calendario && pendingSchedules.length > 0 && (
+                        {(!formData.id_calendario && (!formData.id_calendarios || formData.id_calendarios.length === 0)) && pendingSchedules.length > 0 && (
                             <button
                                 type="button"
                                 onClick={() => setShowMaintenanceSelector(true)}
@@ -449,9 +452,12 @@ const WorkOrdersPage = () => {
                                 <ClipboardList className="w-4 h-4" /> Cargar Mantenimiento
                             </button>
                         )}
-                        {formData.id_calendario && (
+                        {(formData.id_calendario || (formData.id_calendarios && formData.id_calendarios.length > 0)) && (
                             <div className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-emerald-500/30">
-                                <CheckCircle className="w-4 h-4" /> Vinculado a Mantenimiento
+                                <CheckCircle className="w-4 h-4" />
+                                {formData.id_calendarios && formData.id_calendarios.length > 1
+                                    ? `Vinculado a ${formData.id_calendarios.length} Mantenimientos`
+                                    : "Vinculado a Mantenimiento"}
                             </div>
                         )}
                     </div>
@@ -616,8 +622,23 @@ const WorkOrdersPage = () => {
                 title="Mantenimientos Programados"
                 zIndex={60}
             >
-                <div>
-                    <div className="p-4 overflow-y-auto">
+                <div className="flex flex-col h-[600px]">
+                    <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+                        <span className="text-sm font-bold text-slate-500">
+                            {selectedMaintenanceIds.length === 0
+                                ? "Seleccione uno o más mantenimientos"
+                                : `${selectedMaintenanceIds.length} seleccionados`}
+                        </span>
+                        {selectedMaintenanceIds.length > 0 && (
+                            <button
+                                onClick={handleConfirmMaintenanceSelection}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2"
+                            >
+                                <CheckCircle className="w-4 h-4" /> Cargar Selección
+                            </button>
+                        )}
+                    </div>
+                    <div className="p-4 overflow-y-auto flex-1">
                         {pendingSchedules.length === 0 ? (
                             <div className="text-center py-12 opacity-50">
                                 <Info className="w-12 h-12 mx-auto mb-3 text-slate-300" />
@@ -625,39 +646,50 @@ const WorkOrdersPage = () => {
                             </div>
                         ) : (
                             <div className="space-y-3">
-                                {pendingSchedules.map(s => (
-                                    <button
-                                        key={s.id}
-                                        type="button"
-                                        onClick={() => handleLoadFromMaintenance(s)}
-                                        className="w-full text-left p-4 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-indigo-500 cursor-pointer group transition-all bg-slate-50/50 dark:bg-slate-900/50 hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5"
-                                    >
-                                        <div className="flex justify-between items-start mb-2">
-                                            <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{s.codigo || `MANT-${s.id}`}</span>
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.fecha}</span>
-                                        </div>
-                                        <h4 className="font-bold text-slate-800 dark:text-white mb-1">{s.equipo}</h4>
-                                        <p className="text-xs text-slate-500 font-medium mb-3">{s.tipo}</p>
-                                        <div className="flex gap-4">
-                                            {s.tecnico_id && (
-                                                <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase">
-                                                    <User className="w-3.5 h-3.5" /> Técnico Asignado
+                                {pendingSchedules.map(s => {
+                                    const isSelected = selectedMaintenanceIds.includes(s.id);
+                                    return (
+                                        <div
+                                            key={s.id}
+                                            onClick={() => toggleMaintenanceSelection(s.id)}
+                                            className={`w-full text-left p-4 rounded-2xl border cursor-pointer group transition-all relative
+                                                ${isSelected
+                                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-500'
+                                                    : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:border-indigo-300 hover:bg-white dark:hover:bg-slate-800'
+                                                }`}
+                                        >
+                                            <div className="absolute top-4 right-4">
+                                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${isSelected ? 'bg-indigo-500 border-indigo-500' : 'border-slate-300 bg-white dark:bg-slate-800'}`}>
+                                                    {isSelected && <CheckCircle className="w-3.5 h-3.5 text-white" />}
                                                 </div>
-                                            )}
-                                            {s.proveedor_id && (
-                                                <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase">
-                                                    <Building className="w-3.5 h-3.5" /> Proveedor Asignado
-                                                </div>
-                                            )}
+                                            </div>
+                                            <div className="flex justify-between items-start mb-2 pr-8">
+                                                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{s.codigo || `MANT-${s.id}`}</span>
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.fecha}</span>
+                                            </div>
+                                            <h4 className="font-bold text-slate-800 dark:text-white mb-1">{s.equipo}</h4>
+                                            <p className="text-xs text-slate-500 font-medium mb-3">{s.tipo}</p>
+                                            <div className="flex gap-4">
+                                                {s.tecnico_id && (
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase">
+                                                        <User className="w-3.5 h-3.5" /> Técnico Asignado
+                                                    </div>
+                                                )}
+                                                {s.proveedor_id && (
+                                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase">
+                                                        <Building className="w-3.5 h-3.5" /> Proveedor Asignado
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </button>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
                 </div>
             </Modal>
-        </div >
+        </div>
     );
 };
 
