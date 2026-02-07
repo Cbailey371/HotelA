@@ -26,6 +26,7 @@ pub struct UpdateWorkOrderRequest {
     pub observaciones: Option<String>,
     pub id_tipo_mantenimiento: Option<i32>,
     pub id_calendario: Option<Option<i32>>,
+    pub id_calendarios: Option<Vec<i32>>, // Added
     pub costo_estimado: Option<f64>,
     pub terminos_pago: Option<String>,
 }
@@ -283,6 +284,37 @@ pub async fn update_work_order(
 
     if let Some(terminos) = payload.terminos_pago {
         ot_active.terminos_pago = Set(Some(terminos));
+    }
+
+    // Handle linking updates
+    if let Some(calendarios) = &payload.id_calendarios {
+         // Unlink ALL existing maintenances for this OT
+         mantenimiento_calendario::Entity::update_many()
+            .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(Option::<i32>::None))
+            .filter(mantenimiento_calendario::Column::OrdenTrabajoId.eq(ot.id_ot))
+            .exec(&db)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+         // Link new ones
+         if !calendarios.is_empty() {
+             mantenimiento_calendario::Entity::update_many()
+                .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot.id_ot))
+                .filter(mantenimiento_calendario::Column::IdMantenimientoCalendario.is_in(calendarios.clone()))
+                .exec(&db)
+                .await
+                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+         }
+    } else if let Some(cal_opt) = payload.id_calendario {
+        if cal_opt.is_none() {
+             // Explicit unlink requested via legacy field ID=null
+             mantenimiento_calendario::Entity::update_many()
+                .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(Option::<i32>::None))
+                .filter(mantenimiento_calendario::Column::OrdenTrabajoId.eq(ot.id_ot))
+                .exec(&db)
+                .await
+                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        }
     }
 
     ot_active.update(&db).await

@@ -467,7 +467,7 @@ const WorkOrdersPage = () => {
                                                 <Edit className="w-4 h-4" />
                                             </button>
 
-                                            {order.id_calendario && (
+                                            {(order.id_calendario || (order.mantenimientos && order.mantenimientos.length > 0)) && (
                                                 <button
                                                     onClick={() => handleUnlink(order)}
                                                     className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
