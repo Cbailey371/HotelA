@@ -289,6 +289,7 @@ pub async fn update_work_order(
 
     // Handle linking updates
     if let Some(calendarios) = &payload.id_calendarios {
+         println!("Handling multi-maintenance update for OT {}: {:?}", ot_id, calendarios);
          // Unlink ALL existing maintenances for this OT
          mantenimiento_calendario::Entity::update_many()
             .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(Option::<i32>::None))
@@ -308,7 +309,11 @@ pub async fn update_work_order(
          }
     } else if let Some(cal_opt) = payload.id_calendario {
         if cal_opt.is_none() {
+             println!("Unlinking legacy maintenance from OT {}", ot_id);
              // Explicit unlink requested via legacy field ID=null
+             // 1. Unlink legacy column on OT (handled below in ot_active update)
+             
+             // 2. Unlink new column on Maintenance
              mantenimiento_calendario::Entity::update_many()
                 .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(Option::<i32>::None))
                 .filter(mantenimiento_calendario::Column::OrdenTrabajoId.eq(ot_id))
