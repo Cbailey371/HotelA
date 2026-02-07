@@ -30,6 +30,7 @@ pub struct Model {
     pub tarea_tipo_id: Option<i32>,
     pub recurrente: bool,
     pub responsable_interno_email: Option<String>,
+    pub orden_trabajo_id: Option<i32>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -62,7 +63,13 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     MantenimientoTipo,
-    #[sea_orm(has_many = "super::orden_trabajo::Entity")]
+    #[sea_orm(
+        belongs_to = "super::orden_trabajo::Entity",
+        from = "Column::OrdenTrabajoId",
+        to = "super::orden_trabajo::Column::IdOt",
+        on_update = "Cascade",
+        on_delete = "SetNull"
+    )]
     OrdenTrabajo,
     #[sea_orm(
         belongs_to = "super::usuarios::Entity",

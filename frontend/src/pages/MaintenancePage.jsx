@@ -19,6 +19,7 @@ const MaintenancePage = () => {
     const [showExecuteModal, setShowExecuteModal] = useState(false);
     const [selectedSchedule, setSelectedSchedule] = useState(null);
     const [editingId, setEditingId] = useState(null);
+    const [selectedIds, setSelectedIds] = useState([]); // New state for bulk selection
     const [maintenanceParts, setMaintenanceParts] = useState([]); // New state for parts
     const [showPartSearch, setShowPartSearch] = useState(false);
     const [partSearchQuery, setPartSearchQuery] = useState('');
@@ -239,7 +240,7 @@ const MaintenancePage = () => {
                 id_calendario: schedule.id,
                 id_activo: schedule.equipo_id,
                 id_tipo_mantenimiento: schedule.tipo_mantenimiento_id,
-                id_tecnico: schedule.tecnico_id,
+                id_tecnico: schedule.tecnico_id, // Can be null
                 id_proveedor: schedule.proveedor_id,
                 fecha_programada: schedule.fecha || new Date().toISOString().split('T')[0],
                 prioridad: schedule.prioridad,
@@ -251,6 +252,53 @@ const MaintenancePage = () => {
         } catch (error) {
             console.error("Error creating work order:", error);
             alert('Error al crear la orden de trabajo');
+        }
+    };
+
+    const handleBulkCreateWorkOrder = async () => {
+        if (selectedIds.length === 0) return;
+        if (!confirm(`¿Generar UNA Orden de Trabajo para los ${selectedIds.length} mantenimientos seleccionados?`)) return;
+
+        // Get selected schedules details
+        const selectedItems = schedules.filter(s => selectedIds.includes(s.id));
+        if (selectedItems.length === 0) return;
+
+        // Use the first item as the "primary" for required fields
+        const primary = selectedItems[0];
+
+        try {
+            const payload = {
+                id_calendarios: selectedIds, // Send all IDs
+                id_activo: primary.equipo_id, // Required by backend, using first asset as primary
+                id_tipo_mantenimiento: primary.tipo_mantenimiento_id,
+                id_tecnico: primary.tecnico_id,
+                id_proveedor: primary.proveedor_id,
+                fecha_programada: primary.fecha || new Date().toISOString().split('T')[0],
+                prioridad: primary.prioridad,
+                observaciones: `Orden de Trabajo Múltiple (${selectedItems.length} mantenimientos). \nItems: ${selectedItems.map(s => s.codigo || s.id).join(', ')}`
+            };
+
+            await api.post('/work-orders', payload);
+            alert('Orden de Trabajo generada exitosamente');
+            setSelectedIds([]); // Clear selection
+            fetchAllData();
+        } catch (error) {
+            console.error("Error creating bulk work order:", error);
+            alert('Error al crear la orden de trabajo masiva');
+        }
+    };
+
+    const toggleSelection = (id) => {
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === schedules.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(schedules.map(s => s.id));
         }
     };
 
@@ -372,12 +420,22 @@ const MaintenancePage = () => {
                         <p className="text-slate-500 text-sm font-medium">Cronograma de servicios {new Date().getFullYear()}</p>
                     </div>
                 </div>
-                <button
-                    onClick={() => openScheduleModal()}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-500/30 transition-all flex items-center gap-2"
-                >
-                    <Plus className="w-4 h-4" /> Programar Servicio
-                </button>
+                <div className="flex gap-2">
+                    {selectedIds.length > 0 && (
+                        <button
+                            onClick={handleBulkCreateWorkOrder}
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-purple-500/30 transition-all flex items-center gap-2 animate-in fade-in zoom-in duration-200"
+                        >
+                            <ClipboardList className="w-4 h-4" /> Generar OT ({selectedIds.length})
+                        </button>
+                    )}
+                    <button
+                        onClick={() => openScheduleModal()}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-500/30 transition-all flex items-center gap-2"
+                    >
+                        <Plus className="w-4 h-4" /> Programar Servicio
+                    </button>
+                </div>
             </div>
 
 
@@ -425,6 +483,14 @@ const MaintenancePage = () => {
                     <table className="w-full text-left">
                         <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 text-[10px] font-black uppercase tracking-widest">
                             <tr>
+                                <th className="px-4 py-4 w-10">
+                                    <input
+                                        type="checkbox"
+                                        checked={schedules.length > 0 && selectedIds.length === schedules.length}
+                                        onChange={toggleSelectAll}
+                                        className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                    />
+                                </th>
                                 <th className="px-8 py-4">Código</th>
                                 <th className="px-8 py-4">Equipo / Activo</th>
                                 <th className="px-8 py-4">Servicio</th>
@@ -453,7 +519,15 @@ const MaintenancePage = () => {
                                 const matchesPriority = priorityFilter === 'all' || (s.prioridad || '').toLowerCase() === priorityFilter;
                                 return matchesSearch && matchesStatus && matchesPriority;
                             }).map((s) => (
-                                <tr key={s.id} className="group hover:bg-slate-50 dark:hover:bg-[#0f172a]/30 transition-all">
+                                <tr key={s.id} className={`group hover:bg-slate-50 dark:hover:bg-[#0f172a]/30 transition-all ${selectedIds.includes(s.id) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
+                                    <td className="px-4 py-5">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.includes(s.id)}
+                                            onChange={() => toggleSelection(s.id)}
+                                            className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                        />
+                                    </td>
                                     <td className="px-8 py-5">
                                         <div className="text-xs font-black text-slate-400 mb-0.5 uppercase tracking-wider">{s.codigo || 'N/A'}</div>
                                     </td>

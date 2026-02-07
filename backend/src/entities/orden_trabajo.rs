@@ -44,6 +44,8 @@ pub enum Relation {
         on_delete = "Cascade"
     )]
     ActivosEquipos,
+    #[sea_orm(has_many = "super::mantenimiento_calendario::Entity")]
+    LinkedMaintenances,
 }
 
 impl Related<super::mantenimiento_calendario::Entity> for Entity {

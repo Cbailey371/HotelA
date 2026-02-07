@@ -7,6 +7,7 @@ use std::str::FromStr;
 #[derive(Deserialize)]
 pub struct CreateWorkOrderRequest {
     pub id_calendario: Option<i32>,
+    pub id_calendarios: Option<Vec<i32>>, // New field for multiple
     pub id_activo: i32,
     pub id_tipo_mantenimiento: i32,
     pub id_tecnico: Option<i32>,
@@ -50,6 +51,15 @@ pub struct WorkOrderDto {
     pub costo_estimado: Option<f64>,
     pub terminos_pago: Option<String>,
     pub mantenimiento_costo_estimado: Option<f64>,
+    pub mantenimientos: Vec<MaintenanceSimpleDto>, // New field
+}
+
+#[derive(Serialize)]
+pub struct MaintenanceSimpleDto {
+    pub id: i32,
+    pub equipo: String,
+    pub tipo: String,
+    pub fecha: Option<String>,
 }
 
 pub async fn create_work_order(
@@ -78,6 +88,26 @@ pub async fn create_work_order(
     let ot = new_ot.insert(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+    // Link multiple maintenance schedules if provided
+    if let Some(ids) = payload.id_calendarios {
+        if !ids.is_empty() {
+             mantenimiento_calendario::Entity::update_many()
+                .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot.id_ot))
+                .filter(mantenimiento_calendario::Column::IdMantenimientoCalendario.is_in(ids))
+                .exec(&db)
+                .await
+                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        }
+    } else if let Some(single_id) = payload.id_calendario {
+        // Fallback for legacy single ID
+         mantenimiento_calendario::Entity::update_many()
+            .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot.id_ot))
+            .filter(mantenimiento_calendario::Column::IdMantenimientoCalendario.eq(single_id))
+            .exec(&db)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    }
+
     Ok(Json(ot.id_ot))
 }
 
@@ -99,7 +129,10 @@ pub async fn get_work_orders(
     let m_types = mantenimiento_tipo::Entity::find().all(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    let schedules = mantenimiento_calendario::Entity::find().all(&db).await
+    let schedules: Vec<(mantenimiento_calendario::Model, Option<activos_equipos::Model>)> = mantenimiento_calendario::Entity::find()
+        .find_also_related(activos_equipos::Entity)
+        .all(&db)
+        .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     let dtos: Vec<WorkOrderDto> = orders.into_iter().map(|(ot, activo)| {
@@ -116,8 +149,24 @@ pub async fn get_work_orders(
         });
 
         let mantenimiento_costo_estimado = ot.id_calendario.and_then(|id| {
-            schedules.iter().find(|s| s.id_mantenimiento_calendario == id).map(|s| s.costo_estimado.map(|c| c.to_string().parse().unwrap_or(0.0))).flatten()
+            schedules.iter().find(|(s, _)| s.id_mantenimiento_calendario == id).and_then(|(s, _)| s.costo_estimado.map(|c| c.to_string().parse().unwrap_or(0.0)))
         });
+
+        // Find linked maintenances (Both legacy id_calendario relation AND new orden_trabajo_id relation)
+        // We filter schedules where orden_trabajo_id == ot.id OR id == ot.id_calendario
+        let linked: Vec<MaintenanceSimpleDto> = schedules.iter()
+            .filter(|(s, _)| s.orden_trabajo_id == Some(ot.id_ot) || (ot.id_calendario.is_some() && Some(s.id_mantenimiento_calendario) == ot.id_calendario))
+            .map(|(s, e)| MaintenanceSimpleDto {
+                id: s.id_mantenimiento_calendario,
+                equipo: e.as_ref().map(|a| a.nombre_equipo.clone()).unwrap_or("Desconocido".to_string()),
+                tipo: m_types.iter().find(|t| t.id_tipo_mantenimiento == s.tipo_mantenimiento_id).map(|t| t.nombre_tipo.clone()).unwrap_or("Mantenimiento".to_string()),
+                fecha: s.fecha_programada.map(|d| d.to_string()),
+            })
+            .collect();
+            
+        // Correcting the 'equipo' field in map above: 
+        // We need 'activos_equipos' list to map names.
+        // references 'schedules' and 'm_types'.
 
         WorkOrderDto {
             id_ot: ot.id_ot,
@@ -136,11 +185,12 @@ pub async fn get_work_orders(
             nombre_tecnico,
             nombre_proveedor,
             codigo_mantenimiento: ot.id_calendario.and_then(|id| {
-                schedules.iter().find(|s| s.id_mantenimiento_calendario == id).and_then(|s| s.codigo_mantenimiento.clone())
+                schedules.iter().find(|(s, _)| s.id_mantenimiento_calendario == id).and_then(|(s, _)| s.codigo_mantenimiento.clone())
             }),
             costo_estimado: ot.costo_estimado.map(|c| c.to_string().parse().unwrap_or(0.0)),
             terminos_pago: ot.terminos_pago,
             mantenimiento_costo_estimado,
+            mantenimientos: linked,
         }
     }).collect();
 

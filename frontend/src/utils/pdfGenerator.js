@@ -57,22 +57,46 @@ export const pdfGenerator = {
         doc.setFontSize(10);
         doc.text(`Fecha Emisión: ${new Date().toLocaleDateString()}`, 160, 62);
 
-        // Asset Info
-        // Asset Info
-        autoTable(doc, {
-            startY: 68,
-            head: [['INFORMACIÓN DEL ACTIVO / EQUIPO']],
-            body: [
-                [`Equipo: ${workOrder.activo?.nombre_equipo || 'N/A'}`],
-                [`Marca/Modelo: ${workOrder.activo?.marca || 'N/A'} - ${workOrder.activo?.modelo || 'N/A'}`],
-                [`Serie: ${workOrder.activo?.numero_serie || 'N/A'}`],
-                [`Ubicación: ${workOrder.activo?.ubicacion || 'N/A'}`],
-                [`Código Admin: ${workOrder.activo?.codigo_administrativo || workOrder.activo?.codigo_equipo || 'N/A'}`],
-            ],
-            theme: 'striped',
-            headStyles: { fillColor: primaryColor, fontStyle: 'bold' },
-            styles: { fontSize: 9 }
-        });
+        // Maintenance List (Multiple) vs Single Asset (Legacy)
+        if (workOrder.mantenimientos && workOrder.mantenimientos.length > 0) {
+            const tableRows = workOrder.mantenimientos.map(m => [
+                m.id,
+                m.equipo || 'N/A',
+                m.tipo || 'Mantenimiento',
+                m.fecha || 'N/A'
+            ]);
+
+            autoTable(doc, {
+                startY: 68,
+                head: [['ID', 'EQUIPO / ACTIVO', 'TIPO SERVICIO', 'FECHA PROG.']],
+                body: tableRows,
+                theme: 'striped',
+                headStyles: { fillColor: primaryColor, fontStyle: 'bold' },
+                styles: { fontSize: 9 },
+                columnStyles: {
+                    0: { cellWidth: 15 },
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 50 },
+                    3: { cellWidth: 30 }
+                }
+            });
+        } else {
+            // Legacy Single Asset View
+            autoTable(doc, {
+                startY: 68,
+                head: [['INFORMACIÓN DEL ACTIVO / EQUIPO']],
+                body: [
+                    [`Equipo: ${workOrder.activo?.nombre_equipo || 'N/A'}`],
+                    [`Marca/Modelo: ${workOrder.activo?.marca || 'N/A'} - ${workOrder.activo?.modelo || 'N/A'}`],
+                    [`Serie: ${workOrder.activo?.numero_serie || 'N/A'}`],
+                    [`Ubicación: ${workOrder.activo?.ubicacion || 'N/A'}`],
+                    [`Código Admin: ${workOrder.activo?.codigo_administrativo || workOrder.activo?.codigo_equipo || 'N/A'}`],
+                ],
+                theme: 'striped',
+                headStyles: { fillColor: primaryColor, fontStyle: 'bold' },
+                styles: { fontSize: 9 }
+            });
+        }
 
         // Responsable Info
         const responsableTableY = doc.lastAutoTable.finalY + 8;

@@ -92,6 +92,8 @@ impl MigratorTrait for Migrator {
             Box::new(m20260129_152408_add_scheduling_fields_to_reports::Migration),
             Box::new(m20260131_090000_fix_admin_password::Migration),
             Box::new(m20260131_114000_seed_new_modules_permissions::Migration),
+            Box::new(m20260207_120000_link_maintenance_to_ot::Migration),
         ]
     }
 }
+mod m20260207_120000_link_maintenance_to_ot;
