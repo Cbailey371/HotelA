@@ -80,21 +80,40 @@ const WorkOrdersPage = () => {
     };
 
 
-    const handleLoadFromMaintenance = (schedule) => {
+    const toggleMaintenanceSelection = (id) => {
+        setSelectedMaintenanceIds(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const handleConfirmMaintenanceSelection = () => {
+        if (selectedMaintenanceIds.length === 0) return;
+
+        const selectedItems = pendingSchedules.filter(s => selectedMaintenanceIds.includes(s.id));
+        const primary = selectedItems[0]; // Use first as primary for asset/type
+
         setFormData({
             ...formData,
-            id_calendario: schedule.id,
-            id_activo: schedule.equipo_id,
-            id_tipo_mantenimiento: schedule.tipo_mantenimiento_id,
-            id_tecnico: schedule.tecnico_id || '',
-            id_proveedor: schedule.proveedor_id || '',
-            prioridad: schedule.prioridad || 'media',
-            observaciones: schedule.codigo ? `Plan de Mantenimiento: ${schedule.codigo}` : `Plan de Mantenimiento ID: ${schedule.id}`,
-            costo_estimado: schedule.costo_estimado || '',
-            terminos_pago: schedule.terminos_pago || ''
+            id_calendario: selectedItems.length === 1 ? primary.id : null,
+            id_calendarios: selectedMaintenanceIds,
+            id_activo: primary.equipo_id,
+            id_tipo_mantenimiento: primary.tipo_mantenimiento_id,
+            id_tecnico: primary.tecnico_id || '',
+            id_proveedor: primary.proveedor_id || '',
+            prioridad: primary.prioridad || 'media',
+            observaciones: selectedItems.length === 1
+                ? (primary.codigo ? `Plan de Mantenimiento: ${primary.codigo}` : `Plan de Mantenimiento ID: ${primary.id}`)
+                : `Orden de Trabajo Múltiple (${selectedItems.length} mantenimientos vinculados).\nItems: ${selectedItems.map(s => s.codigo || s.id).join(', ')}`,
+            costo_estimado: primary.costo_estimado || '',
+            terminos_pago: primary.terminos_pago || ''
         });
         setIsDirty(true);
         setShowMaintenanceSelector(false);
+    };
+
+    const handleLoadFromMaintenance = (schedule) => {
+        // Legacy single select support (if clicking row directly)
+        toggleMaintenanceSelection(schedule.id);
     };
 
     const handleUnlink = async (order) => {
