@@ -122,7 +122,8 @@ const WorkOrdersPage = () => {
         try {
             await workOrderService.update(order.id_ot, {
                 ...order,
-                id_calendario: null
+                id_calendario: null,
+                id_calendarios: []
             });
             fetchData();
         } catch (error) {
