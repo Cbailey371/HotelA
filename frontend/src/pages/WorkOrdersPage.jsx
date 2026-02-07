@@ -166,11 +166,36 @@ const WorkOrdersPage = () => {
 
     const handleEdit = (order) => {
         setEditingOrder(order);
+
+        // Hydrate multi-select state
+        const linkedIds = order.mantenimientos ? order.mantenimientos.map(m => m.id) : [];
+        if (order.id_calendario && !linkedIds.includes(order.id_calendario)) {
+            linkedIds.push(order.id_calendario);
+            // If legacy single ID is present but not in maintenances list, we might want to fetch it or just rely on existing list. 
+            // But usually id_calendario is one of the maintenances if migrated correctly.
+        }
+
+        // Inject linked maintenances into pendingSchedules so they appear in the modal
+        if (order.mantenimientos && order.mantenimientos.length > 0) {
+            setPendingSchedules(prev => {
+                const newSchedules = [...prev];
+                order.mantenimientos.forEach(m => {
+                    if (!newSchedules.find(s => s.id === m.id)) {
+                        newSchedules.push(m);
+                    }
+                });
+                return newSchedules.sort((a, b) => b.id - a.id);
+            });
+        }
+
+        setSelectedMaintenanceIds(linkedIds);
+
         setFormData({
             codigo_ot: order.codigo_ot || '',
             id_activo: order.id_activo,
             id_tipo_mantenimiento: order.id_tipo_mantenimiento,
             id_calendario: order.id_calendario,
+            id_calendarios: linkedIds,
             id_tecnico: order.id_tecnico || '',
             id_proveedor: order.id_proveedor || '',
             prioridad: order.prioridad || 'media',
@@ -377,7 +402,31 @@ const WorkOrdersPage = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        {order.id_calendario ? (
+                                        {order.mantenimientos && order.mantenimientos.length > 0 ? (
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest">
+                                                    {order.mantenimientos.length > 1 ? `Vinculado (${order.mantenimientos.length})` : 'Vinculado'}
+                                                </span>
+                                                <span className="text-xs font-bold text-slate-500">
+                                                    {order.mantenimientos.length > 1
+                                                        ? 'Múltiples Items'
+                                                        : (order.codigo_mantenimiento || `ID Mnt: ${order.id_calendario}`)
+                                                    }
+                                                </span>
+                                                {order.mantenimientos.length > 1 && (
+                                                    <div className="flex flex-wrap gap-1 mt-1">
+                                                        {order.mantenimientos.slice(0, 3).map(m => (
+                                                            <span key={m.id} className="text-[9px] bg-purple-50 text-purple-600 px-1 rounded border border-purple-100">
+                                                                {m.codigo || m.id}
+                                                            </span>
+                                                        ))}
+                                                        {order.mantenimientos.length > 3 && (
+                                                            <span className="text-[9px] text-slate-400">+{order.mantenimientos.length - 3}</span>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : order.id_calendario ? (
                                             <div className="flex flex-col">
                                                 <span className="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest">Vinculado</span>
                                                 <span className="text-xs font-bold text-slate-500">{order.codigo_mantenimiento || `ID Mnt: ${order.id_calendario}`}</span>

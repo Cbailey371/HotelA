@@ -60,6 +60,14 @@ pub struct MaintenanceSimpleDto {
     pub equipo: String,
     pub tipo: String,
     pub fecha: Option<String>,
+    pub codigo: Option<String>, // Added
+    pub tecnico_id: Option<i32>, // Added
+    pub proveedor_id: Option<i32>, // Added
+    pub equipo_id: i32, // Added
+    pub tipo_mantenimiento_id: i32, // Added
+    pub prioridad: Option<String>, // Added
+    pub costo_estimado: Option<f64>, // Added
+    pub terminos_pago: Option<String>, // Added
 }
 
 pub async fn create_work_order(
@@ -161,6 +169,14 @@ pub async fn get_work_orders(
                 equipo: e.as_ref().map(|a| a.nombre_equipo.clone()).unwrap_or("Desconocido".to_string()),
                 tipo: m_types.iter().find(|t| t.id_tipo_mantenimiento == s.tipo_mantenimiento_id).map(|t| t.nombre_tipo.clone()).unwrap_or("Mantenimiento".to_string()),
                 fecha: s.fecha_programada.map(|d| d.to_string()),
+                codigo: s.codigo_mantenimiento.clone(),
+                tecnico_id: s.tecnico_id,
+                proveedor_id: s.proveedor_id,
+                equipo_id: s.equipo_id,
+                tipo_mantenimiento_id: s.tipo_mantenimiento_id,
+                prioridad: s.prioridad.clone(),
+                costo_estimado: s.costo_estimado.map(|c| c.to_string().parse().unwrap_or(0.0)),
+                terminos_pago: s.terminos_pago.clone(),
             })
             .collect();
             
