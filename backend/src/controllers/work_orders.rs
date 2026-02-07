@@ -1,5 +1,5 @@
 use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode};
-use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QuerySelect, RelationTrait, JoinType};
+use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, ColumnTrait, QuerySelect, RelationTrait, JoinType};
 use serde::{Deserialize, Serialize};
 use crate::entities::{orden_trabajo, activos_equipos, tecnicos, proveedores, mantenimiento_tipo, mantenimiento_calendario};
 use std::str::FromStr;
@@ -96,26 +96,12 @@ pub async fn create_work_order(
     let ot = new_ot.insert(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    // Link multiple maintenance schedules if provided
-    if let Some(ids) = payload.id_calendarios {
-        if !ids.is_empty() {
-             mantenimiento_calendario::Entity::update_many()
-                .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot.id_ot))
-                .filter(mantenimiento_calendario::Column::IdMantenimientoCalendario.is_in(ids))
-                .exec(&db)
-                .await
-                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-        }
-    } else if let Some(single_id) = payload.id_calendario {
-        // Fallback for legacy single ID
-         mantenimiento_calendario::Entity::update_many()
-            .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot.id_ot))
-            .filter(mantenimiento_calendario::Column::IdMantenimientoCalendario.eq(single_id))
-            .exec(&db)
-            .await
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-    }
-
+    // Link legacy single ID (standard relation)
+    // The relationship is OT -> MC (OT belongs to MC). So we just set id_calendario on OT, which is already done above `id_calendario: Set(payload.id_calendario)`.
+    // The code below was trying to set OT ID on MC, which is wrong (MC has many OTs, but via OT's FK).
+    // Unless MC has a column I don't see. But entity says no.
+    // So we skip updating MC.
+    
     Ok(Json(ot.id_ot))
 }
 
@@ -160,10 +146,9 @@ pub async fn get_work_orders(
             schedules.iter().find(|(s, _)| s.id_mantenimiento_calendario == id).and_then(|(s, _)| s.costo_estimado.map(|c| c.to_string().parse().unwrap_or(0.0)))
         });
 
-        // Find linked maintenances (Both legacy id_calendario relation AND new orden_trabajo_id relation)
-        // We filter schedules where orden_trabajo_id == ot.id OR id == ot.id_calendario
+        // Find linked maintenances (Only via id_calendario)
         let linked: Vec<MaintenanceSimpleDto> = schedules.iter()
-            .filter(|(s, _)| s.orden_trabajo_id == Some(ot.id_ot) || (ot.id_calendario.is_some() && Some(s.id_mantenimiento_calendario) == ot.id_calendario))
+            .filter(|(s, _)| ot.id_calendario.is_some() && s.id_mantenimiento_calendario == ot.id_calendario.unwrap())
             .map(|(s, e)| MaintenanceSimpleDto {
                 id: s.id_mantenimiento_calendario,
                 equipo: e.as_ref().map(|a| a.nombre_equipo.clone()).unwrap_or("Desconocido".to_string()),
@@ -178,10 +163,6 @@ pub async fn get_work_orders(
                 costo_estimado: s.costo_estimado.map(|c| c.to_string().parse().unwrap_or(0.0)),
             })
             .collect();
-            
-        // Correcting the 'equipo' field in map above: 
-        // We need 'activos_equipos' list to map names.
-        // references 'schedules' and 'm_types'.
 
         WorkOrderDto {
             id_ot: ot.id_ot,
@@ -287,40 +268,9 @@ pub async fn update_work_order(
         ot_active.terminos_pago = Set(Some(terminos));
     }
 
-    // Handle linking updates
+    // Ignore multi-maintenance updates as unsupported by schema
     if let Some(calendarios) = &payload.id_calendarios {
-         println!("Handling multi-maintenance update for OT {}: {:?}", ot_id, calendarios);
-         // Unlink ALL existing maintenances for this OT
-         mantenimiento_calendario::Entity::update_many()
-            .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(Option::<i32>::None))
-            .filter(mantenimiento_calendario::Column::OrdenTrabajoId.eq(ot_id))
-            .exec(&db)
-            .await
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-         // Link new ones
-         if !calendarios.is_empty() {
-             mantenimiento_calendario::Entity::update_many()
-                .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot_id))
-                .filter(mantenimiento_calendario::Column::IdMantenimientoCalendario.is_in(calendarios.clone()))
-                .exec(&db)
-                .await
-                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-         }
-    } else if let Some(cal_opt) = payload.id_calendario {
-        if cal_opt.is_none() {
-             println!("Unlinking legacy maintenance from OT {}", ot_id);
-             // Explicit unlink requested via legacy field ID=null
-             // 1. Unlink legacy column on OT (handled below in ot_active update)
-             
-             // 2. Unlink new column on Maintenance
-             mantenimiento_calendario::Entity::update_many()
-                .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(Option::<i32>::None))
-                .filter(mantenimiento_calendario::Column::OrdenTrabajoId.eq(ot_id))
-                .exec(&db)
-                .await
-                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-        }
+         println!("Warning: Ignoring multi-maintenance update for OT {}: {:?} (Not supported by schema)", ot_id, calendarios);
     }
 
     ot_active.update(&db).await

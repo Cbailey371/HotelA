@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Wrench, Users, Settings, LogOut, Moon, Sun, Box, Calendar, ClipboardList, Building2, ShoppingCart, Shield, FileText } from 'lucide-react';
+import { LayoutDashboard, Wrench, Users, Settings, LogOut, Moon, Sun, Box, Calendar, ClipboardList, Building2, ShoppingCart, Shield, FileText, CalendarDays } from 'lucide-react';
 import logo from '../assets/andros_logo.png';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -13,6 +13,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
         { icon: Box, label: 'Activos', path: '/assets' },
         { icon: Calendar, label: 'Mantenimiento', path: '/maintenance' },
+        { icon: CalendarDays, label: 'Feriados', path: '/holidays' },
         { icon: ClipboardList, label: 'Órdenes de Trabajo', path: '/work-orders' },
         { icon: ShoppingCart, label: 'Órdenes de Compra', path: '/purchases' },
         { icon: Box, label: 'Inventario', path: '/inventory' },

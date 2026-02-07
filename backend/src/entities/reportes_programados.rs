@@ -17,11 +17,11 @@ pub struct Model {
     pub proximo_envio: Option<DateTimeWithTimeZone>,
     pub destinatarios: Option<String>,
     pub activo: Option<bool>,
+    pub created_at: Option<DateTimeWithTimeZone>,
+    pub updated_at: Option<DateTimeWithTimeZone>,
     pub fecha_inicio: Date,
     pub fecha_fin: Option<Date>,
     pub hora_ejecucion: Time,
-    pub created_at: Option<DateTimeWithTimeZone>,
-    pub updated_at: Option<DateTimeWithTimeZone>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

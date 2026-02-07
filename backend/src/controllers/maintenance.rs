@@ -297,7 +297,15 @@ pub async fn execute_maintenance(
             _ => None,
         };
 
-        if let Some(next) = next_date {
+        if let Some(base) = next_date {
+            // Apply Panama Rules: Check holidays and weekends
+            // Default policy: Postergar (Move to next working day)
+            let next = crate::utils::scheduler::calculate_next_valid_date(
+                &txn, 
+                base, 
+                crate::utils::scheduler::AjustePolitica::Postergar
+            ).await.unwrap_or(base);
+
             let next_schedule = mantenimiento_calendario::ActiveModel {
                 equipo_id: Set(schedule.equipo_id),
                 tipo_mantenimiento_id: Set(schedule.tipo_mantenimiento_id),

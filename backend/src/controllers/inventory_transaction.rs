@@ -1,6 +1,19 @@
 use sea_orm::*;
 use crate::entities::{prelude::*, *};
 use chrono::prelude::*;
+use axum::{Json, extract::State, response::IntoResponse};
+use crate::utils::error::AppError;
+
+pub async fn get_transactions(
+    State(db): State<DatabaseConnection>,
+) -> Result<impl IntoResponse, AppError> {
+    let txns = inventario_movimientos::Entity::find()
+        .order_by_desc(inventario_movimientos::Column::Fecha)
+        .all(&db)
+        .await
+        .map_err(|e| AppError::Internal(e.to_string()))?;
+    Ok(Json(txns))
+}
 
 // Helper function to create an inventory movement record
 pub async fn log_movement(

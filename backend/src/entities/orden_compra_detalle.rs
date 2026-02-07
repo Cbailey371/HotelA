@@ -21,8 +21,8 @@ pub enum Relation {
         belongs_to = "super::activos_repuestos::Entity",
         from = "Column::IdRepuesto",
         to = "super::activos_repuestos::Column::IdRepuesto",
-        on_update = "Cascade",
-        on_delete = "Cascade"
+        on_update = "NoAction",
+        on_delete = "NoAction"
     )]
     ActivosRepuestos,
 }

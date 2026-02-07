@@ -18,6 +18,7 @@ import PurchasesPage from './pages/PurchasesPage';
 import ReceivingPage from './pages/ReceivingPage';
 import SettingsPage from './pages/SettingsPage';
 import ReportsPage from './pages/ReportsPage';
+import HolidaysPage from './pages/HolidaysPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -53,6 +54,7 @@ function App() {
               <Route path="purchases" element={<PurchaseOrdersPage />} />
               <Route path="purchases/receive/:orderId" element={<ReceivingPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="holidays" element={<HolidaysPage />} />
               <Route path="reports" element={<ReportsPage />} />
             </Route>
           </Routes>

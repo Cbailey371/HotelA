@@ -36,3 +36,6 @@ pub mod tipos_activos;
 pub mod ubicaciones;
 pub mod usuario_roles;
 pub mod usuarios;
+pub mod feriados_pa;
+pub mod configuracion_calendario;
+pub mod excepciones_calendario;

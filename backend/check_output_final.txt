@@ -1,0 +1,1330 @@
+warning: unused imports: `Permisos`, `RolPermisos`, `Roles`, `UsuarioRoles`, and `Usuarios`
+ --> migration/src/m20260127_000008_fix_admin_permissions.rs:2:44
+  |
+2 | ...::{Usuarios, Roles, Permisos, RolPermisos, UsuarioRoles};
+  |       ^^^^^^^^  ^^^^^  ^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `RolPermisos`, `Roles`, `UsuarioRoles`, and `Usuarios`
+ --> migration/src/m20260127_000009_create_super_admin.rs:2:44
+  |
+2 | ...::{Usuarios, Roles, RolPermisos, UsuarioRoles};
+  |       ^^^^^^^^  ^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `Permisos`, `RolPermisos`, `Roles`, `UsuarioRoles`, and `Usuarios`
+ --> migration/src/m20260127_000010_setup_super_admin.rs:2:44
+  |
+2 | ...::{Usuarios, Roles, Permisos, RolPermisos, UsuarioRoles};
+  |       ^^^^^^^^  ^^^^^  ^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused import: `sea_orm_migration::sea_query::*`
+ --> migration/src/m20260128_002201_seed_super_admin_and_more_permissions.rs:2:5
+  |
+2 | use sea_orm_migration::sea_query::*;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `schema::*`
+ --> migration/src/m20260128_003307_assign_super_admin_to_user_1.rs:1:37
+  |
+1 | use sea_orm_migration::{prelude::*, schema::*};
+  |                                     ^^^^^^^^^
+
+warning: unused import: `schema::*`
+ --> migration/src/m20260128_010641_create_settings_table.rs:1:37
+  |
+1 | use sea_orm_migration::{prelude::*, schema::*};
+  |                                     ^^^^^^^^^
+
+warning: unused import: `schema::*`
+ --> migration/src/m20260128_155231_create_company_config.rs:1:37
+  |
+1 | use sea_orm_migration::{prelude::*, schema::*};
+  |                                     ^^^^^^^^^
+
+warning: unused variable: `db`
+ --> migration/src/m20260126_000004_seed_roles_permissions.rs:9:13
+  |
+9 |         let db = manager.get_connection();
+  |             ^^ help: if this is intentional, prefix it with an underscore: `_db`
+  |
+  = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `manager`
+  --> migration/src/m20260126_000004_seed_roles_permissions.rs:54:26
+   |
+54 | ...c fn down(&self, manager: &SchemaManager) -> Res...
+   |                     ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+
+warning: unused variable: `manager`
+  --> migration/src/m20260127_000008_fix_admin_permissions.rs:57:26
+   |
+57 | ...c fn down(&self, manager: &SchemaManager) -> Res...
+   |                     ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+
+warning: unused variable: `manager`
+  --> migration/src/m20260127_000009_create_super_admin.rs:14:26
+   |
+14 | ...c fn down(&self, manager: &SchemaManager) -> Res...
+   |                     ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+
+warning: unused variable: `manager`
+  --> migration/src/m20260127_000010_setup_super_admin.rs:48:26
+   |
+48 | ...c fn down(&self, manager: &SchemaManager) -> Res...
+   |                     ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+
+warning: enum `Roles` is never used
+  --> migration/src/m20260128_002201_seed_super_admin_and_more_permissions.rs:62:6
+   |
+62 | enum Roles {
+   |      ^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: enum `Permisos` is never used
+  --> migration/src/m20260128_002201_seed_super_admin_and_more_permissions.rs:70:6
+   |
+70 | enum Permisos {
+   |      ^^^^^^^^
+
+warning: enum `RolPermisos` is never used
+  --> migration/src/m20260128_002201_seed_super_admin_and_more_permissions.rs:79:6
+   |
+79 | enum RolPermisos {
+   |      ^^^^^^^^^^^
+
+warning: enum `Post` is never used
+  --> migration/src/m20260128_003307_assign_super_admin_to_user_1.rs:35:6
+   |
+35 | enum Post {
+   |      ^^^^
+
+warning: enum `Post` is never used
+  --> migration/src/m20260128_004143_repair_rbac_data.rs:87:6
+   |
+87 | enum Post {
+   |      ^^^^
+
+warning: `migration` (lib) generated 17 warnings (run `cargo fix --lib -p migration` to apply 12 suggestions)
+warning: unused imports: `PasswordHash` and `PasswordVerifier`
+ --> src/bin/gen_hash.rs:3:27
+  |
+3 | ...g, PasswordHash, PasswordHasher, PasswordVerifier, S...
+  |       ^^^^^^^^^^^^                  ^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+    Checking backend v0.1.0 (/Users/cbailey/Documents/Proyectos/HotelA/backend)
+warning: `backend` (bin "gen_hash") generated 1 warning (run `cargo fix --bin "gen_hash" -p backend` to apply 1 suggestion)
+warning: unused import: `super::activos_documentos::Entity as ActivosDocumentos`
+ --> src/bin/../entities/prelude.rs:3:9
+  |
+3 | pub use super::activos_documentos::Entity as ActivosDocumentos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `super::activos_equipos::Entity as ActivosEquipos`
+ --> src/bin/../entities/prelude.rs:4:9
+  |
+4 | pub use super::activos_equipos::Entity as ActivosEquipos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::activos_repuestos::Entity as ActivosRepuestos`
+ --> src/bin/../entities/prelude.rs:5:9
+  |
+5 | pub use super::activos_repuestos::Entity as ActivosRepuestos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::auditoria_acciones::Entity as AuditoriaAcciones`
+ --> src/bin/../entities/prelude.rs:6:9
+  |
+6 | pub use super::auditoria_acciones::Entity as AuditoriaAcciones;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::bodega_ubicaciones::Entity as BodegaUbicaciones`
+ --> src/bin/../entities/prelude.rs:7:9
+  |
+7 | pub use super::bodega_ubicaciones::Entity as BodegaUbicaciones;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::bodegas::Entity as Bodegas`
+ --> src/bin/../entities/prelude.rs:8:9
+  |
+8 | pub use super::bodegas::Entity as Bodegas;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::categorias_activos::Entity as CategoriasActivos`
+ --> src/bin/../entities/prelude.rs:9:9
+  |
+9 | pub use super::categorias_activos::Entity as CategoriasActivos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compras_solicitud_detalle::Entity as ComprasSolicitudDetalle`
+  --> src/bin/../entities/prelude.rs:10:9
+   |
+10 | pub use super::compras_solicitud_detalle::Entity as ComprasSolicitudDetalle;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compras_solicitudes::Entity as ComprasSolicitudes`
+  --> src/bin/../entities/prelude.rs:11:9
+   |
+11 | pub use super::compras_solicitudes::Entity as ComprasSolicitudes;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::config_empresa::Entity as ConfigEmpresa`
+  --> src/bin/../entities/prelude.rs:12:9
+   |
+12 | pub use super::config_empresa::Entity as ConfigEmpresa;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::configuraciones::Entity as Configuraciones`
+  --> src/bin/../entities/prelude.rs:13:9
+   |
+13 | pub use super::configuraciones::Entity as Configuraciones;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::empresas::Entity as Empresas`
+  --> src/bin/../entities/prelude.rs:14:9
+   |
+14 | pub use super::empresas::Entity as Empresas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::historial_repuestos::Entity as HistorialRepuestos`
+  --> src/bin/../entities/prelude.rs:15:9
+   |
+15 | pub use super::historial_repuestos::Entity as HistorialRepuestos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::inventario_movimientos::Entity as InventarioMovimientos`
+  --> src/bin/../entities/prelude.rs:16:9
+   |
+16 | pub use super::inventario_movimientos::Entity as InventarioMovimientos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_calendario::Entity as MantenimientoCalendario`
+  --> src/bin/../entities/prelude.rs:17:9
+   |
+17 | pub use super::mantenimiento_calendario::Entity as MantenimientoCalendario;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_historial::Entity as MantenimientoHistorial`
+  --> src/bin/../entities/prelude.rs:18:9
+   |
+18 | pub use super::mantenimiento_historial::Entity as MantenimientoHistorial;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_repuestos::Entity as MantenimientoRepuestos`
+  --> src/bin/../entities/prelude.rs:19:9
+   |
+19 | pub use super::mantenimiento_repuestos::Entity as MantenimientoRepuestos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_tareas::Entity as MantenimientoTareas`
+  --> src/bin/../entities/prelude.rs:20:9
+   |
+20 | pub use super::mantenimiento_tareas::Entity as MantenimientoTareas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_tipo::Entity as MantenimientoTipo`
+  --> src/bin/../entities/prelude.rs:21:9
+   |
+21 | pub use super::mantenimiento_tipo::Entity as MantenimientoTipo;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::marcas::Entity as Marcas`
+  --> src/bin/../entities/prelude.rs:22:9
+   |
+22 | pub use super::marcas::Entity as Marcas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::orden_compra_detalle::Entity as OrdenCompraDetalle`
+  --> src/bin/../entities/prelude.rs:23:9
+   |
+23 | pub use super::orden_compra_detalle::Entity as OrdenCompraDetalle;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::orden_compra_repuesto::Entity as OrdenCompraRepuesto`
+  --> src/bin/../entities/prelude.rs:24:9
+   |
+24 | pub use super::orden_compra_repuesto::Entity as OrdenCompraRepuesto;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::orden_trabajo::Entity as OrdenTrabajo`
+  --> src/bin/../entities/prelude.rs:25:9
+   |
+25 | pub use super::orden_trabajo::Entity as OrdenTrabajo;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::permisos::Entity as Permisos`
+  --> src/bin/../entities/prelude.rs:26:9
+   |
+26 | pub use super::permisos::Entity as Permisos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::proveedores::Entity as Proveedores`
+  --> src/bin/../entities/prelude.rs:27:9
+   |
+27 | pub use super::proveedores::Entity as Proveedores;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::reportes_programados::Entity as ReportesProgramados`
+  --> src/bin/../entities/prelude.rs:28:9
+   |
+28 | pub use super::reportes_programados::Entity as ReportesProgramados;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::rol_permisos::Entity as RolPermisos`
+  --> src/bin/../entities/prelude.rs:29:9
+   |
+29 | pub use super::rol_permisos::Entity as RolPermisos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::roles::Entity as Roles`
+  --> src/bin/../entities/prelude.rs:30:9
+   |
+30 | pub use super::roles::Entity as Roles;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::tecnicos::Entity as Tecnicos`
+  --> src/bin/../entities/prelude.rs:31:9
+   |
+31 | pub use super::tecnicos::Entity as Tecnicos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::terminos_pago::Entity as TerminosPago`
+  --> src/bin/../entities/prelude.rs:32:9
+   |
+32 | pub use super::terminos_pago::Entity as TerminosPago;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::tipos_activos::Entity as TiposActivos`
+  --> src/bin/../entities/prelude.rs:33:9
+   |
+33 | pub use super::tipos_activos::Entity as TiposActivos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::ubicaciones::Entity as Ubicaciones`
+  --> src/bin/../entities/prelude.rs:34:9
+   |
+34 | pub use super::ubicaciones::Entity as Ubicaciones;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::usuario_roles::Entity as UsuarioRoles`
+  --> src/bin/../entities/prelude.rs:35:9
+   |
+35 | pub use super::usuario_roles::Entity as UsuarioRoles;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::usuarios::Entity as Usuarios`
+  --> src/bin/../entities/prelude.rs:36:9
+   |
+36 | pub use super::usuarios::Entity as Usuarios;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::feriados_pa::Entity as FeriadosPa`
+  --> src/bin/../entities/prelude.rs:37:9
+   |
+37 | pub use super::feriados_pa::Entity as FeriadosPa;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::configuracion_calendario::Entity as ConfiguracionCalendario`
+  --> src/bin/../entities/prelude.rs:38:9
+   |
+38 | pub use super::configuracion_calendario::Entity as ConfiguracionCalendario;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::excepciones_calendario::Entity as ExcepcionesCalendario`
+  --> src/bin/../entities/prelude.rs:39:9
+   |
+39 | pub use super::excepciones_calendario::Entity as ExcepcionesCalendario;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Deserialize` and `Serialize`
+ --> src/bin/../entities/feriados_pa.rs:4:13
+  |
+4 | use serde::{Deserialize, Serialize};
+  |             ^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused imports: `Deserialize` and `Serialize`
+ --> src/bin/../entities/configuracion_calendario.rs:4:13
+  |
+4 | use serde::{Deserialize, Serialize};
+  |             ^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused imports: `Deserialize` and `Serialize`
+ --> src/bin/../entities/excepciones_calendario.rs:4:13
+  |
+4 | use serde::{Deserialize, Serialize};
+  |             ^^^^^^^^^^^  ^^^^^^^^^
+
+error[E0432]: unresolved import `crate::utils::audit`
+ --> src/controllers/assets.rs:6:25
+  |
+6 | use crate::utils::{jwt, audit, code_generator::generate_next_code, error::AppError};
+  |                         ^^^^^ no `audit` in `utils`
+  |
+  = help: consider importing this module instead:
+          crate::controllers::audit
+
+error[E0432]: unresolved import `crate::utils::audit`
+ --> src/controllers/inventory.rs:6:25
+  |
+6 | use crate::utils::{jwt, audit, error::AppError};
+  |                         ^^^^^ no `audit` in `utils`
+  |
+  = help: consider importing this module instead:
+          crate::controllers::audit
+
+error[E0432]: unresolved import `crate::utils::audit`
+ --> src/controllers/asset_config.rs:5:25
+  |
+5 | use crate::utils::{jwt, audit};
+  |                         ^^^^^ no `audit` in `utils`
+  |
+  = help: consider importing this module instead:
+          crate::controllers::audit
+
+error[E0432]: unresolved import `crate::utils::audit`
+ --> src/controllers/payment_terms.rs:5:25
+  |
+5 | use crate::utils::{jwt, audit};
+  |                         ^^^^^ no `audit` in `utils`
+  |
+  = help: consider importing this module instead:
+          crate::controllers::audit
+
+error[E0432]: unresolved import `crate::utils::audit`
+ --> src/controllers/brands.rs:4:25
+  |
+4 | use crate::utils::{jwt, audit};
+  |                         ^^^^^ no `audit` in `utils`
+  |
+  = help: consider importing this module instead:
+          crate::controllers::audit
+
+error[E0433]: failed to resolve: could not find `audit` in `utils`
+  --> src/controllers/auth.rs:70:19
+   |
+70 |     crate::utils::audit::log_action(
+   |                   ^^^^^ could not find `audit` in `utils`
+
+error[E0425]: cannot find value `base_date` in this scope
+   --> src/controllers/maintenance.rs:300:29
+    |
+300 |         if let Some(base) = base_date {
+    |                             ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `get_transactions` in module `controllers::inventory_transaction`
+  --> src/main.rs:68:91
+   |
+68 |                 .route("/inventory/transactions", get(controllers::inventory_transaction::get_transactions))
+   |                                                                                           ^^^^^^^^^^^^^^^^ not found in `controllers::inventory_transaction`
+
+warning: unused import: `super::activos_documentos::Entity as ActivosDocumentos`
+ --> src/entities/prelude.rs:3:9
+  |
+3 | pub use super::activos_documentos::Entity as ActivosDocumentos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `super::activos_equipos::Entity as ActivosEquipos`
+ --> src/entities/prelude.rs:4:9
+  |
+4 | pub use super::activos_equipos::Entity as ActivosEquipos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::auditoria_acciones::Entity as AuditoriaAcciones`
+ --> src/entities/prelude.rs:6:9
+  |
+6 | pub use super::auditoria_acciones::Entity as AuditoriaAcciones;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::bodega_ubicaciones::Entity as BodegaUbicaciones`
+ --> src/entities/prelude.rs:7:9
+  |
+7 | pub use super::bodega_ubicaciones::Entity as BodegaUbicaciones;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::bodegas::Entity as Bodegas`
+ --> src/entities/prelude.rs:8:9
+  |
+8 | pub use super::bodegas::Entity as Bodegas;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::categorias_activos::Entity as CategoriasActivos`
+ --> src/entities/prelude.rs:9:9
+  |
+9 | pub use super::categorias_activos::Entity as CategoriasActivos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::config_empresa::Entity as ConfigEmpresa`
+  --> src/entities/prelude.rs:12:9
+   |
+12 | pub use super::config_empresa::Entity as ConfigEmpresa;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::configuraciones::Entity as Configuraciones`
+  --> src/entities/prelude.rs:13:9
+   |
+13 | pub use super::configuraciones::Entity as Configuraciones;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::empresas::Entity as Empresas`
+  --> src/entities/prelude.rs:14:9
+   |
+14 | pub use super::empresas::Entity as Empresas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::historial_repuestos::Entity as HistorialRepuestos`
+  --> src/entities/prelude.rs:15:9
+   |
+15 | pub use super::historial_repuestos::Entity as HistorialRepuestos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::inventario_movimientos::Entity as InventarioMovimientos`
+  --> src/entities/prelude.rs:16:9
+   |
+16 | pub use super::inventario_movimientos::Entity as InventarioMovimientos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_calendario::Entity as MantenimientoCalendario`
+  --> src/entities/prelude.rs:17:9
+   |
+17 | pub use super::mantenimiento_calendario::Entity as MantenimientoCalendario;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_historial::Entity as MantenimientoHistorial`
+  --> src/entities/prelude.rs:18:9
+   |
+18 | pub use super::mantenimiento_historial::Entity as MantenimientoHistorial;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_repuestos::Entity as MantenimientoRepuestos`
+  --> src/entities/prelude.rs:19:9
+   |
+19 | pub use super::mantenimiento_repuestos::Entity as MantenimientoRepuestos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_tareas::Entity as MantenimientoTareas`
+  --> src/entities/prelude.rs:20:9
+   |
+20 | pub use super::mantenimiento_tareas::Entity as MantenimientoTareas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_tipo::Entity as MantenimientoTipo`
+  --> src/entities/prelude.rs:21:9
+   |
+21 | pub use super::mantenimiento_tipo::Entity as MantenimientoTipo;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::marcas::Entity as Marcas`
+  --> src/entities/prelude.rs:22:9
+   |
+22 | pub use super::marcas::Entity as Marcas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::orden_trabajo::Entity as OrdenTrabajo`
+  --> src/entities/prelude.rs:25:9
+   |
+25 | pub use super::orden_trabajo::Entity as OrdenTrabajo;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::permisos::Entity as Permisos`
+  --> src/entities/prelude.rs:26:9
+   |
+26 | pub use super::permisos::Entity as Permisos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::proveedores::Entity as Proveedores`
+  --> src/entities/prelude.rs:27:9
+   |
+27 | pub use super::proveedores::Entity as Proveedores;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::reportes_programados::Entity as ReportesProgramados`
+  --> src/entities/prelude.rs:28:9
+   |
+28 | pub use super::reportes_programados::Entity as ReportesProgramados;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::rol_permisos::Entity as RolPermisos`
+  --> src/entities/prelude.rs:29:9
+   |
+29 | pub use super::rol_permisos::Entity as RolPermisos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::roles::Entity as Roles`
+  --> src/entities/prelude.rs:30:9
+   |
+30 | pub use super::roles::Entity as Roles;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::tecnicos::Entity as Tecnicos`
+  --> src/entities/prelude.rs:31:9
+   |
+31 | pub use super::tecnicos::Entity as Tecnicos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::terminos_pago::Entity as TerminosPago`
+  --> src/entities/prelude.rs:32:9
+   |
+32 | pub use super::terminos_pago::Entity as TerminosPago;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::tipos_activos::Entity as TiposActivos`
+  --> src/entities/prelude.rs:33:9
+   |
+33 | pub use super::tipos_activos::Entity as TiposActivos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::ubicaciones::Entity as Ubicaciones`
+  --> src/entities/prelude.rs:34:9
+   |
+34 | pub use super::ubicaciones::Entity as Ubicaciones;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::usuario_roles::Entity as UsuarioRoles`
+  --> src/entities/prelude.rs:35:9
+   |
+35 | pub use super::usuario_roles::Entity as UsuarioRoles;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::usuarios::Entity as Usuarios`
+  --> src/entities/prelude.rs:36:9
+   |
+36 | pub use super::usuarios::Entity as Usuarios;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::feriados_pa::Entity as FeriadosPa`
+  --> src/entities/prelude.rs:37:9
+   |
+37 | pub use super::feriados_pa::Entity as FeriadosPa;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::configuracion_calendario::Entity as ConfiguracionCalendario`
+  --> src/entities/prelude.rs:38:9
+   |
+38 | pub use super::configuracion_calendario::Entity as ConfiguracionCalendario;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::excepciones_calendario::Entity as ExcepcionesCalendario`
+  --> src/entities/prelude.rs:39:9
+   |
+39 | pub use super::excepciones_calendario::Entity as ExcepcionesCalendario;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Deserialize` and `Serialize`
+ --> src/entities/feriados_pa.rs:4:13
+  |
+4 | use serde::{Deserialize, Serialize};
+  |             ^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused imports: `Deserialize` and `Serialize`
+ --> src/entities/configuracion_calendario.rs:4:13
+  |
+4 | use serde::{Deserialize, Serialize};
+  |             ^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused imports: `Deserialize` and `Serialize`
+ --> src/entities/excepciones_calendario.rs:4:13
+  |
+4 | use serde::{Deserialize, Serialize};
+  |             ^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused imports: `ColumnTrait` and `QueryFilter`
+ --> src/utils/mailer.rs:3:48
+  |
+3 | use sea_orm::{DatabaseConnection, EntityTrait, ColumnTrait, QueryFilter};
+  |                                                ^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `DatabaseConnection`
+ --> src/utils/code_generator.rs:1:15
+  |
+1 | use sea_orm::{DatabaseConnection, DbErr, ConnectionTrait, Statement, DatabaseBackend};
+  |               ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `configuracion_calendario`
+ --> src/utils/scheduler.rs:3:60
+  |
+3 | use crate::entities::{feriados_pa, excepciones_calendario, configuracion_calendario};
+  |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `http::StatusCode`
+ --> src/controllers/assets.rs:1:66
+  |
+1 | use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode, Extension};
+  |                                                                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ModelTrait` and `RelationTrait`
+ --> src/controllers/assets.rs:5:97
+  |
+5 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, RelationTrait};
+  |                                                                                                 ^^^^^^^^^^  ^^^^^^^^^^^^^
+
+warning: unused import: `ColumnTrait`
+ --> src/controllers/technicians.rs:2:71
+  |
+2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, ColumnTrait};
+  |                                                                       ^^^^^^^^^^^
+
+warning: unused import: `http::StatusCode`
+ --> src/controllers/inventory.rs:1:66
+  |
+1 | use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode, Extension};
+  |                                                                  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `mantenimiento_calendario`
+ --> src/controllers/inventory.rs:5:80
+  |
+5 | use crate::entities::{activos_repuestos, historial_repuestos, activos_equipos, mantenimiento_calendario};
+  |                                                                                ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `JoinType`, `QuerySelect`, and `RelationTrait`
+ --> src/controllers/maintenance.rs:2:97
+  |
+2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QuerySelect, RelationTrait, JoinType, Que...
+  |                                                                                                 ^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^
+
+warning: unused import: `tecnicos`
+ --> src/controllers/maintenance.rs:4:111
+  |
+4 | use crate::entities::{mantenimiento_calendario, mantenimiento_historial, mantenimiento_tipo, activos_equipos, tecnicos, orden_trabajo, ma...
+  |                                                                                                               ^^^^^^^^
+
+warning: unused import: `Path`
+ --> src/controllers/audit.rs:1:35
+  |
+1 | use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode};
+  |                                   ^^^^
+
+warning: unused imports: `JoinType`, `QuerySelect`, and `RelationTrait`
+ --> src/controllers/audit.rs:2:60
+  |
+2 | use sea_orm::{DatabaseConnection, EntityTrait, QueryOrder, QuerySelect, RelationTrait, JoinType};
+  |                                                            ^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^
+
+warning: unused import: `prelude::*`
+  --> src/controllers/reports.rs:11:23
+   |
+11 | use crate::entities::{prelude::*, *};
+   |                       ^^^^^^^^^^
+
+warning: unused imports: `JoinType`, `QuerySelect`, and `RelationTrait`
+ --> src/controllers/work_orders.rs:2:97
+  |
+2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QuerySelect, RelationTrait, JoinType};
+  |                                                                                                 ^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^
+
+warning: unused import: `ModelTrait`
+ --> src/controllers/roles.rs:2:97
+  |
+2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, LoaderTrait};
+  |                                                                                                 ^^^^^^^^^^
+
+error[E0214]: parenthesized type parameters may only be used with a `Fn` trait
+   --> src/controllers/holidays.rs:109:45
+    |
+109 |     axum::extract::Path(id): axum::extract::Path(i32),
+    |                                             ^^^^^^^^^ only `Fn` traits may use parentheses
+    |
+help: use angle brackets instead
+    |
+109 -     axum::extract::Path(id): axum::extract::Path(i32),
+109 +     axum::extract::Path(id): axum::extract::Path<i32>,
+    |
+
+error[E0214]: parenthesized type parameters may only be used with a `Fn` trait
+   --> src/controllers/holidays.rs:130:45
+    |
+130 |     axum::extract::Path(id): axum::extract::Path(i32),
+    |                                             ^^^^^^^^^ only `Fn` traits may use parentheses
+    |
+help: use angle brackets instead
+    |
+130 -     axum::extract::Path(id): axum::extract::Path(i32),
+130 +     axum::extract::Path(id): axum::extract::Path<i32>,
+    |
+
+error[E0277]: the trait bound `usuarios::Entity: sea_orm::Related<entities::roles::Entity>` is not satisfied
+   --> src/controllers/user.rs:118:28
+    |
+118 |     let roles_list = users.load_many_to_many(roles::Entity, usuario_roles::Entity, &db).await
+    |                            ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `sea_orm::Related<entities::roles::Entity>` is not implemented for `usuarios::Entity`
+   --> src/entities/usuarios.rs:5:35
+    |
+  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+    |                                   ^^^^^^^^^^^^^^^^^
+    = help: the following other types implement trait `sea_orm::Related<R>`:
+              `usuarios::Entity` implements `sea_orm::Related<auditoria_acciones::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<empresas::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<entities::activos_equipos::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<entities::mantenimiento_calendario::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<usuario_roles::Entity>`
+note: required by a bound in `load_many_to_many`
+   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/loader.rs:56:63
+    |
+ 43 |     async fn load_many_to_many<R, S, V, C>(
+    |              ----------------- required by a bound in this associated function
+...
+ 56 |         <<Self as LoaderTrait>::Model as ModelTrait>::Entity: Related<R>;
+    |                                                               ^^^^^^^^^^ required by this bound in `LoaderTrait::load_many_to_many`
+    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `usuarios::Entity: sea_orm::Related<entities::roles::Entity>` is not satisfied
+   --> src/controllers/user.rs:206:38
+    |
+206 |     let roles = updated.find_related(roles::Entity).all(&db).await
+    |                         ------------ ^^^^^^^^^^^^^ unsatisfied trait bound
+    |                         |
+    |                         required by a bound introduced by this call
+    |
+help: the trait `sea_orm::Related<entities::roles::Entity>` is not implemented for `usuarios::Entity`
+   --> src/entities/usuarios.rs:5:35
+    |
+  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+    |                                   ^^^^^^^^^^^^^^^^^
+    = help: the following other types implement trait `sea_orm::Related<R>`:
+              `usuarios::Entity` implements `sea_orm::Related<auditoria_acciones::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<empresas::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<entities::activos_equipos::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<entities::mantenimiento_calendario::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<usuario_roles::Entity>`
+note: required by a bound in `sea_orm::ModelTrait::find_related`
+   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/entity/model.rs:26:23
+    |
+ 23 |     fn find_related<R>(&self, _: R) -> Select<R>
+    |        ------------ required by a bound in this associated function
+...
+ 26 |         Self::Entity: Related<R>,
+    |                       ^^^^^^^^^^ required by this bound in `ModelTrait::find_related`
+    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0599]: no variant or associated item named `Id` found for enum `activos_repuestos::Column` in the current scope
+  --> src/bin/../entities/orden_compra_detalle.rs:18:40
+   |
+18 | #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+   |                                        ^^^^^^^^^^^^^^ variant or associated item not found in `activos_repuestos::Column`
+   |
+  ::: src/bin/../entities/activos_repuestos.rs:5:35
+   |
+ 5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+   |                                   ----------------- variant or associated item `Id` not found for this enum
+   |
+   = note: this error originates in the derive macro `DeriveRelation` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `activos_documentos::Model: serde::Serialize` is not satisfied
+   --> src/controllers/assets.rs:513:42
+    |
+513 |   ) -> Result<impl IntoResponse, AppError> {
+    |  __________________________________________^
+514 | |     let new_doc = activos_documentos::ActiveModel {
+515 | |         activo_id: Set(id),
+516 | |         nombre_archivo: Set(payload.nombre_archivo),
+...   |
+523 | |     Ok(Json(doc))
+524 | | }
+    | |_^ unsatisfied trait bound
+    |
+help: the trait `entities::activos_equipos::_::_serde::Serialize` is not implemented for `activos_documentos::Model`
+   --> src/entities/activos_documentos.rs:7:1
+    |
+  7 | pub struct Model {
+    | ^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `activos_documentos::Model` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `entities::activos_equipos::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 250 others
+    = note: required for `axum::Json<activos_documentos::Model>` to implement `IntoResponse`
+
+error[E0277]: the trait bound `activos_documentos::Model: serde::Serialize` is not satisfied
+   --> src/controllers/assets.rs:513:13
+    |
+513 | ) -> Result<impl IntoResponse, AppError> {
+    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `entities::activos_equipos::_::_serde::Serialize` is not implemented for `activos_documentos::Model`
+   --> src/entities/activos_documentos.rs:7:1
+    |
+  7 | pub struct Model {
+    | ^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `activos_documentos::Model` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `entities::activos_equipos::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 250 others
+    = note: required for `axum::Json<activos_documentos::Model>` to implement `IntoResponse`
+
+error[E0308]: mismatched types
+   --> src/controllers/maintenance.rs:304:17
+    |
+303 |             let next = crate::utils::scheduler::calculate_next_valid_date(
+    |                        -------------------------------------------------- arguments to this function are incorrect
+304 |                 &txn, 
+    |                 ^^^^ expected `&DatabaseConnection`, found `&DatabaseTransaction`
+    |
+    = note: expected reference `&sea_orm::DatabaseConnection`
+               found reference `&sea_orm::DatabaseTransaction`
+note: function defined here
+   --> src/utils/scheduler.rs:11:14
+    |
+ 11 | pub async fn calculate_next_valid_date(
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+ 12 |     db: &DatabaseConnection,
+    |     -----------------------
+
+error[E0277]: the trait bound `mantenimiento_tipo::Model: serde::Serialize` is not satisfied
+   --> src/controllers/maintenance.rs:339:42
+    |
+339 |   ) -> Result<impl IntoResponse, AppError> {
+    |  __________________________________________^
+340 | |     let types = mantenimiento_tipo::Entity::find().all(&db).await?;
+341 | |     Ok(Json(types))
+342 | | }
+    | |_^ unsatisfied trait bound
+    |
+help: the trait `entities::activos_equipos::_::_serde::Serialize` is not implemented for `mantenimiento_tipo::Model`
+   --> src/entities/mantenimiento_tipo.rs:7:1
+    |
+  7 | pub struct Model {
+    | ^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `mantenimiento_tipo::Model` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `entities::activos_equipos::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 250 others
+    = note: required for `Vec<mantenimiento_tipo::Model>` to implement `entities::activos_equipos::_::_serde::Serialize`
+    = note: required for `axum::Json<Vec<mantenimiento_tipo::Model>>` to implement `IntoResponse`
+
+error[E0277]: the trait bound `mantenimiento_tipo::Model: serde::Serialize` is not satisfied
+   --> src/controllers/maintenance.rs:339:13
+    |
+339 | ) -> Result<impl IntoResponse, AppError> {
+    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `entities::activos_equipos::_::_serde::Serialize` is not implemented for `mantenimiento_tipo::Model`
+   --> src/entities/mantenimiento_tipo.rs:7:1
+    |
+  7 | pub struct Model {
+    | ^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `mantenimiento_tipo::Model` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `entities::activos_equipos::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 250 others
+    = note: required for `Vec<mantenimiento_tipo::Model>` to implement `entities::activos_equipos::_::_serde::Serialize`
+    = note: required for `axum::Json<Vec<mantenimiento_tipo::Model>>` to implement `IntoResponse`
+
+error[E0277]: the trait bound `entities::reportes_programados::Model: serde::Serialize` is not satisfied
+   --> src/controllers/reports.rs:191:42
+    |
+191 |   ) -> Result<impl IntoResponse, AppError> {
+    |  __________________________________________^
+192 | |     let reports = reportes_programados::Entity::find()
+193 | |         .order_by_desc(reportes_programados::Column::CreatedAt)
+194 | |         .all(&db)
+195 | |         .await?;
+196 | |     Ok(Json(reports))
+197 | | }
+    | |_^ unsatisfied trait bound
+    |
+help: the trait `entities::activos_equipos::_::_serde::Serialize` is not implemented for `entities::reportes_programados::Model`
+   --> src/entities/reportes_programados.rs:7:1
+    |
+  7 | pub struct Model {
+    | ^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::reportes_programados::Model` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `entities::activos_equipos::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 250 others
+    = note: required for `Vec<entities::reportes_programados::Model>` to implement `entities::activos_equipos::_::_serde::Serialize`
+    = note: required for `axum::Json<Vec<entities::reportes_programados::Model>>` to implement `IntoResponse`
+
+error[E0277]: the trait bound `entities::reportes_programados::Model: serde::Serialize` is not satisfied
+   --> src/controllers/reports.rs:191:13
+    |
+191 | ) -> Result<impl IntoResponse, AppError> {
+    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `entities::activos_equipos::_::_serde::Serialize` is not implemented for `entities::reportes_programados::Model`
+   --> src/entities/reportes_programados.rs:7:1
+    |
+  7 | pub struct Model {
+    | ^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::reportes_programados::Model` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `entities::activos_equipos::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 250 others
+    = note: required for `Vec<entities::reportes_programados::Model>` to implement `entities::activos_equipos::_::_serde::Serialize`
+    = note: required for `axum::Json<Vec<entities::reportes_programados::Model>>` to implement `IntoResponse`
+
+error[E0277]: the trait bound `entities::reportes_programados::Model: serde::Serialize` is not satisfied
+   --> src/controllers/reports.rs:214:42
+    |
+214 |   ) -> Result<impl IntoResponse, AppError> {
+    |  __________________________________________^
+215 | |     let new_report = reportes_programados::ActiveModel {
+216 | |         nombre: Set(payload.nombre),
+217 | |         tipo_reporte: Set(payload.tipo_reporte),
+...   |
+229 | |     Ok(Json(saved))
+230 | | }
+    | |_^ unsatisfied trait bound
+    |
+help: the trait `entities::activos_equipos::_::_serde::Serialize` is not implemented for `entities::reportes_programados::Model`
+   --> src/entities/reportes_programados.rs:7:1
+    |
+  7 | pub struct Model {
+    | ^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::reportes_programados::Model` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `entities::activos_equipos::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 250 others
+    = note: required for `axum::Json<entities::reportes_programados::Model>` to implement `IntoResponse`
+
+error[E0277]: the trait bound `entities::reportes_programados::Model: serde::Serialize` is not satisfied
+   --> src/controllers/reports.rs:214:13
+    |
+214 | ) -> Result<impl IntoResponse, AppError> {
+    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `entities::activos_equipos::_::_serde::Serialize` is not implemented for `entities::reportes_programados::Model`
+   --> src/entities/reportes_programados.rs:7:1
+    |
+  7 | pub struct Model {
+    | ^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::reportes_programados::Model` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `entities::activos_equipos::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 250 others
+    = note: required for `axum::Json<entities::reportes_programados::Model>` to implement `IntoResponse`
+
+error[E0277]: the trait bound `entities::reportes_programados::Model: serde::Serialize` is not satisfied
+   --> src/controllers/reports.rs:236:42
+    |
+236 |   ) -> Result<impl IntoResponse, AppError> {
+    |  __________________________________________^
+237 | |     let report: Option<reportes_programados::Model> = reportes_programados::Entity::find_by_id(id)
+238 | |         .one(&db)
+239 | |         .await?;
+...   |
+255 | |     Ok(Json(updated))
+256 | | }
+    | |_^ unsatisfied trait bound
+    |
+help: the trait `entities::activos_equipos::_::_serde::Serialize` is not implemented for `entities::reportes_programados::Model`
+   --> src/entities/reportes_programados.rs:7:1
+    |
+  7 | pub struct Model {
+    | ^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::reportes_programados::Model` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `entities::activos_equipos::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 250 others
+    = note: required for `axum::Json<entities::reportes_programados::Model>` to implement `IntoResponse`
+
+error[E0277]: the trait bound `entities::reportes_programados::Model: serde::Serialize` is not satisfied
+   --> src/controllers/reports.rs:236:13
+    |
+236 | ) -> Result<impl IntoResponse, AppError> {
+    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `entities::activos_equipos::_::_serde::Serialize` is not implemented for `entities::reportes_programados::Model`
+   --> src/entities/reportes_programados.rs:7:1
+    |
+  7 | pub struct Model {
+    | ^^^^^^^^^^^^^^^^
+    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::reportes_programados::Model` type
+    = note: for types from other crates check whether the crate offers a `serde` feature flag
+    = help: the following other types implement trait `entities::activos_equipos::_::_serde::Serialize`:
+              &'a T
+              &'a mut T
+              ()
+              (T,)
+              (T0, T1)
+              (T0, T1, T2)
+              (T0, T1, T2, T3)
+              (T0, T1, T2, T3, T4)
+            and 250 others
+    = note: required for `axum::Json<entities::reportes_programados::Model>` to implement `IntoResponse`
+
+error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
+   --> src/controllers/work_orders.rs:103:61
+    |
+103 |                 .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot.id_ot))
+    |                                                             ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
+    |
+   ::: src/entities/mantenimiento_calendario.rs:5:35
+    |
+  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
+
+error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
+   --> src/controllers/work_orders.rs:112:57
+    |
+112 |             .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot.id_ot))
+    |                                                         ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
+    |
+   ::: src/entities/mantenimiento_calendario.rs:5:35
+    |
+  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
+
+error[E0308]: mismatched types
+   --> src/controllers/work_orders.rs:126:28
+    |
+126 |         .find_also_related(activos_equipos::Entity)
+    |          ----------------- ^^^^^^^^^^^^^^^^^^^^^^^ expected `Entity`, found `entities::activos_equipos::Entity`
+    |          |
+    |          arguments to this method are incorrect
+    |
+    = note: `entities::activos_equipos::Entity` and `Entity` have similar names, but are actually distinct types
+note: `entities::activos_equipos::Entity` is defined in module `crate::entities::activos_equipos` of the current crate
+   --> src/entities/activos_equipos.rs:6:35
+    |
+  6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+    |                                   ^^^^^^^^^^^^^^^^^
+note: `Entity` is defined in module `crate::entities::mantenimiento_calendario` of the current crate
+   --> src/entities/mantenimiento_calendario.rs:5:35
+    |
+  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+    |                                   ^^^^^^^^^^^^^^^^^
+help: the return type of this call is `entities::activos_equipos::Entity` due to the type of the argument passed
+   --> src/controllers/work_orders.rs:125:18
+    |
+125 |       let orders = orden_trabajo::Entity::find()
+    |  __________________^
+126 | |         .find_also_related(activos_equipos::Entity)
+    | |____________________________-----------------------^
+    |                              |
+    |                              this argument influences the return type of `find_also_related`
+note: method defined here
+   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/join.rs:49:12
+    |
+ 49 |     pub fn find_also_related<R>(self, r: R) -> SelectTwo<E, R>
+    |            ^^^^^^^^^^^^^^^^^
+    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0609]: no field `orden_trabajo_id` on type `&entities::mantenimiento_calendario::Model`
+   --> src/controllers/work_orders.rs:166:32
+    |
+166 | ...   .filter(|(s, _)| s.orden_trabajo_id == Some(ot.id_ot) || (ot.id_calendario.is_some() && Some(s.id_mantenimiento_calendario) == ot.i...
+    |                          ^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `id_mantenimiento_calendario`, `equipo_id`, `tipo_mantenimiento_id`, `frecuencia`, `intervalo_valor` ... and 17 others
+
+error[E0308]: mismatched types
+   --> src/controllers/work_orders.rs:199:13
+    |
+199 |             activo,
+    |             ^^^^^^ expected `entities::activos_equipos::Model`, found `Model`
+    |
+    = note: `Model` and `entities::activos_equipos::Model` have similar names, but are actually distinct types
+note: `Model` is defined in module `crate::entities::mantenimiento_calendario` of the current crate
+   --> src/entities/mantenimiento_calendario.rs:7:1
+    |
+  7 | pub struct Model {
+    | ^^^^^^^^^^^^^^^^
+note: `entities::activos_equipos::Model` is defined in module `crate::entities::activos_equipos` of the current crate
+   --> src/entities/activos_equipos.rs:8:1
+    |
+  8 | pub struct Model {
+    | ^^^^^^^^^^^^^^^^
+
+error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
+   --> src/controllers/work_orders.rs:295:57
+    |
+295 |             .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(Option::<i32>::None))
+    |                                                         ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
+    |
+   ::: src/entities/mantenimiento_calendario.rs:5:35
+    |
+  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
+
+error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
+   --> src/controllers/work_orders.rs:296:55
+    |
+296 |             .filter(mantenimiento_calendario::Column::OrdenTrabajoId.eq(ot_id))
+    |                                                       ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
+    |
+   ::: src/entities/mantenimiento_calendario.rs:5:35
+    |
+  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
+
+error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
+   --> src/controllers/work_orders.rs:304:61
+    |
+304 |                 .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot_id))
+    |                                                             ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
+    |
+   ::: src/entities/mantenimiento_calendario.rs:5:35
+    |
+  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
+
+error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
+   --> src/controllers/work_orders.rs:318:61
+    |
+318 |                 .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(Option::<i32>::None))
+    |                                                             ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
+    |
+   ::: src/entities/mantenimiento_calendario.rs:5:35
+    |
+  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
+
+For more information about this error, try `rustc --explain E0599`.
+error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
+   --> src/controllers/work_orders.rs:319:59
+    |
+319 |                 .filter(mantenimiento_calendario::Column::OrdenTrabajoId.eq(ot_id))
+    |                                                           ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
+    |
+   ::: src/entities/mantenimiento_calendario.rs:5:35
+    |
+  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
+
+warning: `backend` (bin "reset_password") generated 40 warnings
+error: could not compile `backend` (bin "reset_password") due to 1 previous error; 40 warnings emitted
+warning: build failed, waiting for other jobs to finish...
+error[E0277]: the trait bound `entities::roles::Entity: sea_orm::Related<permisos::Entity>` is not satisfied
+  --> src/controllers/roles.rs:53:34
+   |
+53 |     let permissions = roles_list.load_many_to_many(permisos::Entity, rol_permisos::Entity, &db).await
+   |                                  ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+   |
+help: the trait `sea_orm::Related<permisos::Entity>` is not implemented for `entities::roles::Entity`
+  --> src/entities/roles.rs:5:35
+   |
+ 5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+   |                                   ^^^^^^^^^^^^^^^^^
+   = help: the following other types implement trait `sea_orm::Related<R>`:
+             `entities::roles::Entity` implements `sea_orm::Related<rol_permisos::Entity>`
+             `entities::roles::Entity` implements `sea_orm::Related<usuario_roles::Entity>`
+note: required by a bound in `load_many_to_many`
+  --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/loader.rs:56:63
+   |
+43 |     async fn load_many_to_many<R, S, V, C>(
+   |              ----------------- required by a bound in this associated function
+...
+56 |         <<Self as LoaderTrait>::Model as ModelTrait>::Entity: Related<R>;
+   |                                                               ^^^^^^^^^^ required by this bound in `LoaderTrait::load_many_to_many`
+   = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `entities::roles::Entity: sea_orm::Related<usuarios::Entity>` is not satisfied
+  --> src/controllers/roles.rs:58:37
+   |
+58 |     let users_assigned = roles_list.load_many_to_many(crate::entities::usuarios::Entity, usuario_roles::Entity, &db).await
+   |                                     ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+   |
+help: the trait `sea_orm::Related<usuarios::Entity>` is not implemented for `entities::roles::Entity`
+  --> src/entities/roles.rs:5:35
+   |
+ 5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+   |                                   ^^^^^^^^^^^^^^^^^
+   = help: the following other types implement trait `sea_orm::Related<R>`:
+             `entities::roles::Entity` implements `sea_orm::Related<rol_permisos::Entity>`
+             `entities::roles::Entity` implements `sea_orm::Related<usuario_roles::Entity>`
+note: required by a bound in `load_many_to_many`
+  --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/loader.rs:56:63
+   |
+43 |     async fn load_many_to_many<R, S, V, C>(
+   |              ----------------- required by a bound in this associated function
+...
+56 |         <<Self as LoaderTrait>::Model as ModelTrait>::Entity: Related<R>;
+   |                                                               ^^^^^^^^^^ required by this bound in `LoaderTrait::load_many_to_many`
+   = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0599]: no variant or associated item named `Id` found for enum `entities::activos_repuestos::Column` in the current scope
+  --> src/entities/orden_compra_detalle.rs:18:40
+   |
+18 | #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+   |                                        ^^^^^^^^^^^^^^ variant or associated item not found in `entities::activos_repuestos::Column`
+   |
+  ::: src/entities/activos_repuestos.rs:5:35
+   |
+ 5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+   |                                   ----------------- variant or associated item `Id` not found for this enum
+   |
+   = note: this error originates in the derive macro `DeriveRelation` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+Some errors have detailed explanations: E0214, E0277, E0308, E0425, E0432, E0433, E0599, E0609.
+For more information about an error, try `rustc --explain E0214`.
+warning: `backend` (bin "backend") generated 50 warnings
+error: could not compile `backend` (bin "backend") due to 36 previous errors; 50 warnings emitted

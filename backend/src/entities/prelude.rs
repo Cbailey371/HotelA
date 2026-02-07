@@ -34,3 +34,6 @@ pub use super::tipos_activos::Entity as TiposActivos;
 pub use super::ubicaciones::Entity as Ubicaciones;
 pub use super::usuario_roles::Entity as UsuarioRoles;
 pub use super::usuarios::Entity as Usuarios;
+pub use super::feriados_pa::Entity as FeriadosPa;
+pub use super::configuracion_calendario::Entity as ConfiguracionCalendario;
+pub use super::excepciones_calendario::Entity as ExcepcionesCalendario;
