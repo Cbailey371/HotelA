@@ -133,7 +133,7 @@ const WorkOrdersPage = () => {
     };
 
     const handleCreate = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         try {
             if (editingOrder) {
                 await workOrderService.update(editingOrder.id_ot, {
