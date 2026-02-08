@@ -425,10 +425,10 @@ const MaintenancePage = () => {
         setSelectedSchedule(schedule);
         setExecuteForm({
             fecha_ejecucion: new Date().toISOString().split('T')[0],
-            tecnico_id: '',
-            observaciones: '',
+            tecnico_id: schedule.tecnico_id || '',
+            observaciones: schedule.observaciones || '', // Bring instructions as initial findings context
             horas_trabajo: 1,
-            costo_mano_obra: 0
+            costo_mano_obra: schedule.costo_estimado || 0
         });
         setIsDirty(false);
         setShowExecuteModal(true);
