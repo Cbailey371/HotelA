@@ -289,12 +289,31 @@ pub async fn execute_maintenance(
     }
 
     if schedule.recurrente {
+        println!("DEBUG: Executing recurring maintenance ID: {}", schedule.id_mantenimiento_calendario);
+        println!("DEBUG: Frequency found: {:?}", schedule.frecuencia);
+        println!("DEBUG: Execution Date (Base): {:?}", fecha_e);
+
         let next_date = match schedule.frecuencia.as_deref() {
-            Some("Mensual") => Some(fecha_e + chrono::Months::new(1)),
-            Some("Trimestral") => Some(fecha_e + chrono::Months::new(3)),
-            Some("Semestral") => Some(fecha_e + chrono::Months::new(6)),
-            Some("Anual") => Some(fecha_e + chrono::Months::new(12)),
-            _ => None,
+            Some("Mensual") => {
+                println!("DEBUG: Matched Mensual (+1 Month)");
+                Some(fecha_e + chrono::Months::new(1))
+            },
+            Some("Trimestral") => {
+                println!("DEBUG: Matched Trimestral (+3 Months)");
+                Some(fecha_e + chrono::Months::new(3))
+            },
+            Some("Semestral") => {
+                println!("DEBUG: Matched Semestral (+6 Months)");
+                Some(fecha_e + chrono::Months::new(6))
+            },
+            Some("Anual") => {
+                println!("DEBUG: Matched Anual (+12 Months)");
+                Some(fecha_e + chrono::Months::new(12))
+            },
+            _ => {
+                println!("DEBUG: No frequency match found");
+                None
+            },
         };
 
         if let Some(base) = next_date {

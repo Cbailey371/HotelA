@@ -566,7 +566,7 @@ const MaintenancePage = () => {
                                     </td>
                                     <td className="px-8 py-5">
                                         <div className="text-xs font-black text-blue-600 mb-0.5 uppercase tracking-wider">{s.tipo}</div>
-                                        <div className="text-[10px] text-slate-400 font-bold uppercase">Preventivo Semestral</div>
+                                        <div className="text-[10px] text-slate-400 font-bold uppercase">{s.recurrente ? s.frecuencia : 'Evento Único'}</div>
                                     </td>
                                     <td className="px-8 py-5">
                                         <div className="flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300">
