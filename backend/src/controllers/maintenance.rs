@@ -319,6 +319,8 @@ pub async fn execute_maintenance(
                 tarea_tipo_id: Set(schedule.tarea_tipo_id),
                 recurrente: Set(true),
                 responsable_interno_email: Set(schedule.responsable_interno_email.clone()),
+                ..Default::default()
+            };
             next_schedule.insert(&txn).await?;
             format!("Mantenimiento completado. Próximo: {}", next)
         } else {
