@@ -53,11 +53,13 @@ pub async fn seed_holidays(
     Query(params): Query<HolidayFilter>,
 ) -> Result<impl IntoResponse, AppError> {
     let year = params.year.unwrap_or_else(|| chrono::Local::now().year());
-    let fixed = crate::utils::scheduler::get_panama_fixed_holidays(year);
-
+    let mut holidays = crate::utils::scheduler::get_panama_fixed_holidays(year);
+    let mut variable = crate::utils::scheduler::get_panama_variable_holidays(year);
+    holidays.append(&mut variable);
+    
     use sea_orm::{Set, ActiveModelTrait};
 
-    for (date, desc) in fixed {
+    for (date, desc) in holidays {
         // Check if exists
         let exists = feriados_pa::Entity::find()
             .filter(feriados_pa::Column::Fecha.eq(date))
