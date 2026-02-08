@@ -240,11 +240,11 @@ const MaintenancePage = () => {
         payload.costo_mano_obra = parseFloat(payload.costo_mano_obra) || 0;
 
         try {
-            await api.post(`/maintenance/execute/${selectedSchedule.id}`, payload);
+            const res = await api.post(`/maintenance/execute/${selectedSchedule.id}`, payload);
             setShowExecuteModal(false);
             setIsDirty(false);
             console.log('Ejecución registrada correctamente');
-            alert('Mantenimiento completado y reprogramado exitosamente.');
+            alert(res.data); // Show detailed message from backend
             fetchAllData();
         } catch (error) {
             console.error("Error executing maintenance:", error);
