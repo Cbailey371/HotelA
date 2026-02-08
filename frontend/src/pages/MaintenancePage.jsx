@@ -202,8 +202,8 @@ const MaintenancePage = () => {
 
         try {
             if (editingId) {
-                await api.put(`/maintenance/schedule/${editingId}`, sanitizedData);
-                alert('Plan actualizado exitosamente');
+                const res = await api.put(`/maintenance/schedule/${editingId}`, sanitizedData);
+                alert('Resultado: ' + res.data);
             } else {
                 const res = await api.post('/maintenance/schedule', sanitizedData);
                 const newId = res.data;
