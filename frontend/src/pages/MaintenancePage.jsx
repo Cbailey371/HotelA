@@ -304,6 +304,14 @@ const MaintenancePage = () => {
 
 
     const updateScheduleStatus = async (id, newStatus) => {
+        if (newStatus === 'completado') {
+            const schedule = schedules.find(s => s.id === id);
+            if (schedule) {
+                openExecuteModal(schedule);
+            }
+            return;
+        }
+
         try {
             await api.put(`/maintenance/schedule/${id}`, { estado: newStatus });
             fetchAllData();
@@ -575,6 +583,16 @@ const MaintenancePage = () => {
                                             >
                                                 <Settings className="w-4 h-4" />
                                             </button>
+
+                                            {s.estado === 'programado' && (
+                                                <button
+                                                    onClick={() => openExecuteModal(s)}
+                                                    className="bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40 p-2 rounded-lg transition-colors border border-emerald-200 dark:border-emerald-800"
+                                                    title="Registrar Ejecución"
+                                                >
+                                                    <CheckCircle className="w-4 h-4" />
+                                                </button>
+                                            )}
 
                                             {s.estado === 'programado' && !s.tiene_ot && (
                                                 <button
