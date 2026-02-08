@@ -1,5 +1,5 @@
 use chrono::{NaiveDate, Datelike, Duration};
-use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait};
+use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait, ConnectionTrait};
 use crate::entities::{feriados_pa, excepciones_calendario, configuracion_calendario};
 
 pub enum AjustePolitica {
@@ -8,11 +8,12 @@ pub enum AjustePolitica {
     Mantener,  // Keep original date
 }
 
-pub async fn calculate_next_valid_date(
-    db: &DatabaseConnection,
+pub async fn calculate_next_valid_date<C>(
+    db: &C,
     target_date: NaiveDate,
     politica: AjustePolitica,
-) -> Result<NaiveDate, Box<dyn std::error::Error>> {
+) -> Result<NaiveDate, Box<dyn std::error::Error>>
+where C: ConnectionTrait {
     if is_working_day(db, target_date).await? {
         return Ok(target_date);
     }
@@ -25,7 +26,7 @@ pub async fn calculate_next_valid_date(
             }
         },
         AjustePolitica::Anticipar => {
-             while !is_working_day(db, current_date).await? {
+            while !is_working_day(db, current_date).await? {
                 current_date -= Duration::days(1);
             }
         },
@@ -35,10 +36,11 @@ pub async fn calculate_next_valid_date(
     Ok(current_date)
 }
 
-pub async fn is_working_day(
-    db: &DatabaseConnection,
+pub async fn is_working_day<C>(
+    db: &C,
     date: NaiveDate,
-) -> Result<bool, Box<dyn std::error::Error>> {
+) -> Result<bool, Box<dyn std::error::Error>> 
+where C: ConnectionTrait {
     // 1. Check Manual Exceptions (Highest Priority)
     // If it's an "Extra Working Day", return true immediately.
     // If it's a "Non-Working Day" (manual override), return false.

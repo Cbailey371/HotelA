@@ -106,7 +106,7 @@ pub async fn create_holiday(
 
 pub async fn update_holiday(
     State(db): State<DatabaseConnection>,
-    axum::extract::Path(id): axum::extract::Path(i32),
+    axum::extract::Path(id): axum::extract::Path<i32>,
     Json(payload): Json<CreateHolidayDto>,
 ) -> Result<impl IntoResponse, AppError> {
     use sea_orm::{Set, ActiveModelTrait};
@@ -127,7 +127,7 @@ pub async fn update_holiday(
 
 pub async fn delete_holiday(
     State(db): State<DatabaseConnection>,
-    axum::extract::Path(id): axum::extract::Path(i32),
+    axum::extract::Path(id): axum::extract::Path<i32>,
 ) -> Result<impl IntoResponse, AppError> {
     use sea_orm::ModelTrait;
     

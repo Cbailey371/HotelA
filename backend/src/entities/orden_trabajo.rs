@@ -38,7 +38,7 @@ pub enum Relation {
     #[sea_orm(
         belongs_to = "super::activos_equipos::Entity",
         from = "Column::IdActivo",
-        to = "super::activos_equipos::Column::Id",
+        to = "super::activos_equipos::Column::IdEquipo",
         on_update = "Cascade",
         on_delete = "Cascade"
     )]
