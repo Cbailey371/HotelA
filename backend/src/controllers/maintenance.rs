@@ -288,7 +288,7 @@ pub async fn execute_maintenance(
         usage_record.insert(&txn).await?;
     }
 
-    if schedule.recurrente {
+    let message = if schedule.recurrente {
         println!("DEBUG: Executing recurring maintenance ID: {}", schedule.id_mantenimiento_calendario);
         println!("DEBUG: Frequency found: {:?}", schedule.frecuencia);
         println!("DEBUG: Execution Date (Base): {:?}", fecha_e);
