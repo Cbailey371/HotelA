@@ -345,13 +345,18 @@ pub async fn execute_maintenance(
                 ..Default::default()
             };
             next_schedule.insert(&txn).await?;
-            Ok(Json(format!("Mantenimiento completado. Próximo: {} (Freq: {:?})", next, schedule.frecuencia)))
+            format!("Mantenimiento completado. Próximo: {} (Freq: {:?})", next, schedule.frecuencia)
         } else {
-            Ok(Json("Mantenimiento completado. No se generó siguiente fecha (Frecuencia no coincidente o inválida).".to_string()))
+            "Mantenimiento completado. No se generó siguiente fecha (Frecuencia no coincidente o inválida).".to_string()
         }
     } else {
-        Ok(Json("Mantenimiento completado (No recurrente).".to_string()))
-    }
+        "Mantenimiento completado (No recurrente).".to_string()
+    };
+    
+    txn.commit().await?;
+
+    Ok(Json(message))
+}
 
 pub async fn get_maintenance_types(
     State(db): State<DatabaseConnection>,
