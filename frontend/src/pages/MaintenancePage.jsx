@@ -196,14 +196,10 @@ const MaintenancePage = () => {
         delete sanitizedData.minutos;
         delete sanitizedData.periodo;
 
-        // DEBUG PAYLOAD
-        console.log("Saving schedule data:", sanitizedData);
-        alert(`DEBUG: Enviando Frecuencia: ${sanitizedData.frecuencia}`);
-
         try {
             if (editingId) {
-                const res = await api.put(`/maintenance/schedule/${editingId}`, sanitizedData);
-                alert('Resultado: ' + res.data);
+                await api.put(`/maintenance/schedule/${editingId}`, sanitizedData);
+                alert('Plan actualizado exitosamente');
             } else {
                 const res = await api.post('/maintenance/schedule', sanitizedData);
                 const newId = res.data;

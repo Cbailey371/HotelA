@@ -201,11 +201,9 @@ pub async fn update_schedule(
     // ... logic continues ...
     if let Some(v) = payload.estado { schedule_active.estado = Set(Some(v)); }
 
-    println!("DEBUG: Saving schedule ID: {}", id);
-    let updated = schedule_active.update(&db).await?;
-    println!("DEBUG: Final Frequency in DB: {:?}", updated.frecuencia);
+    schedule_active.update(&db).await?;
 
-    Ok(Json(format!("Actualizado. Nueva Frecuencia en BD: {:?}", updated.frecuencia)))
+    Ok(Json("Schedule updated successfully".to_string()))
 }
 
 pub async fn delete_schedule(
@@ -283,31 +281,16 @@ pub async fn execute_maintenance(
     }
 
     let message = if schedule.recurrente {
-        println!("DEBUG: Executing recurring maintenance ID: {}", schedule.id_mantenimiento_calendario);
-        println!("DEBUG: Frequency found: {:?}", schedule.frecuencia);
-        println!("DEBUG: Execution Date (Base): {:?}", fecha_e);
-
+        let base_recurrence = schedule.fecha_programada.unwrap_or(fecha_e);
+        
         let next_date = match schedule.frecuencia.as_deref() {
-            Some("Mensual") => {
-                println!("DEBUG: Matched Mensual (+1 Month)");
-                Some(fecha_e + chrono::Months::new(1))
-            },
-            Some("Trimestral") => {
-                println!("DEBUG: Matched Trimestral (+3 Months)");
-                Some(fecha_e + chrono::Months::new(3))
-            },
-            Some("Semestral") => {
-                println!("DEBUG: Matched Semestral (+6 Months)");
-                Some(fecha_e + chrono::Months::new(6))
-            },
-            Some("Anual") => {
-                println!("DEBUG: Matched Anual (+12 Months)");
-                Some(fecha_e + chrono::Months::new(12))
-            },
-            _ => {
-                println!("DEBUG: No frequency match found");
-                None
-            },
+            Some("Mensual") => Some(base_recurrence + chrono::Months::new(1)),
+            Some("Trimestral") => Some(base_recurrence + chrono::Months::new(3)),
+            Some("Semestral") => Some(base_recurrence + chrono::Months::new(6)),
+            Some("Anual") => Some(base_recurrence + chrono::Months::new(12)),
+            Some("Diaria") => Some(base_recurrence + chrono::Duration::days(1)),
+            Some("Semanal") => Some(base_recurrence + chrono::Duration::weeks(1)),
+            _ => None,
         };
 
         if let Some(base) = next_date {
@@ -336,12 +319,10 @@ pub async fn execute_maintenance(
                 tarea_tipo_id: Set(schedule.tarea_tipo_id),
                 recurrente: Set(true),
                 responsable_interno_email: Set(schedule.responsable_interno_email.clone()),
-                ..Default::default()
-            };
             next_schedule.insert(&txn).await?;
-            format!("Mantenimiento completado. Próximo: {} (Freq: {:?})", next, schedule.frecuencia)
+            format!("Mantenimiento completado. Próximo: {}", next)
         } else {
-            "Mantenimiento completado. No se generó siguiente fecha (Frecuencia no coincidente o inválida).".to_string()
+            "Mantenimiento completado. No se generó siguiente fecha (Frecuencia inválida).".to_string()
         }
     } else {
         "Mantenimiento completado (No recurrente).".to_string()
