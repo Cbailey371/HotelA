@@ -13,7 +13,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
         { icon: Box, label: 'Activos', path: '/assets' },
         { icon: Calendar, label: 'Mantenimiento', path: '/maintenance' },
-        { icon: CalendarDays, label: 'Feriados', path: '/holidays' },
+
         { icon: ClipboardList, label: 'Órdenes de Trabajo', path: '/work-orders' },
         { icon: ShoppingCart, label: 'Órdenes de Compra', path: '/purchases' },
         { icon: Box, label: 'Inventario', path: '/inventory' },
@@ -23,6 +23,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { icon: Users, label: 'Usuarios', path: '/users', roles: ['ADMINISTRADOR', 'SUPER-ADMIN'] },
         { icon: Shield, label: 'Roles y Permisos', path: '/roles', roles: ['ADMINISTRADOR', 'SUPER-ADMIN'] },
         { icon: LayoutDashboard, label: 'Auditoría', path: '/audit', roles: ['ADMINISTRADOR', 'SUPER-ADMIN'] },
+        { icon: CalendarDays, label: 'Feriados', path: '/holidays' },
         { icon: Settings, label: 'Configuración', path: '/settings' },
     ];
 
