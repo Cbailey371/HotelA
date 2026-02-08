@@ -225,12 +225,31 @@ const MaintenancePage = () => {
 
     const handleExecuteSubmit = async (e) => {
         if (e) e.preventDefault();
+
+        const payload = { ...executeForm };
+
+        // Validation
+        if (!payload.tecnico_id) {
+            alert('Debe seleccionar un técnico responsable.');
+            return;
+        }
+
+        // Parse types
+        payload.tecnico_id = parseInt(payload.tecnico_id);
+        payload.horas_trabajo = parseFloat(payload.horas_trabajo) || 0;
+        payload.costo_mano_obra = parseFloat(payload.costo_mano_obra) || 0;
+
         try {
-            await api.post(`/maintenance/execute/${selectedSchedule.id}`, executeForm);
+            await api.post(`/maintenance/execute/${selectedSchedule.id}`, payload);
             setShowExecuteModal(false);
             setIsDirty(false);
+            console.log('Ejecución registrada correctamente');
+            alert('Mantenimiento completado y reprogramado exitosamente.');
             fetchAllData();
-        } catch (error) { console.error(error); }
+        } catch (error) {
+            console.error("Error executing maintenance:", error);
+            alert("Error al registrar la ejecución: " + (error.response?.data || error.message));
+        }
     };
 
     const handleCreateWorkOrder = async (schedule) => {
