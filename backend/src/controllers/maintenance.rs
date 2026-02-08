@@ -190,7 +190,10 @@ pub async fn update_schedule(
 
     if let Some(v) = payload.equipo_id { schedule_active.equipo_id = Set(v); }
     if let Some(v) = payload.tipo_mantenimiento_id { schedule_active.tipo_mantenimiento_id = Set(v); }
-    if let Some(v) = payload.frecuencia { schedule_active.frecuencia = Set(Some(v)); }
+    if let Some(v) = payload.frecuencia { 
+        println!("DEBUG: Updating frequency to: {}", v);
+        schedule_active.frecuencia = Set(Some(v)); 
+    }
     if let Some(v) = payload.fecha_programada { 
         let fecha = NaiveDate::parse_from_str(&v, "%Y-%m-%d").ok();
         schedule_active.fecha_programada = Set(fecha);
