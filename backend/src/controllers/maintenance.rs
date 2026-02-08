@@ -210,9 +210,39 @@ pub async fn delete_schedule(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, AppError> {
-    mantenimiento_calendario::Entity::delete_by_id(id)
-        .exec(&db)
+    let txn = db.begin().await?;
+
+    // 1. Release reservations and delete parts
+    let parts = mantenimiento_repuestos::Entity::find()
+        .filter(mantenimiento_repuestos::Column::MantenimientoId.eq(id))
+        .all(&txn)
         .await?;
+
+    for part in parts {
+        let qty = part.cantidad_estimada.to_string().parse::<f64>().unwrap_or_default() as i32;
+        // Release reservation (assuming type 1 for maintenance reservation, though strictly we might just want to delete)
+        // If the part was just 'estimated' and not 'consumed', we should release.
+        // If it was consumed, it's already out of stock. But for a future schedule, it's likely just reserved/estimated.
+        // Checks strictness: if it's a future task, it shouldn't have consumed parts yet.
+        let _ = inventory_transaction::release_reservation(&txn, part.repuesto_id, qty, part.id, 1).await;
+        
+        mantenimiento_repuestos::Entity::delete_by_id(part.id)
+            .exec(&txn)
+            .await?;
+    }
+
+    // 2. Delete history (if any exists for this schedule ID - rare for future tasks but possible)
+    mantenimiento_historial::Entity::delete_many()
+        .filter(mantenimiento_historial::Column::CalendarioId.eq(Some(id)))
+        .exec(&txn)
+        .await?;
+
+    // 3. Delete Schedule
+    mantenimiento_calendario::Entity::delete_by_id(id)
+        .exec(&txn)
+        .await?;
+
+    txn.commit().await?;
 
     Ok(Json("Schedule deleted successfully"))
 }
