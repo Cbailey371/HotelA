@@ -47,6 +47,7 @@ pub struct ScheduleDto {
     pub dias_anticipacion: Option<i32>,
     pub tarea_tipo_id: Option<i32>,
     pub recurrente: bool,
+    pub frecuencia: Option<String>,
     pub observaciones: Option<String>,
     pub responsable_id: Option<i32>,
 }
@@ -110,6 +111,7 @@ pub async fn get_schedules(
             dias_anticipacion: s.dias_anticipacion,
             tarea_tipo_id: s.tarea_tipo_id,
             recurrente: s.recurrente,
+            frecuencia: s.frecuencia,
             observaciones: s.observaciones,
             responsable_id: s.responsable_id,
         }
