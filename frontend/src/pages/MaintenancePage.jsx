@@ -196,6 +196,10 @@ const MaintenancePage = () => {
         delete sanitizedData.minutos;
         delete sanitizedData.periodo;
 
+        // DEBUG PAYLOAD
+        console.log("Saving schedule data:", sanitizedData);
+        alert(`DEBUG: Enviando Frecuencia: ${sanitizedData.frecuencia}`);
+
         try {
             if (editingId) {
                 await api.put(`/maintenance/schedule/${editingId}`, sanitizedData);
