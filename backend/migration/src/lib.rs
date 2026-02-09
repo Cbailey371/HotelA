@@ -94,8 +94,11 @@ impl MigratorTrait for Migrator {
             Box::new(m20260131_114000_seed_new_modules_permissions::Migration),
             Box::new(m20260207_120000_link_maintenance_to_ot::Migration),
             Box::new(m20260207_233929_create_feriados_pa_table::Migration),
+            Box::new(m20260207_235500_seed_holidays_permissions::Migration),
         ]
     }
 }
 mod m20260207_120000_link_maintenance_to_ot;
 mod m20260207_233929_create_feriados_pa_table;
+mod m20260207_235500_seed_holidays_permissions;
+
