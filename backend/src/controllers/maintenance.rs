@@ -292,7 +292,7 @@ pub async fn execute_maintenance(
         .await?;
 
     for part_usage in planned_parts {
-        let qty_used = part_usage.cantidad_estimada.to_string().parse::<i32>().unwrap_or(0);
+        let qty_used = part_usage.cantidad_estimada.to_string().parse::<f64>().unwrap_or_default() as i32;
         
         inventory_transaction::consume_reserved_stock(&txn, part_usage.repuesto_id, qty_used, schedule.id_mantenimiento_calendario, 1)
             .await?;
