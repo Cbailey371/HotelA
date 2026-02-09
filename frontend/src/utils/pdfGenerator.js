@@ -185,26 +185,26 @@ export const pdfGenerator = {
         doc.text(`${company?.razon_social || ''}`, 14, 50);
         doc.text(`${company?.ruc ? `NIT/RUC: ${company.ruc}-${company.dv}` : ''}`, 14, 55);
         doc.text(`${company?.direccion || ''}`, 14, 60);
-        doc.text(`Tel: ${company?.telefono || ''} | ${company?.correo || ''}`, 14, 65);
+        doc.text(`Tel: ${company?.telefono || ''} | ${company?.correo || ''}`, 14, 68);
 
         // OC Number and Dates
         doc.setDrawColor(...primaryColor);
         doc.setLineWidth(0.5);
-        doc.line(14, 70, 196, 70);
+        doc.line(14, 75, 196, 75);
 
         doc.setTextColor(40);
         doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
-        doc.text(`NÚMERO DE ORDEN: ${purchaseOrder.codigo_compra || purchaseOrder.id_orden_compra}`, 14, 80);
+        doc.text(`NÚMERO DE ORDEN: ${purchaseOrder.codigo_compra || purchaseOrder.id_orden_compra}`, 14, 85);
 
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Fecha Emisión: ${purchaseOrder.fecha_solicitud || new Date().toLocaleDateString()}`, 140, 80);
-        doc.text(`Fecha Entrega: ${purchaseOrder.fecha_entrega || 'N/A'}`, 140, 85);
+        doc.text(`Fecha Emisión: ${purchaseOrder.fecha_solicitud || new Date().toLocaleDateString()}`, 140, 85);
+        doc.text(`Fecha Entrega: ${purchaseOrder.fecha_entrega || 'N/A'}`, 140, 90);
 
         // Provider Section
         autoTable(doc, {
-            startY: 92,
+            startY: 98,
             head: [['DATOS DEL PROVEEDOR']],
             body: [
                 [`Proveedor: ${provider?.nombre || 'General'}`],
