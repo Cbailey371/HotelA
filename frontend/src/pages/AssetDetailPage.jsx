@@ -4,10 +4,11 @@ import axios from 'axios';
 import {
     ArrowLeft, Settings, Wrench, Package, Calendar, MapPin,
     ShieldCheck, Activity, Hash, Clock, AlertTriangle, FileText,
-    ChevronRight, ExternalLink, Upload, Download, Edit2, Info
+    ChevronRight, ExternalLink, Upload, Download, Edit2, Info, QrCode
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import QRCode from 'react-qr-code';
 import AssetFormModal from '../components/AssetFormModal';
 
 const AssetDetailPage = () => {
@@ -21,6 +22,7 @@ const AssetDetailPage = () => {
     // Actions State
     const [showMenu, setShowMenu] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showQRModal, setShowQRModal] = useState(false);
     const menuRef = useRef(null);
 
     useEffect(() => {
@@ -174,6 +176,39 @@ const AssetDetailPage = () => {
         }
     };
 
+    const handlePrintLabel = () => {
+        const content = document.getElementById('printable-qr');
+        if (!content) return;
+
+        const win = window.open('', '', 'height=600,width=600');
+        win.document.write('<html><head><title>Etiqueta de Activo</title>');
+        win.document.write('<style>');
+        win.document.write(`
+            @media print {
+                @page { margin: 0; size: auto; }
+                body { margin: 10px; }
+            }
+            body { font-family: system-ui, -apple-system, sans-serif; display: flex; flex-col; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+            .label-container { 
+                text-align: center; 
+                border: 2px solid #000; 
+                padding: 20px; 
+                border-radius: 12px; 
+                max-width: 300px;
+                width: 100%;
+                background: white;
+            }
+            .header { font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
+            .code { font-size: 16px; font-weight: 900; margin-top: 15px; font-family: monospace; letter-spacing: 1px; }
+            .name { font-size: 12px; margin-top: 5px; font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        `);
+        win.document.write('</style></head><body>');
+        win.document.write(content.outerHTML);
+        win.document.write('<script>window.onload = function() { window.print(); window.close(); }</script>');
+        win.document.write('</body></html>');
+        win.document.close();
+    };
+
     if (loading) return (
         <div className="flex items-center justify-center min-h-[400px]">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -233,6 +268,15 @@ const AssetDetailPage = () => {
                                     className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
                                 >
                                     <FileText className="w-4 h-4" /> Generar Ficha Técnica
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowQRModal(true);
+                                        setShowMenu(false);
+                                    }}
+                                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
+                                >
+                                    <QrCode className="w-4 h-4" /> Imprimir Etiqueta QR
                                 </button>
                             </div>
                         )}
@@ -506,7 +550,50 @@ const AssetDetailPage = () => {
                 onSaved={fetchAssetDetail}
                 initialData={asset}
             />
-        </div>
+
+            {/* QR Code Modal for Printing */}
+            {
+                showQRModal && (
+                    <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+                        <div className="bg-white dark:bg-[#1e293b] p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
+                            <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2">Etiqueta de Activo</h3>
+                            <p className="text-slate-500 text-sm mb-6">Escanee este código para acceder a la ficha técnica.</p>
+
+                            <div className="flex justify-center mb-8">
+                                <div id="printable-qr" className="label-container bg-white p-6 rounded-xl border-2 border-slate-900 inline-block">
+                                    <div className="header text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-slate-900">Propiedad de HotelA</div>
+                                    <div className="bg-white inline-block">
+                                        <QRCode
+                                            value={`${window.location.origin}/assets/${asset.id_equipo || id}`}
+                                            size={140}
+                                            level="H"
+                                        />
+                                    </div>
+                                    <div className="code text-lg font-black mt-4 font-mono text-slate-900">{asset.codigo}</div>
+                                    <div className="name text-xs font-bold mt-1 max-w-[200px] truncate mx-auto text-slate-700">{asset.nombre}</div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => setShowQRModal(false)}
+                                    className="px-4 py-3 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={handlePrintLabel}
+                                    className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 transition-all"
+                                >
+                                    <QrCode className="w-5 h-5" />
+                                    Imprimir
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
