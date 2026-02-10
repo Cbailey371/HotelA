@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Mail, Server, Shield, Send, Plus, Trash2, Tag, Box, LayoutGrid, MapPin, ClipboardList, Building, Image as ImageIcon, CreditCard, ArrowDownRight, X, Pencil } from 'lucide-react';
+import { Save, Mail, Server, Shield, Send, Plus, Trash2, Tag, Box, LayoutGrid, MapPin, ClipboardList, Building, Image as ImageIcon, CreditCard, ArrowDownRight, X, Pencil, Book, FileText } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import api from '../services/api';
 
 const SettingsPage = () => {
@@ -45,6 +47,20 @@ const SettingsPage = () => {
 
     const [configLoading, setConfigLoading] = useState(false);
 
+    // Manuals State
+    const [selectedManual, setSelectedManual] = useState(null);
+    const [manualContent, setManualContent] = useState('');
+    const [manualLoading, setManualLoading] = useState(false);
+
+    const manuals = [
+        { id: '01', title: '01. Acceso y Seguridad', file: 'manual_01_acceso_y_seguridad.md', desc: 'Usuarios, Roles y Auditoría' },
+        { id: '02', title: '02. Gestión de Activos', file: 'manual_02_gestion_de_activos.md', desc: 'Alta, Ciclo de vida y Documentación' },
+        { id: '03', title: '03. Mantenimiento', file: 'manual_03_gestion_de_mantenimiento.md', desc: 'Planificación, OT y Técnicos' },
+        { id: '04', title: '04. Inventario', file: 'manual_04_inventario_y_repuestos.md', desc: 'Catálogo y Movimientos' },
+        { id: '05', title: '05. Compras', file: 'manual_05_compras_y_proveedores.md', desc: 'Proveedores y Ciclo de Compras' },
+        { id: '06', title: '06. Configuración', file: 'manual_06_configuracion_y_reportes.md', desc: 'Ajustes globales y Reportes' },
+    ];
+
     // Company State
     const [companySettings, setCompanySettings] = useState({
         logo: '',
@@ -77,8 +93,17 @@ const SettingsPage = () => {
         if (activeTab === 'payment-terms') fetchPaymentTerms();
         if (activeTab === 'brands') fetchBrands();
         if (activeTab === 'warehouses') fetchWarehouses();
+        if (activeTab === 'manuals' && !selectedManual) {
+            setSelectedManual(manuals[0]);
+        }
         setMessage({ type: '', text: '' });
     }, [activeTab]);
+
+    useEffect(() => {
+        if (activeTab === 'manuals' && selectedManual) {
+            fetchManualContent(selectedManual.file);
+        }
+    }, [selectedManual, activeTab]);
 
     // API Calls
     const fetchSmtpSettings = async () => {
@@ -197,6 +222,24 @@ const SettingsPage = () => {
             setWarehouseLocations(response.data);
         } catch (error) {
             console.error("Error fetching locations", error);
+        }
+    };
+
+    const fetchManualContent = async (filename) => {
+        setManualLoading(true);
+        try {
+            const response = await fetch(`/manuals/${filename}`);
+            if (response.ok) {
+                const text = await response.text();
+                setManualContent(text);
+            } else {
+                setManualContent('# Error\nNo se pudo cargar el manual.');
+            }
+        } catch (error) {
+            console.error("Error loading manual", error);
+            setManualContent('# Error\nError de conexión al cargar el manual.');
+        } finally {
+            setManualLoading(false);
         }
     };
 
@@ -591,6 +634,69 @@ const SettingsPage = () => {
                             className="hidden"
                         />
                     </label>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderManualsTab = () => (
+        <div className="flex gap-6 h-[600px]">
+            {/* Sidebar List */}
+            <div className="w-1/3 bg-slate-50 dark:bg-[#0f172a] rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col">
+                <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+                    <h3 className="font-bold text-slate-700 dark:text-white">Capítulos del Manual</h3>
+                </div>
+                <div className="overflow-y-auto flex-1 p-2 space-y-1">
+                    {manuals.map(manual => (
+                        <button
+                            key={manual.id}
+                            onClick={() => setSelectedManual(manual)}
+                            className={`w-full text-left p-3 rounded-lg transition-colors flex items-start gap-3 ${selectedManual?.id === manual.id
+                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'}`}
+                        >
+                            <FileText className={`w-5 h-5 shrink-0 mt-0.5 ${selectedManual?.id === manual.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                            <div>
+                                <div className="font-medium text-sm">{manual.title}</div>
+                                <div className="text-xs opacity-80">{manual.desc}</div>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Content Viewer */}
+            <div className="flex-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col">
+                <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0f172a] flex justify-between items-center">
+                    <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <Book className="w-4 h-4 text-blue-600" />
+                        {selectedManual?.title}
+                    </h3>
+                </div>
+                <div className="flex-1 overflow-y-auto p-8 prose dark:prose-invert max-w-none">
+                    {manualLoading ? (
+                        <div className="flex items-center justify-center h-full text-slate-400">
+                            Cargando manual...
+                        </div>
+                    ) : (
+                        <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                                h1: ({ node, ...props }) => <h1 className="text-2xl font-bold mb-4 pb-2 border-b border-slate-200 dark:border-slate-700" {...props} />,
+                                h2: ({ node, ...props }) => <h2 className="text-xl font-bold mt-6 mb-3 text-blue-600 dark:text-blue-400" {...props} />,
+                                h3: ({ node, ...props }) => <h3 className="text-lg font-bold mt-4 mb-2" {...props} />,
+                                ul: ({ node, ...props }) => <ul className="list-disc pl-5 space-y-1 mb-4" {...props} />,
+                                ol: ({ node, ...props }) => <ol className="list-decimal pl-5 space-y-1 mb-4" {...props} />,
+                                code: ({ node, inline, className, children, ...props }) => (
+                                    <code className={`${inline ? 'bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-sm font-mono text-pink-500' : 'block bg-slate-800 text-slate-100 p-4 rounded-lg my-4 overflow-x-auto'}`} {...props}>
+                                        {children}
+                                    </code>
+                                ),
+                            }}
+                        >
+                            {manualContent}
+                        </ReactMarkdown>
+                    )}
                 </div>
             </div>
         </div>
@@ -1196,6 +1302,12 @@ const SettingsPage = () => {
                 >
                     <Shield className="w-4 h-4" /> Respaldo y Restauración
                 </button>
+                <button
+                    onClick={() => setActiveTab('manuals')}
+                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'manuals' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                >
+                    <Book className="w-4 h-4" /> Manuales de Ayuda
+                </button>
             </div>
 
             <div className="bg-white dark:bg-[#1e293b] p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm min-h-[400px]">
@@ -1311,6 +1423,7 @@ const SettingsPage = () => {
                 {activeTab === 'warehouses' && renderWarehousesTable()}
                 {activeTab === 'tasks' && renderConfigTable(taskTypes, 'Tipo de Tarea')}
                 {activeTab === 'backup' && renderBackupTab()}
+                {activeTab === 'manuals' && renderManualsTab()}
             </div>
         </div>
     );
