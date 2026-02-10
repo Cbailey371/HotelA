@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { Save, Mail, Server, Shield, Send, Plus, Trash2, Tag, Box, LayoutGrid, MapPin, ClipboardList, Building, Image as ImageIcon, CreditCard, ArrowDownRight, X, Pencil, Book, FileText, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
