@@ -60,7 +60,11 @@ Los activos se mueven o cambian de estado.
     -   **Fuera de Servicio**: No funciona, esperando decisión.
     -   **Baja**: Desechado o vendido (El activo no se borra, queda como histórico).
 
-### 1.4. Generación de Códigos QR (Futuro)
-*Nota: Esta funcionalidad permite imprimir etiquetas para pegar en los equipos.*
-1.  Desde el detalle del activo, busque la opción **"Imprimir Etiqueta"**.
-2.  Se generará un código QR que vincula directamente a la ficha del activo en el sistema.
+### 1.4. Generación de Códigos QR
+
+Esta funcionalidad permite imprimir etiquetas para pegar en los equipos.
+
+1.  Desde el detalle del activo, haga clic en el icono de **Configuración** (engranaje).
+2.  Busque la opción **"Imprimir Etiqueta QR"**.
+3.  Se generará una vista previa con el código QR que vincula directamente a la ficha del activo en el sistema.
+4.  Pulse **"Imprimir"** para generar la etiqueta física.
