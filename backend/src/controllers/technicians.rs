@@ -35,7 +35,10 @@ pub struct TechnicianDto {
 pub async fn get_technicians(
     State(db): State<DatabaseConnection>,
 ) -> Result<impl IntoResponse, AppError> {
-    let list = tecnicos::Entity::find().all(&db).await?;
+    use sea_orm::QueryOrder;
+    let list = tecnicos::Entity::find()
+        .order_by_asc(tecnicos::Column::IdTecnico)
+        .all(&db).await?;
 
     let dtos: Vec<TechnicianDto> = list.into_iter().map(|t| TechnicianDto {
         id: t.id_tecnico,

@@ -44,7 +44,10 @@ pub struct ProviderDto {
 pub async fn get_providers(
     State(db): State<DatabaseConnection>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let providers = proveedores::Entity::find().all(&db).await
+    use sea_orm::QueryOrder;
+    let providers = proveedores::Entity::find()
+        .order_by_asc(proveedores::Column::IdProveedor)
+        .all(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     let dtos: Vec<ProviderDto> = providers.into_iter().map(|p| ProviderDto {

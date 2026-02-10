@@ -97,7 +97,7 @@ pub async fn get_orders(
     State(db): State<DatabaseConnection>,
 ) -> Result<impl IntoResponse, AppError> {
     let orders = OrdenCompraRepuesto::find()
-        .order_by_desc(orden_compra_repuesto::Column::CreatedAt)
+        .order_by_asc(orden_compra_repuesto::Column::IdOrdenCompra)
         .all(&db)
         .await?;
     
@@ -108,7 +108,7 @@ pub async fn get_requests(
     State(db): State<DatabaseConnection>,
 ) -> Result<impl IntoResponse, AppError> {
     let requests = ComprasSolicitudes::find()
-        .order_by_desc(compras_solicitudes::Column::CreatedAt)
+        .order_by_asc(compras_solicitudes::Column::Id)
         .all(&db)
         .await?;
     

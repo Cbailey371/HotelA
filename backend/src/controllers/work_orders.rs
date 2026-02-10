@@ -110,6 +110,7 @@ pub async fn get_work_orders(
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let orders = orden_trabajo::Entity::find()
         .find_also_related(activos_equipos::Entity)
+        .order_by_asc(orden_trabajo::Column::IdOt)
         .all(&db)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;

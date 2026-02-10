@@ -266,6 +266,7 @@ pub async fn get_assets(
 ) -> Result<impl IntoResponse, AppError> {
     let assets = activos_equipos::Entity::find()
         .filter(activos_equipos::Column::Estado.ne("baja"))
+        .order_by_asc(activos_equipos::Column::IdEquipo)
         .all(&db)
         .await?;
 

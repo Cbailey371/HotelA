@@ -62,7 +62,7 @@ pub async fn get_parts(
 ) -> Result<impl IntoResponse, AppError> {
     let parts = activos_repuestos::Entity::find()
         .filter(activos_repuestos::Column::Estado.ne("baja"))
-        .order_by_asc(activos_repuestos::Column::CodigoRepuesto)
+        .order_by_asc(activos_repuestos::Column::IdRepuesto)
         .all(&db).await?;
 
     let dtos: Vec<PartDto> = parts.into_iter().map(|p| PartDto {
