@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Save, Mail, Server, Shield, Send, Plus, Trash2, Tag, Box, LayoutGrid, MapPin, ClipboardList, Building, Image as ImageIcon, CreditCard, ArrowDownRight, X, Pencil, Book, FileText } from 'lucide-react';
+import { Save, Mail, Server, Shield, Send, Plus, Trash2, Tag, Box, LayoutGrid, MapPin, ClipboardList, Building, Image as ImageIcon, CreditCard, ArrowDownRight, X, Pencil, Book, FileText, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { jsPDF } from 'jspdf';
 import api from '../services/api';
 
 const SettingsPage = () => {
@@ -240,6 +240,39 @@ const SettingsPage = () => {
             setManualContent('# Error\nError de conexión al cargar el manual.');
         } finally {
             setManualLoading(false);
+        }
+    };
+
+    const handleDownloadPDF = async (e, manual) => {
+        e.stopPropagation();
+        try {
+            const response = await fetch(`/manuals/${manual.file}`);
+            if (!response.ok) throw new Error("No se pudo descargar el contenido");
+            const text = await response.text();
+
+            const doc = new jsPDF();
+            doc.setFontSize(16);
+            doc.text(manual.title, 10, 15);
+            doc.setFontSize(10);
+
+            const splitText = doc.splitTextToSize(text, 180);
+            let y = 25;
+            const pageHeight = doc.internal.pageSize.height;
+
+            splitText.forEach(line => {
+                if (y > pageHeight - 10) {
+                    doc.addPage();
+                    y = 15;
+                }
+                doc.text(line, 10, y);
+                y += 5;
+            });
+
+            doc.save(`${manual.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`);
+            setMessage({ type: 'success', text: `Manual "${manual.title}" descargado.` });
+        } catch (error) {
+            console.error("Error generating PDF", error);
+            setMessage({ type: 'error', text: 'Error al generar el PDF del manual.' });
         }
     };
 
@@ -648,19 +681,26 @@ const SettingsPage = () => {
                 </div>
                 <div className="overflow-y-auto flex-1 p-2 space-y-1">
                     {manuals.map(manual => (
-                        <button
+                        <div
                             key={manual.id}
                             onClick={() => setSelectedManual(manual)}
-                            className={`w-full text-left p-3 rounded-lg transition-colors flex items-start gap-3 ${selectedManual?.id === manual.id
-                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                                : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'}`}
+                            className={`w-full text-left p-3 rounded-lg transition-colors flex items-start gap-3 cursor-pointer group ${selectedManual?.id === manual.id
+                                ? 'bg-blue-100 dark:bg-blue-900/30'
+                                : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         >
                             <FileText className={`w-5 h-5 shrink-0 mt-0.5 ${selectedManual?.id === manual.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
-                            <div>
-                                <div className="font-medium text-sm">{manual.title}</div>
-                                <div className="text-xs opacity-80">{manual.desc}</div>
+                            <div className="flex-1">
+                                <div className={`font-medium text-sm ${selectedManual?.id === manual.id ? 'text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-400'}`}>{manual.title}</div>
+                                <div className={`text-xs ${selectedManual?.id === manual.id ? 'text-blue-600/70 dark:text-blue-400/70' : 'text-slate-400'}`}>{manual.desc}</div>
                             </div>
-                        </button>
+                            <button
+                                onClick={(e) => handleDownloadPDF(e, manual)}
+                                className="p-1.5 rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-blue-600 transition-all opacity-0 group-hover:opacity-100"
+                                title="Descargar PDF"
+                            >
+                                <Download className="w-4 h-4" />
+                            </button>
+                        </div>
                     ))}
                 </div>
             </div>
