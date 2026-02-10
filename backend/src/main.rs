@@ -185,6 +185,14 @@ async fn main() {
                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
                 )
                 
+                // Backup & Restore
+                .route("/backup/export", get(controllers::backup::export_backup)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
+                )
+                .route("/backup/import", post(controllers::backup::import_backup)
+                    .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
+                )
+                
                 // Asset Configuration
                 .nest("/asset-config", Router::new()
                     .route("/categories", get(controllers::asset_config::get_categories).post(controllers::asset_config::create_category))
@@ -220,6 +228,9 @@ async fn main() {
                     axum::http::header::CONTENT_TYPE,
                     axum::http::header::ACCEPT,
                     axum::http::header::ORIGIN,
+                ])
+                .expose_headers([
+                    axum::http::header::CONTENT_DISPOSITION,
                 ])
         )
         .with_state(db);

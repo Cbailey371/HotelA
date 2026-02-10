@@ -60,6 +60,9 @@ const SettingsPage = () => {
     const [companyLoading, setCompanyLoading] = useState(true);
     const [companySaving, setCompanySaving] = useState(false);
 
+    // Backup State
+    const [backupLoading, setBackupLoading] = useState(false);
+
     useEffect(() => {
         if (activeTab === 'smtp') fetchSmtpSettings();
         if (activeTab === 'company') fetchCompanySettings();
@@ -454,6 +457,144 @@ const SettingsPage = () => {
             setMessage({ type: 'error', text: 'Error eliminando elemento' });
         }
     };
+
+    // Backup Handlers
+    const handleDownloadBackup = async () => {
+        setBackupLoading(true);
+        try {
+            // Add timestamp to bypass PWA/Service Worker cache
+            const response = await api.get(`/backup/export?t=${new Date().getTime()}`, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/json' }));
+            const link = document.createElement('a');
+            link.href = url;
+            // Fallback to frontend generated filename if header makes it difficult
+            const date = new Date();
+            const timestamp = date.getFullYear() +
+                String(date.getMonth() + 1).padStart(2, '0') +
+                String(date.getDate()).padStart(2, '0') + '_' +
+                String(date.getHours()).padStart(2, '0') +
+                String(date.getMinutes()).padStart(2, '0') +
+                String(date.getSeconds()).padStart(2, '0');
+
+            // Prefer header if valid, but ensure fallback is robust
+            let filename = `backup_hotela_${timestamp}.json`;
+
+            const contentDisposition = response.headers['content-disposition'];
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch.length === 2 && filenameMatch[1].endsWith('.json')) {
+                    filename = filenameMatch[1];
+                }
+            }
+
+            console.log("Using filename for download:", filename);
+            link.style.display = 'none';
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+
+            // Dispatch click event for better browser compatibility
+            link.click();
+
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            }, 100);
+
+            setMessage({ type: 'success', text: 'Respaldo descargado correctamente' });
+        } catch (error) {
+            console.error(error);
+            setMessage({ type: 'error', text: 'Error al descargar respaldo' });
+        } finally {
+            setBackupLoading(false);
+        }
+    };
+
+    const handleImportBackup = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!window.confirm("ATENCIÓN: Esta acción sobrescribirá los datos existentes que coincidan con los IDs del respaldo. ¿Deseas continuar?")) {
+            event.target.value = null;
+            return;
+        }
+
+        setBackupLoading(true);
+        setMessage({ type: '', text: '' });
+        const formData = new FormData();
+        formData.append('backup_file', file);
+
+        try {
+            const response = await api.post('/backup/import', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setMessage({ type: 'success', text: typeof response.data === 'string' ? response.data : 'Restauración completada' });
+        } catch (error) {
+            console.error(error);
+            setMessage({ type: 'error', text: 'Error al importar respaldo' });
+        } finally {
+            setBackupLoading(false);
+            event.target.value = null;
+        }
+    };
+
+    const renderBackupTab = () => (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Export Card */}
+                <div className="bg-slate-50 dark:bg-[#0f172a] p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
+                            <ArrowDownRight className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-700 dark:text-white">Exportar Respaldo</h3>
+                            <p className="text-xs text-slate-500">Descarga una copia de seguridad de tus datos.</p>
+                        </div>
+                    </div>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
+                        Este archivo JSON contiene: Activos, Inventario, Proveedores y Técnicos.
+                    </p>
+                    <button
+                        onClick={handleDownloadBackup}
+                        disabled={backupLoading}
+                        className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                        {backupLoading ? 'Procesando...' : <><ArrowDownRight className="w-4 h-4" /> Descargar Respaldo JSON</>}
+                    </button>
+                </div>
+
+                {/* Import Card */}
+                <div className="bg-slate-50 dark:bg-[#0f172a] p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="p-3 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
+                            <ClipboardList className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-700 dark:text-white">Restaurar Datos</h3>
+                            <p className="text-xs text-slate-500">Importa datos desde un archivo de respaldo.</p>
+                        </div>
+                    </div>
+                    <div className="mb-6 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-100 dark:border-amber-800">
+                        <p className="text-xs text-amber-700 dark:text-amber-400 flex gap-2">
+                            <Shield className="w-4 h-4 shrink-0" />
+                            <span><strong>Precaución:</strong> Al importar, los registros existentes con el mismo ID serán actualizados. Los nuevos se insertarán.</span>
+                        </p>
+                    </div>
+                    <label className={`w-full py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer ${backupLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        {backupLoading ? 'Subiendo...' : <><Plus className="w-4 h-4" /> Seleccionar Archivo JSON</>}
+                        <input
+                            type="file"
+                            accept=".json"
+                            onChange={handleImportBackup}
+                            disabled={backupLoading}
+                            className="hidden"
+                        />
+                    </label>
+                </div>
+            </div>
+        </div>
+    );
 
     // Components
     const renderCompanyTab = () => (
@@ -1049,6 +1190,12 @@ const SettingsPage = () => {
                 >
                     <ClipboardList className="w-4 h-4" /> Tipos de Tarea
                 </button>
+                <button
+                    onClick={() => setActiveTab('backup')}
+                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'backup' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                >
+                    <Shield className="w-4 h-4" /> Respaldo y Restauración
+                </button>
             </div>
 
             <div className="bg-white dark:bg-[#1e293b] p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm min-h-[400px]">
@@ -1163,6 +1310,7 @@ const SettingsPage = () => {
                 {activeTab === 'brands' && renderConfigTable(brands, 'Marca')}
                 {activeTab === 'warehouses' && renderWarehousesTable()}
                 {activeTab === 'tasks' && renderConfigTable(taskTypes, 'Tipo de Tarea')}
+                {activeTab === 'backup' && renderBackupTab()}
             </div>
         </div>
     );

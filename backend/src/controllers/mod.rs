@@ -20,3 +20,4 @@ pub mod payment_terms;
 pub mod brands;
 pub mod warehouses;
 pub mod warehouse_locations;
+pub mod backup;
