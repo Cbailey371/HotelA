@@ -696,7 +696,7 @@ const SettingsPage = () => {
                             </div>
                             <button
                                 onClick={(e) => handleDownloadPDF(e, manual)}
-                                className="p-1.5 rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-blue-600 transition-all opacity-0 group-hover:opacity-100"
+                                className="p-2 rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-blue-600 transition-colors"
                                 title="Descargar PDF"
                             >
                                 <Download className="w-4 h-4" />
