@@ -39,6 +39,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(|| async { "HotelA Backend Running" }))
         .route("/api/auth/login", post(controllers::auth::login))
+        .route("/api/public/calendar", get(controllers::maintenance::get_public_schedules))
 
         
         // Rutas protegidas

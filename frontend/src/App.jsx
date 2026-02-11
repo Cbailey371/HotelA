@@ -19,6 +19,7 @@ import ReceivingPage from './pages/ReceivingPage';
 import SettingsPage from './pages/SettingsPage';
 import ReportsPage from './pages/ReportsPage';
 import HolidaysPage from './pages/HolidaysPage';
+import PublicCalendar from './pages/PublicCalendar';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -35,6 +36,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/public/calendar" element={<PublicCalendar />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <Layout />

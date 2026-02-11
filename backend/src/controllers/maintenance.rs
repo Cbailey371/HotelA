@@ -507,3 +507,51 @@ pub async fn remove_maintenance_part(
 
     Ok(Json("Repuesto removido y reserva liberada".to_string()))
 }
+
+pub async fn get_public_schedules(
+    State(db): State<DatabaseConnection>,
+) -> Result<impl IntoResponse, AppError> {
+    let schedules = mantenimiento_calendario::Entity::find()
+        .find_also_related(activos_equipos::Entity)
+        .filter(mantenimiento_calendario::Column::Estado.ne("cancelado"))
+        .order_by_asc(mantenimiento_calendario::Column::FechaProgramada)
+        .all(&db)
+        .await?;
+
+    let m_types = mantenimiento_tipo::Entity::find()
+        .all(&db)
+        .await?;
+
+    let dtos: Vec<ScheduleDto> = schedules.into_iter().map(|(s, e)| {
+        let tipo_nombre = m_types.iter()
+            .find(|t| t.id_tipo_mantenimiento == s.tipo_mantenimiento_id)
+            .map(|t| t.nombre_tipo.clone())
+            .unwrap_or_else(|| "Preventivo".to_string());
+
+        ScheduleDto {
+            id: s.id_mantenimiento_calendario,
+            equipo: e.map(|v| v.nombre_equipo).unwrap_or("N/A".to_string()),
+            tipo: tipo_nombre,
+            fecha: s.fecha_programada.map(|d| d.to_string()),
+            estado: s.estado.unwrap_or("programado".to_string()),
+            responsable: s.responsable_interno_email.clone().or_else(|| Some("Asignado".to_string())).take().unwrap_or_default(),
+            codigo: s.codigo_mantenimiento,
+            prioridad: s.prioridad.unwrap_or("media".to_string()),
+            orden_trabajo_id: None,
+            tiene_ot: false,
+            equipo_id: s.equipo_id,
+            tipo_mantenimiento_id: s.tipo_mantenimiento_id,
+            tecnico_id: s.tecnico_id,
+            proveedor_id: s.proveedor_id,
+            costo_estimado: s.costo_estimado.map(|c| c.to_string().parse().unwrap_or(0.0)),
+            dias_anticipacion: s.dias_anticipacion,
+            tarea_tipo_id: s.tarea_tipo_id,
+            recurrente: s.recurrente,
+            frecuencia: s.frecuencia,
+            observaciones: s.observaciones,
+            responsable_id: s.responsable_id,
+        }
+    }).collect();
+
+    Ok(Json(dtos))
+}
