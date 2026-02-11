@@ -43,7 +43,8 @@ mod m20260129_083649_create_scheduled_reports_table;
 mod m20260129_152408_add_scheduling_fields_to_reports;
 mod m20260131_090000_fix_admin_password;
 mod m20260131_114000_seed_new_modules_permissions;
-mod m20260211_170000_field_permissions;
+pub mod m20260211_170000_field_permissions;
+pub mod m20260211_180000_fix_field_permissions_module;
 
 pub struct Migrator;
 
@@ -97,6 +98,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260207_233929_create_feriados_pa_table::Migration),
             Box::new(m20260207_235500_seed_holidays_permissions::Migration),
             Box::new(m20260211_170000_field_permissions::Migration),
+            Box::new(m20260211_180000_fix_field_permissions_module::Migration),
         ]
     }
 }
