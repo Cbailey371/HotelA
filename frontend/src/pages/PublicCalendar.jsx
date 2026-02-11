@@ -291,6 +291,7 @@ const PublicCalendar = () => {
                 </span>
             </div>
         </div>
+        </div >
     );
 };
 
