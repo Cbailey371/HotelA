@@ -1,4 +1,4 @@
-# manual_01_acceso_y_seguridad.md
+# manual_06_acceso_y_seguridad.md
 
 ## 1. Introducción y Acceso al Sistema
 
@@ -45,9 +45,9 @@ Este módulo permite dar de alta, modificar o desactivar el acceso del personal 
 ### 2.2. Editar Usuario
 1.  En la lista de usuarios, localice al usuario.
 2.  Haga clic en el icono de **Lápiz (Editar)**.
-3.  Modifique los datos necesarios (ej. cambio de rol o corrección de nombre).
-4.  Para cambiar contraseña, déjelo en blanco si no desea modificarla.
-5.  Guarde los cambios.
+3. Modifique los datos necesarios (ej. cambio de rol o corrección de nombre).
+4. Para cambiar contraseña, déjelo en blanco si no desea modificarla.
+5. Guarde los cambios.
 
 ### 2.3. Desactivar Usuario
 En lugar de borrar usuarios (lo cual rompería el historial de auditoría), se recomienda **desactivarlos**.

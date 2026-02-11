@@ -1,4 +1,4 @@
-# manual_05_compras_y_proveedores.md
+# manual_04_compras_y_proveedores.md
 
 ## 1. Gestión de Proveedores
 
@@ -62,6 +62,4 @@ Cuando llega el camión del proveedor:
 2.  Clic en **"Recibir Ítems"**.
 3.  Coteje el remito/factura con la OC.
 4.  Ingrese las **Cantidades Recibidas** para cada ítem.
-    -   *Recepción Parcial*: Si no llegó todo, la OC queda "Abierta" esperando el resto.
-    -   *Recepción Total*: Si llegó todo, la OC pasa a **"Completada/Cerrada"**.
 5.  **Impacto Automático**: Al guardar la recepción, el inventario de estos ítems **aumenta** automáticamente en la bodega seleccionada.

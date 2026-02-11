@@ -1,4 +1,4 @@
-# manual_06_configuracion_y_reportes.md
+# manual_05_configuracion_y_reportes.md
 
 ## 1. Reportes Inteligentes
 

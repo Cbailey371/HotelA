@@ -54,12 +54,12 @@ const SettingsPage = () => {
     const [manualLoading, setManualLoading] = useState(false);
 
     const manuals = [
-        { id: '01', title: '01. Acceso y Seguridad', file: 'manual_01_acceso_y_seguridad.md', desc: 'Usuarios, Roles y Auditoría' },
-        { id: '02', title: '02. Gestión de Activos', file: 'manual_02_gestion_de_activos.md', desc: 'Alta, Ciclo de vida y Documentación' },
+        { id: '01', title: '01. Gestión de Activos', file: 'manual_01_gestion_de_activos.md', desc: 'Alta, Ciclo de vida y Documentación' },
+        { id: '02', title: '02. Inventario', file: 'manual_02_inventario_y_repuestos.md', desc: 'Catálogo y Movimientos' },
         { id: '03', title: '03. Mantenimiento', file: 'manual_03_gestion_de_mantenimiento.md', desc: 'Planificación, OT y Técnicos' },
-        { id: '04', title: '04. Inventario', file: 'manual_04_inventario_y_repuestos.md', desc: 'Catálogo y Movimientos' },
-        { id: '05', title: '05. Compras', file: 'manual_05_compras_y_proveedores.md', desc: 'Proveedores y Ciclo de Compras' },
-        { id: '06', title: '06. Configuración', file: 'manual_06_configuracion_y_reportes.md', desc: 'Ajustes globales y Reportes' },
+        { id: '04', title: '04. Compras', file: 'manual_04_compras_y_proveedores.md', desc: 'Proveedores y Ciclo de Compras' },
+        { id: '05', title: '05. Configuración', file: 'manual_05_configuracion_y_reportes.md', desc: 'Ajustes globales y Reportes' },
+        { id: '06', title: '06. Acceso y Seguridad', file: 'manual_06_acceso_y_seguridad.md', desc: 'Usuarios, Roles y Auditoría' },
     ];
 
     // Company State

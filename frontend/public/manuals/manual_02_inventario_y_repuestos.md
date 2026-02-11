@@ -1,4 +1,4 @@
-# manual_04_inventario_y_repuestos.md
+# manual_02_inventario_y_repuestos.md
 
 ## 1. Gestión de Inventario
 
@@ -28,11 +28,11 @@ Antes de tener stock, debe existir la ficha de la parte.
     -   **Stock Mínimo / Máximo**: Niveles para alertas de re-compra.
     -   **Ubicación**: Pasillo, Estante, Nivel (ej. "A-04-B").
 
-### 1.2. Movimientos de Stock
+### 1.3. Movimientos de Stock
 El stock nunca se edita "a mano" (salvo ajustes), se mueve por transacciones.
 
 #### A. Entradas (Compras)
--   Se generan automáticamente al **Recibir una Orden de Compra** (ver Manual 05).
+-   Se generan automáticamente al **Recibir una Orden de Compra** (ver Manual 04).
 -   Aumentan la cantidad disponible y actualizan el Costo Promedio.
 
 #### B. Salidas (Consumo)
@@ -46,10 +46,10 @@ Si el conteo físico no coincide con el sistema:
 3.  Ingrese la cantidad real y una **Justificación Obligatoria** (ej. "Rotura en almacén", "Conteo cíclico").
 4.  Esta acción queda registrada en auditoría.
 
-### 1.3. Alertas de Stock Bajo
+### 1.4. Alertas de Stock Bajo
 El sistema monitorea niveles automáticamente.
 -   En el listado, los ítems con **Stock < Mínimo** aparecerán resaltados en **Rojo/Ámbar**.
 -   Utilice el filtro "Por Reponer" para generar su lista de compras semanal.
 
-### 1.4. Importación/Exportación
+### 1.5. Importación/Exportación
 Al igual que los activos, puede cargar su catálogo inicial desde Excel masivamente usando la opción **"Importar"** y la plantilla CSV provista.
