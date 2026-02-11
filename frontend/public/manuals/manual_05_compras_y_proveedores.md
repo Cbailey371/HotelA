@@ -7,7 +7,13 @@
 
 Base de datos de suministradores de servicios y repuestos.
 
-### 1.1. Registro de Proveedores
+### 1.1. Configuración de Compras
+
+Antes de registrar proveedores u órdenes de compra, asegúrese de tener:
+
+*   **Términos de Pago**: Define las condiciones comerciales (ej. Contado, 15 días, 30 días Crédito).
+
+### 1.2. Registro de Proveedores
 1.  Vaya a **Compras > Proveedores**.
 2.  Clic en **"+ Nuevo Proveedor"**.
 3.  Datos fiscales y de contacto:

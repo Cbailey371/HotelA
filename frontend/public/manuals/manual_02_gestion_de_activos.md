@@ -7,7 +7,19 @@
 
 Este es el corazón del sistema. Aquí se registra y gestiona todo el inventario de maquinaria, equipos e instalaciones del hotel. Cada activo es la base para la planificación del mantenimiento.
 
-### 1.1. Alta de Activos (Creación)
+### 1.1. Configuración Inicial Requerida
+
+Antes de registrar su primer activo, asegúrese de haber configurado los siguientes catálogos en el menú **Configuración**:
+
+*   **Categorías de Activos**: Define grupos como Climatización, Electricidad, Obra Civil, etc.
+*   **Tipos de Activos**: Especifica si es Maquinaria, Mobiliario, Herramientas, etc.
+*   **Ubicaciones de Activo**: Define las áreas físicas (ej. Sótano 1, Azotea, Habitación 101).
+*   **Marcas**: Registre las marcas de sus fabricantes (ej. Carrier, Caterpillar, Samsung).
+
+> [!IMPORTANT]
+> Tener estos datos listos agiliza el registro y permite generar reportes precisos por área o tipo de equipo.
+
+### 1.2. Alta de Activos (Creación)
 
 Existen dos formas de ingresar activos al sistema: manual o masiva.
 

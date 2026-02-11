@@ -7,7 +7,14 @@
 
 Control total de repuestos, consumibles y herramientas. El sistema gestiona existencias multi-bodega y ubicación física exacta.
 
-### 1.1. Catálogo de Repuestos
+### 1.1. Requisitos de Almacenamiento
+
+Antes de ingresar repuestos al inventario, es obligatorio configurar:
+
+*   **Bodegas**: Registre los almacenes principales (ej. Bodega Central, Taller de Mantenimiento).
+*   **Ubicaciones**: Defina las estanterías o racks dentro de cada bodega (ej. Pasillo A, Estante 01).
+
+### 1.2. Catálogo de Repuestos
 Antes de tener stock, debe existir la ficha de la parte.
 
 **Crear Nuevo Repuesto:**

@@ -7,7 +7,14 @@
 
 Este módulo permite pasar de un mantenimiento reactivo a uno **preventivo**.
 
-### 1.1. Planificación (Calendario)
+### 1.1. Configuración Previa
+
+Para que el calendario y las órdenes de trabajo funcionen correctamente, debe definir:
+
+*   **Tipos de Tareas**: Define las actividades estándar (ej. Inspección, Cambio de Aceite, Limpieza, Calibración).
+*   **Técnicos**: Registre al personal que ejecutará las tareas (ver Sección 3 de este manual).
+
+### 1.2. Planificación (Calendario)
 La base del preventivo es la programación recurrente.
 
 **Crear una Tarea Programada:**
