@@ -177,7 +177,17 @@ pub async fn delete_provider(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    proveedores::Entity::delete_by_id(id).exec(&db).await
+    let provider = proveedores::Entity::find_by_id(id)
+        .one(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Provider not found".to_string()))?;
+
+    let mut provider: proveedores::ActiveModel = provider.into();
+    provider.estado = Set(Some("inactivo".to_string()));
+    
+    provider.update(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-    Ok(Json("Provider deleted".to_string()))
+        
+    Ok(Json("Provider inactivated".to_string()))
 }
