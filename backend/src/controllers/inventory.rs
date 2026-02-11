@@ -146,16 +146,28 @@ pub async fn create_part(
     }))
 }
 
-pub async fn update_part(
-    State(db): State<DatabaseConnection>,
-    Path(id): Path<i32>,
-    Json(payload): Json<CreatePartRequest>,
-) -> Result<impl IntoResponse, AppError> {
-    let mut part: activos_repuestos::ActiveModel = activos_repuestos::Entity::find_by_id(id)
-        .one(&db)
-        .await?
-        .ok_or_else(|| AppError::NotFound("Repuesto no encontrado".to_string()))?
-        .into();
+    // Field-level permission check for critical fields
+    let has_critical_perm = crate::middleware::auth::check_permission(&db, claims.user_id, "critical_fields_edit").await;
+
+    if !has_critical_perm {
+        // If no permission, we ignore changes to critical fields or could return error.
+        // The user asked for it to "bloque o permita", usually meaning UI reflects and API enforces.
+        // Let's check existing values and compare.
+        let existing = activos_repuestos::Entity::find_by_id(id).one(&db).await?.unwrap();
+        
+        let target_stock = Some(payload.stock_actual);
+        let target_min = Some(payload.stock_minimo);
+        let target_price = Some(Decimal::from_str(&payload.precio_unitario.to_string()).unwrap_or_default());
+        let target_status = payload.estado.clone();
+
+        if existing.stock_actual != target_stock || 
+           existing.stock_minimo != target_min || 
+           existing.costo_unitario != target_price ||
+           existing.estado != target_status 
+        {
+            return Err(AppError::Forbidden("No tiene permisos para modificar campos críticos (Stock, Precio o Estado)".to_string()));
+        }
+    }
 
     part.nombre_repuesto = Set(payload.nombre_repuesto);
     part.descripcion = Set(payload.descripcion);

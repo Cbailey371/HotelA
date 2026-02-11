@@ -3,8 +3,12 @@ import axios from 'axios';
 import { ZoomIn, Image as ImageIcon, Upload, FileText, X } from 'lucide-react';
 import Modal from './Modal';
 import DatePicker from './DatePicker';
+import { useAuth } from '../context/AuthContext';
 
 const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
+    const { user } = useAuth();
+    const canEditCritical = user?.permisos?.includes('critical_fields_edit') || user?.role === 'SUPER-ADMIN';
+
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
@@ -327,7 +331,7 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
                             </div>
                             <div className="col-span-1">
                                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Estado</label>
-                                <select name="estado" value={formData.estado} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none">
+                                <select name="estado" value={formData.estado} onChange={handleInputChange} disabled={!canEditCritical} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed">
                                     <option value="activo">Activo</option>
                                     <option value="en_reparacion">En Reparación</option>
                                     <option value="inactivo">Inactivo</option>

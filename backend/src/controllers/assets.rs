@@ -365,7 +365,18 @@ pub async fn update_asset(
     if let Some(v) = payload.numero_serie { asset.numero_serie = Set(Some(v)); }
     if let Some(v) = payload.ubicacion { asset.ubicacion = Set(Some(v)); }
     if let Some(v) = payload.area_responsable { asset.area_responsable = Set(Some(v)); }
-    if let Some(v) = payload.estado { asset.estado = Set(Some(v)); }
+    // Field-level permission check for critical fields (Status in Assets)
+    let has_critical_perm = crate::middleware::auth::check_permission(&db, claims.user_id, "critical_fields_edit").await;
+
+    if let Some(v) = payload.estado { 
+        if !has_critical_perm {
+            let existing = activos_equipos::Entity::find_by_id(id).one(&db).await?.unwrap();
+            if existing.estado != Some(v.clone()) {
+                return Err(AppError::Forbidden("No tiene permisos para modificar el estado del activo".to_string()));
+            }
+        }
+        asset.estado = Set(Some(v)); 
+    }
     if let Some(v) = payload.imagen_url { asset.imagen_url = Set(Some(v)); }
 
     if let Some(v) = payload.tipo_activo { asset.tipo_activo = Set(Some(v)); }

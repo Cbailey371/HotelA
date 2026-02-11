@@ -1,7 +1,7 @@
 use axum::{Json, extract::State, response::IntoResponse};
-use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait};
+use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait, JoinType, RelationTrait, QuerySelect};
 use serde::{Deserialize, Serialize};
-use crate::entities::{usuarios, roles, usuario_roles};
+use crate::entities::{usuarios, roles, usuario_roles, rol_permisos, permisos};
 use crate::utils::{hash, jwt, error::AppError};
 
 #[derive(Deserialize)]
@@ -24,6 +24,7 @@ pub struct UserResponse {
     pub apellido: Option<String>,
     pub cargo: Option<String>,
     pub role: String,
+    pub permisos: Vec<String>,
 }
 
 pub async fn login(
@@ -86,6 +87,27 @@ pub async fn login(
             apellido: Some(user.apellido.clone()),
             cargo: user.cargo,
             role: role_name,
+            permisos: {
+                let role_ids: Vec<i32> = user_roles.into_iter()
+                    .filter_map(|(_, r)| r)
+                    .map(|r| r.id_rol)
+                    .collect();
+                
+                if role_ids.is_empty() {
+                    Vec::new()
+                } else {
+                    permisos::Entity::find()
+                        .join(JoinType::InnerJoin, permisos::Relation::RolPermisos.def())
+                        .filter(rol_permisos::Column::RolId.is_in(role_ids))
+                        .all(&db).await
+                        .unwrap_or_default()
+                        .into_iter()
+                        .map(|p| p.codigo_permiso)
+                        .collect::<std::collections::HashSet<String>>()
+                        .into_iter()
+                        .collect()
+                }
+            },
         }
     }))
 }

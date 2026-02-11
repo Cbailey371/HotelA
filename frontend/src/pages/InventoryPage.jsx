@@ -8,8 +8,13 @@ import api from '../services/api';
 import SearchableSelect from '../components/SearchableSelect';
 
 import Modal from '../components/Modal';
+import { useAuth } from '../context/AuthContext';
 
 const InventoryPage = () => {
+    const { user } = useAuth();
+    const hasPermission = (perm) => user?.permisos?.includes(perm) || user?.role === 'SUPER-ADMIN';
+    const canEditCritical = hasPermission('critical_fields_edit');
+
     const [parts, setParts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -495,15 +500,15 @@ const InventoryPage = () => {
                         </div>
                         <div className="col-span-1">
                             <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Stock Actual</label>
-                            <input type="number" name="stock_actual" value={formData.stock_actual} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none" />
+                            <input type="number" name="stock_actual" value={formData.stock_actual} onChange={handleInputChange} disabled={!canEditCritical} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none disabled:opacity-50 disabled:cursor-not-allowed" />
                         </div>
                         <div className="col-span-1">
                             <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Stock Mínimo</label>
-                            <input type="number" name="stock_minimo" value={formData.stock_minimo} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none" />
+                            <input type="number" name="stock_minimo" value={formData.stock_minimo} onChange={handleInputChange} disabled={!canEditCritical} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none disabled:opacity-50 disabled:cursor-not-allowed" />
                         </div>
                         <div className="col-span-1">
                             <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Precio Unitario ($)</label>
-                            <input type="number" step="0.01" name="precio_unitario" value={formData.precio_unitario} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none" />
+                            <input type="number" step="0.01" name="precio_unitario" value={formData.precio_unitario} onChange={handleInputChange} disabled={!canEditCritical} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none disabled:opacity-50 disabled:cursor-not-allowed" />
                         </div>
                         <div className="col-span-1">
                             <SearchableSelect
@@ -543,7 +548,7 @@ const InventoryPage = () => {
                         </div>
                         <div className="col-span-1">
                             <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Estado</label>
-                            <select name="estado" value={formData.estado} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none">
+                            <select name="estado" value={formData.estado} onChange={handleInputChange} disabled={!canEditCritical} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none disabled:opacity-50 disabled:cursor-not-allowed">
                                 <option value="activo">Activo</option>
                                 <option value="inactivo">Inactivo</option>
                             </select>
