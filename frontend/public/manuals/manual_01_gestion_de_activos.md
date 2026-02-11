@@ -38,6 +38,10 @@ Existen dos formas de ingresar activos al sistema: manual o masiva.
 5.  Haga clic en **"Guardar"**.
 
 #### B. Importación Masiva (Excel/CSV)
+
+> [!TIP]
+> **Recomendación de Inicio**: Para la puesta en marcha del sistema, se recomienda realizar una **carga inicial de activos**. La opción de Importación Masiva es ideal para este proceso, permitiéndole subir cientos de equipos de forma rápida y estructurada.
+
 Para cargas iniciales de cientos de equipos:
 1.  En la pantalla de Activos, haga clic en **"Plantilla"** para descargar el archivo base en formato CSV.
 2.  Una vez descargada la plantilla, llénela respetando las columnas (no cambie los encabezados).

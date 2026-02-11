@@ -61,6 +61,10 @@ Existen dos formas de ingresar repuestos al sistema: manual o masiva.
 3.  Llene la ficha técnica como se describe en la sección 1.2 y guarde.
 
 #### B. Importación Masiva (Excel/CSV)
+
+> [!TIP]
+> **Recomendación de Inicio**: Para la puesta en marcha del sistema, se recomienda realizar una **carga inicial de inventario**. La opción de Importación Masiva es ideal para este proceso, permitiéndole subir cientos de repuestos y suministros de forma rápida y estructurada.
+
 Para cargas iniciales de cientos de repuestos:
 1.  En la pantalla de Inventario, haga clic en **"Plantilla"** para descargar el archivo base en formato CSV.
 2.  Una vez descargada la plantilla, llénela respetando las columnas (no cambie los encabezados).
