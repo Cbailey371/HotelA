@@ -555,40 +555,38 @@ const InventoryPage = () => {
                     </div>
                     <div className="col-span-2">
                         <label className="text-[10px] font-bold uppercase text-slate-400 mb-1 block">Imagen del Repuesto</label>
-                        <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:border-blue-500 transition-colors bg-slate-50 dark:bg-[#0f172a]">
+                        <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden transition-colors bg-slate-50 dark:bg-[#0f172a]">
                             {formData.imagen_preview || formData.imagen ? (
-                                <div
-                                    onClick={() => {
-                                        const imgUrl = formData.imagen_preview || `${formData.imagen}`;
-                                        setPreviewImage(imgUrl);
-                                    }}
-                                    className="relative w-32 h-32 rounded-lg overflow-hidden border border-slate-200 cursor-zoom-in group"
-                                >
-                                    <img
-                                        src={formData.imagen_preview || `${formData.imagen}`}
-                                        alt="Preview"
-                                        className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all">
-                                        <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100" />
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setFormData(prev => ({ ...prev, imagen: null, imagen_file: null, imagen_preview: null }));
-                                            setIsDirty(true);
+                                <div className="p-4 flex flex-col items-center justify-center">
+                                    <div
+                                        onClick={() => {
+                                            const imgUrl = formData.imagen_preview || `${formData.imagen}`;
+                                            setPreviewImage(imgUrl);
                                         }}
-                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 z-10"
+                                        className="relative w-32 h-32 rounded-lg overflow-hidden border border-slate-200 cursor-zoom-in group"
                                     >
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                </div>
-                            ) : (
-                                <>
-                                    <Upload className="w-8 h-8 text-slate-300" />
-                                    <label className="cursor-pointer text-xs font-bold text-blue-600 hover:text-blue-700">
-                                        Cargar Imagen
+                                        <img
+                                            src={formData.imagen_preview || `${formData.imagen}`}
+                                            alt="Preview"
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all">
+                                            <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100" />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setFormData(prev => ({ ...prev, imagen: null, imagen_file: null, imagen_preview: null }));
+                                                setIsDirty(true);
+                                            }}
+                                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 z-10"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                    <label className="mt-3 cursor-pointer text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-tighter">
+                                        Cambiar Imagen
                                         <input
                                             type="file"
                                             accept="image/*"
@@ -606,8 +604,31 @@ const InventoryPage = () => {
                                             }}
                                         />
                                     </label>
-                                    <span className="text-[10px] text-slate-400">PNG, JPG hasta 5MB</span>
-                                </>
+                                </div>
+                            ) : (
+                                <label className="flex flex-col items-center justify-center gap-2 p-8 cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-500/5 hover:border-blue-400 group transition-all">
+                                    <Upload className="w-8 h-8 text-slate-300 group-hover:text-blue-500 group-hover:scale-110 transition-all" />
+                                    <div className="text-center">
+                                        <span className="text-xs font-bold text-blue-600 block">Cargar Imagen</span>
+                                        <span className="text-[10px] text-slate-400">PNG, JPG hasta 5MB</span>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    imagen_file: file,
+                                                    imagen_preview: URL.createObjectURL(file)
+                                                }));
+                                                setIsDirty(true);
+                                            }
+                                        }}
+                                    />
+                                </label>
                             )}
                         </div>
                     </div>
