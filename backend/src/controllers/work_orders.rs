@@ -1,5 +1,5 @@
 use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode};
-use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, ColumnTrait, QuerySelect, RelationTrait, JoinType};
+use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, ColumnTrait, QuerySelect, RelationTrait, JoinType, QueryOrder};
 use serde::{Deserialize, Serialize};
 use crate::entities::{orden_trabajo, activos_equipos, tecnicos, proveedores, mantenimiento_tipo, mantenimiento_calendario};
 use std::str::FromStr;

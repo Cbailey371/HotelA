@@ -1,5 +1,5 @@
 use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode};
-use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, LoaderTrait};
+use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, LoaderTrait};
 use serde::{Deserialize, Serialize};
 use crate::entities::{roles, permisos, rol_permisos, usuario_roles};
 
