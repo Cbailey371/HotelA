@@ -39,10 +39,10 @@ Existen dos formas de ingresar activos al sistema: manual o masiva.
 
 #### B. Importación Masiva (Excel/CSV)
 Para cargas iniciales de cientos de equipos:
-1.  En la pantalla de Activos, clic en **"Importar"**.
-2.  Descargue la **Plantilla CSV** proporcionada.
-3.  Llene la plantilla respetando las columnas (no cambie los encabezados).
-4.  Suba el archivo completado.
+1.  En la pantalla de Activos, haga clic en **"Plantilla"** para descargar el archivo base en formato CSV.
+2.  Una vez descargada la plantilla, llénela respetando las columnas (no cambie los encabezados).
+3.  Para subir el archivo completado, haga clic en **"Importar CSV"**.
+4.  Seleccione su archivo desde su PC.
 5.  El sistema validará y creará todos los activos automáticamente.
 
 ### 1.2. Expediente Digital del Activo

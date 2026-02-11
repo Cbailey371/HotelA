@@ -51,5 +51,19 @@ El sistema monitorea niveles automáticamente.
 -   En el listado, los ítems con **Stock < Mínimo** aparecerán resaltados en **Rojo/Ámbar**.
 -   Utilice el filtro "Por Reponer" para generar su lista de compras semanal.
 
-### 1.5. Importación/Exportación
-Al igual que los activos, puede cargar su catálogo inicial desde Excel masivamente usando la opción **"Importar"** y la plantilla CSV provista.
+### 1.5. Importación de Repuestos (Manual o Masiva)
+
+Existen dos formas de ingresar repuestos al sistema: manual o masiva.
+
+#### A. Creación Manual
+1.  Navegue al menú **Inventario**.
+2.  Haga clic en **"+ Nuevo Ítem"**.
+3.  Llene la ficha técnica como se describe en la sección 1.2 y guarde.
+
+#### B. Importación Masiva (Excel/CSV)
+Para cargas iniciales de cientos de repuestos:
+1.  En la pantalla de Inventario, haga clic en **"Plantilla"** para descargar el archivo base en formato CSV.
+2.  Una vez descargada la plantilla, llénela respetando las columnas (no cambie los encabezados).
+3.  Para subir el archivo completado, haga clic en **"Importar CSV"**.
+4.  Seleccione su archivo desde su PC.
+5.  El sistema validará y creará todos los repuestos automáticamente.
