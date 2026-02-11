@@ -348,6 +348,7 @@ pub async fn get_asset_by_id(
 pub async fn update_asset(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
+    Extension(claims): Extension<jwt::Claims>,
     Json(payload): Json<UpdateAssetRequest>,
 ) -> Result<impl IntoResponse, AppError> {
     let mut asset: activos_equipos::ActiveModel = activos_equipos::Entity::find_by_id(id)

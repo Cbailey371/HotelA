@@ -146,6 +146,18 @@ pub async fn create_part(
     }))
 }
 
+pub async fn update_part(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+    Extension(claims): Extension<jwt::Claims>,
+    Json(payload): Json<CreatePartRequest>,
+) -> Result<impl IntoResponse, AppError> {
+    let mut part: activos_repuestos::ActiveModel = activos_repuestos::Entity::find_by_id(id)
+        .one(&db)
+        .await?
+        .ok_or_else(|| AppError::NotFound("Repuesto no encontrado".to_string()))?
+        .into();
+
     // Field-level permission check for critical fields
     let has_critical_perm = crate::middleware::auth::check_permission(&db, claims.user_id, "critical_fields_edit").await;
 
