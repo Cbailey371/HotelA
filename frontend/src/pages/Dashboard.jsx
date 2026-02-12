@@ -5,6 +5,7 @@ import KPIsSection from '../components/dashboard/KPIsSection';
 import CostChart from '../components/dashboard/CostChart';
 import UpcomingMaintenanceList from '../components/dashboard/UpcomingMaintenanceList';
 import MaintenanceCalendar from '../components/dashboard/MaintenanceCalendar';
+import LowStockWidget from '../components/dashboard/LowStockWidget';
 
 const Dashboard = () => {
     const [stats, setStats] = useState({
@@ -15,7 +16,8 @@ const Dashboard = () => {
         monthly_costs: [],
         daily_costs: [],
         upcoming_maintenance: [],
-        low_stock_items: 0
+        low_stock_items: 0,
+        low_stock_details: []
     });
     const [loading, setLoading] = useState(true);
 
@@ -53,14 +55,19 @@ const Dashboard = () => {
             <KPIsSection stats={stats} loading={loading} />
 
             {/* Charts & Lists Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-[450px]">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-[600px]">
                 {/* Cost Chart (2 cols) */}
                 <div className="lg:col-span-2 h-full">
                     <CostChart monthlyData={stats.monthly_costs} dailyData={stats.daily_costs} loading={loading} />
                 </div>
-                {/* Upcoming List (1 col) */}
-                <div className="h-full">
-                    <UpcomingMaintenanceList tasks={stats.upcoming_maintenance} loading={loading} />
+                {/* Side Lists (1 col) */}
+                <div className="h-full flex flex-col gap-6">
+                    <div className="flex-1 min-h-[280px]">
+                        <UpcomingMaintenanceList tasks={stats.upcoming_maintenance} loading={loading} />
+                    </div>
+                    <div className="flex-1 min-h-[280px]">
+                        <LowStockWidget items={stats.low_stock_details || []} loading={loading} />
+                    </div>
                 </div>
             </div>
 

@@ -22,6 +22,14 @@ pub struct UpcomingEventDto {
 }
 
 #[derive(Serialize)]
+pub struct LowStockItemDto {
+    pub id: i32,
+    pub name: String,
+    pub current_stock: i32,
+    pub min_stock: i32,
+}
+
+#[derive(Serialize)]
 pub struct DashboardStats {
     pub total_assets: u64,
     pub active_maintenance: u64,
@@ -31,6 +39,7 @@ pub struct DashboardStats {
     pub daily_costs: Vec<MonthlyCostDto>,
     pub upcoming_maintenance: Vec<UpcomingEventDto>,
     pub low_stock_items: u64,
+    pub low_stock_details: Vec<LowStockItemDto>,
     pub calendar_events: Vec<UpcomingEventDto>,
 }
 
@@ -67,12 +76,27 @@ pub async fn get_stats(
         .count(&db)
         .await?;
 
-    // 5. Low Stock Items (Legacy but useful)
-    let parts = activos_repuestos::Entity::find().all(&db).await?;
+    // 5. Low Stock Items (Refactored to get details)
+    let low_stock_data = activos_repuestos::Entity::find()
+        .all(&db)
+        .await?
+        .into_iter()
+        .filter(|p| {
+            let actual = p.stock_actual.unwrap_or(0);
+            let minimo = p.stock_minimo.unwrap_or(0);
+            actual <= minimo
+        })
+        .collect::<Vec<_>>();
     
-    let low_stock_items = parts.into_iter()
-        .filter(|p| p.stock_actual.unwrap_or(0) <= p.stock_minimo.unwrap_or(0))
-        .count() as u64;
+    let low_stock_items = low_stock_data.len() as u64;
+    let low_stock_details: Vec<LowStockItemDto> = low_stock_data.into_iter()
+        .map(|p| LowStockItemDto {
+            id: p.id_repuesto,
+            name: p.nombre_repuesto,
+            current_stock: p.stock_actual.unwrap_or(0),
+            min_stock: p.stock_minimo.unwrap_or(0),
+        })
+        .collect();
 
     // 6. Monthly Costs (Last 6 months)
     let six_months_ago = today - chrono::Duration::days(180);
@@ -202,6 +226,7 @@ pub async fn get_stats(
         daily_costs,
         upcoming_maintenance,
         low_stock_items,
+        low_stock_details,
         calendar_events,
     }))
 }
