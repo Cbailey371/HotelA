@@ -20,7 +20,7 @@ const Layout = () => {
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Global Notification Bell - Top Right */}
-            <div className="fixed top-6 right-8 z-[60]">
+            <div className="fixed top-0 right-8 z-[60]">
                 <NotificationBell />
             </div>
 
