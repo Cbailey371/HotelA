@@ -56,8 +56,6 @@ const InventoryPage = () => {
         proveedor_id: '',
         fecha_vencimiento: '',
         compatibilidad: '',
-        fecha_vencimiento: '',
-        compatibilidad: '',
         estado: 'activo',
         sku: '',
         equipos_ids: []
