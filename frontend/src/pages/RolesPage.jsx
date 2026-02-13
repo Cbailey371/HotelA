@@ -116,8 +116,6 @@ const RolesPage = () => {
                     onClick={() => {
                         setEditingRole(null);
                         setFormData({ nombre: '', descripcion: '', permisos: [] });
-                        setEditingRole(null);
-                        setFormData({ nombre: '', descripcion: '', permisos: [] });
                         setShowModal(true);
                         setIsDirty(false);
                     }}
@@ -274,11 +272,6 @@ const RolesPage = () => {
                                 ))}
                             </div>
                         </div>
-                    </div>
-
-                    <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
-                        <button type="button" onClick={() => setShowModal(false)} className="px-5 py-2.5 text-slate-500 font-bold hover:text-slate-800 transition-colors">Cancelar</button>
-                        <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-500/20">Guardar Rol</button>
                     </div>
                 </form>
             </Modal>

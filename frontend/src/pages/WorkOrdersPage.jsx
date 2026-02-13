@@ -726,27 +726,12 @@ const WorkOrdersPage = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex justify-end gap-3 pt-4">
-                            <button
-                                type="button"
-                                onClick={() => setShowModal(false)}
-                                className="px-6 py-2.5 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-slate-800 transition-all"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="submit"
-                                className={`${editingOrder ? 'bg-amber-500 hover:bg-amber-600' : 'bg-indigo-600 hover:bg-indigo-700'} text-white px-10 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-indigo-500/30 transition-all`}
-                            >
-                                {editingOrder ? 'Actualizar Orden' : 'Guardar Orden'}
-                            </button>
-                        </div>
                     </form>
                 </div>
             </Modal>
 
             {/* Maintenance Selector Modal */}
-            <Modal
+            < Modal
                 isOpen={showMaintenanceSelector}
                 onClose={() => setShowMaintenanceSelector(false)}
                 title="Mantenimientos Programados"
@@ -818,21 +803,16 @@ const WorkOrdersPage = () => {
                         )}
                     </div>
                 </div>
-            </Modal>
+            </Modal >
 
             {/* Email Confirmation Modal */}
-            <Modal
+            < Modal
                 isOpen={showEmailModal}
                 onClose={() => setShowEmailModal(false)}
-                title="Enviar Orden de Trabajo"
+                onSave={handleConfirmSendEmail}
+                title="Enviar Orden por Correo"
             >
-                <div className="p-4 space-y-4">
-                    <p className="text-slate-600 dark:text-slate-400">
-                        Se enviará la Orden de Trabajo <strong>{selectedOrderForEmail?.codigo_ot || selectedOrderForEmail?.id_ot}</strong>.
-                        <br />
-                        Por favor, ingrese la dirección de correo electrónico del destinatario:
-                    </p>
-
+                <div className="space-y-4">
                     <div>
                         <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Correo Destinatario</label>
                         <input
@@ -846,27 +826,10 @@ const WorkOrdersPage = () => {
                             Separe múltiples correos con comas. Ej: <em>ventas@proveedor.com, gerente@proveedor.com</em>
                         </p>
                     </div>
-
-                    <div className="flex justify-end gap-3 pt-4">
-                        <button
-                            onClick={() => setShowEmailModal(false)}
-                            className="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold transition-colors"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            onClick={handleConfirmSendEmail}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg shadow-blue-500/20 flex items-center gap-2"
-                        >
-                            <Mail size={18} />
-                            Enviar Orden
-                        </button>
-                    </div>
                 </div>
             </Modal>
-        </div>
+        </div >
     );
 };
 
 export default WorkOrdersPage;
-

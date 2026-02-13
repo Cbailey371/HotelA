@@ -1,5 +1,5 @@
 use sea_orm::*;
-use crate::entities::{prelude::*, *};
+use crate::entities::*;
 use chrono::prelude::*;
 use axum::{Json, extract::State, response::IntoResponse};
 use crate::utils::error::AppError;
@@ -45,7 +45,7 @@ pub async fn reserve_stock(
     referencia_id: i32, // ID Maintenance
     usuario_id: i32,
 ) -> Result<(), DbErr> {
-    let item_model = ActivosRepuestos::find_by_id(repuesto_id)
+    let item_model = activos_repuestos::Entity::find_by_id(repuesto_id)
         .one(txn)
         .await?
         .ok_or(DbErr::Custom("Part not found".to_owned()))?;
@@ -74,7 +74,7 @@ pub async fn consume_reserved_stock(
     referencia_id: i32, // ID Maintenance
     usuario_id: i32,
 ) -> Result<(), DbErr> {
-    let item_model = ActivosRepuestos::find_by_id(repuesto_id)
+    let item_model = activos_repuestos::Entity::find_by_id(repuesto_id)
         .one(txn)
         .await?
         .ok_or(DbErr::Custom("Part not found".to_owned()))?;
@@ -102,7 +102,7 @@ pub async fn release_reservation(
     referencia_id: i32,
     usuario_id: i32,
 ) -> Result<(), DbErr> {
-    let item_model = ActivosRepuestos::find_by_id(repuesto_id)
+    let item_model = activos_repuestos::Entity::find_by_id(repuesto_id)
         .one(txn)
         .await?
         .ok_or(DbErr::Custom("Part not found".to_owned()))?;
@@ -126,7 +126,7 @@ pub async fn add_stock(
     referencia_id: i32, // ID Order
     usuario_id: i32,
 ) -> Result<(), DbErr> {
-     let item_model = ActivosRepuestos::find_by_id(repuesto_id)
+     let item_model = activos_repuestos::Entity::find_by_id(repuesto_id)
         .one(txn)
         .await?
         .ok_or(DbErr::Custom("Part not found".to_owned()))?;

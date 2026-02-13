@@ -7,7 +7,7 @@ use axum::{
 use sea_orm::{prelude::*, QueryOrder, TransactionTrait, Set};
 use serde::{Deserialize, Serialize};
 use chrono::prelude::*;
-use crate::entities::{prelude::*, inventario_movimientos, *};
+use crate::entities::{inventario_movimientos, *};
 use crate::utils::error::AppError;
 
 #[derive(Serialize)]
@@ -99,8 +99,8 @@ pub struct OrderWithDetailsDto {
 pub async fn get_orders(
     State(db): State<DatabaseConnection>,
 ) -> Result<impl IntoResponse, AppError> {
-    let orders = OrdenCompraRepuesto::find()
-        .find_also_related(Proveedores)
+    let orders = orden_compra_repuesto::Entity::find()
+        .find_also_related(proveedores::Entity)
         .order_by_asc(orden_compra_repuesto::Column::IdOrdenCompra)
         .all(&db)
         .await?;
@@ -124,7 +124,7 @@ pub async fn get_orders(
 pub async fn get_requests(
     State(db): State<DatabaseConnection>,
 ) -> Result<impl IntoResponse, AppError> {
-    let requests = ComprasSolicitudes::find()
+    let requests = compras_solicitudes::Entity::find()
         .order_by_asc(compras_solicitudes::Column::Id)
         .all(&db)
         .await?;
@@ -170,12 +170,12 @@ pub async fn get_request_by_id(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, AppError> {
-    let request = ComprasSolicitudes::find_by_id(id)
+    let request = compras_solicitudes::Entity::find_by_id(id)
         .one(&db)
         .await?
         .ok_or_else(|| AppError::NotFound("Request not found".to_string()))?;
 
-    let details = ComprasSolicitudDetalle::find()
+    let details = compras_solicitud_detalle::Entity::find()
         .filter(compras_solicitud_detalle::Column::SolicitudId.eq(id))
         .all(&db)
         .await?;
@@ -207,7 +207,7 @@ pub async fn update_request_status(
     Path(id): Path<i32>,
     Json(payload): Json<UpdatePurchaseRequestStatusDto>,
 ) -> Result<impl IntoResponse, AppError> {
-    let mut request: compras_solicitudes::ActiveModel = ComprasSolicitudes::find_by_id(id)
+    let mut request: compras_solicitudes::ActiveModel = compras_solicitudes::Entity::find_by_id(id)
         .one(&db)
         .await?
         .ok_or_else(|| AppError::NotFound("Request not found".to_string()))?
@@ -252,7 +252,7 @@ pub async fn create_order_from_request(
 ) -> Result<impl IntoResponse, AppError> {
      let txn = db.begin().await?;
 
-    let request = ComprasSolicitudes::find_by_id(request_id)
+    let request = compras_solicitudes::Entity::find_by_id(request_id)
         .one(&txn)
         .await?
         .ok_or_else(|| AppError::NotFound("Request not found".to_string()))?;
@@ -272,7 +272,7 @@ pub async fn create_order_from_request(
     
     let inserted_order = new_order.insert(&txn).await?;
 
-    let details = ComprasSolicitudDetalle::find()
+    let details = compras_solicitud_detalle::Entity::find()
         .filter(compras_solicitud_detalle::Column::SolicitudId.eq(request_id))
         .all(&txn)
         .await?;
@@ -344,14 +344,14 @@ pub async fn get_order_by_id(
     State(db): State<DatabaseConnection>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, AppError> {
-    let order = OrdenCompraRepuesto::find_by_id(id)
+    let order = orden_compra_repuesto::Entity::find_by_id(id)
         .one(&db)
         .await?
         .ok_or_else(|| AppError::NotFound("Order not found".to_string()))?;
 
-    let details = OrdenCompraDetalle::find()
+    let details = orden_compra_detalle::Entity::find()
         .filter(orden_compra_detalle::Column::IdOrdenCompra.eq(id))
-        .find_also_related(ActivosRepuestos)
+        .find_also_related(activos_repuestos::Entity)
         .all(&db)
         .await?;
 
@@ -404,7 +404,7 @@ pub async fn update_order(
 ) -> Result<impl IntoResponse, AppError> {
     let txn = db.begin().await?;
 
-    let order = OrdenCompraRepuesto::find_by_id(id)
+    let order = orden_compra_repuesto::Entity::find_by_id(id)
         .one(&txn)
         .await?
         .ok_or_else(|| AppError::NotFound("Order not found".to_string()))?;
@@ -421,7 +421,7 @@ pub async fn update_order(
 
     order.update(&txn).await?;
 
-    OrdenCompraDetalle::delete_many()
+    orden_compra_detalle::Entity::delete_many()
         .filter(orden_compra_detalle::Column::IdOrdenCompra.eq(id))
         .exec(&txn)
         .await?;
@@ -447,7 +447,7 @@ pub async fn update_order_status(
     Path(id): Path<i32>,
     Json(payload): Json<UpdatePurchaseRequestStatusDto>,
 ) -> Result<impl IntoResponse, AppError> {
-    let order = OrdenCompraRepuesto::find_by_id(id)
+    let order = orden_compra_repuesto::Entity::find_by_id(id)
         .one(&db)
         .await?
         .ok_or_else(|| AppError::NotFound("Order not found".to_string()))?;
@@ -467,12 +467,12 @@ pub async fn delete_order(
 ) -> Result<impl IntoResponse, AppError> {
     let txn = db.begin().await?;
 
-    OrdenCompraDetalle::delete_many()
+    orden_compra_detalle::Entity::delete_many()
         .filter(orden_compra_detalle::Column::IdOrdenCompra.eq(id))
         .exec(&txn)
         .await?;
 
-    OrdenCompraRepuesto::delete_by_id(id)
+    orden_compra_repuesto::Entity::delete_by_id(id)
         .exec(&txn)
         .await?;
 
@@ -502,7 +502,7 @@ pub async fn receive_order_items(
 ) -> Result<impl IntoResponse, AppError> {
     let txn = db.begin().await?;
 
-    let order = OrdenCompraRepuesto::find_by_id(order_id)
+    let order = orden_compra_repuesto::Entity::find_by_id(order_id)
         .one(&txn)
         .await?
         .ok_or_else(|| AppError::NotFound("Order not found".to_string()))?;
@@ -513,7 +513,7 @@ pub async fn receive_order_items(
     for item in payload.items {
         if item.cantidad_recibir <= 0 { continue; }
 
-        let detail = OrdenCompraDetalle::find_by_id(item.id_detalle)
+        let detail = orden_compra_detalle::Entity::find_by_id(item.id_detalle)
             .one(&txn)
             .await?
             .ok_or_else(|| AppError::NotFound(format!("Detail {} not found", item.id_detalle)))?;
@@ -564,7 +564,7 @@ pub async fn receive_order_items(
         some_items_received = true;
     }
 
-    let details = OrdenCompraDetalle::find()
+    let details = orden_compra_detalle::Entity::find()
         .filter(orden_compra_detalle::Column::IdOrdenCompra.eq(order_id))
         .all(&txn)
         .await?;
@@ -598,7 +598,7 @@ pub async fn send_order_email(
     Path(id): Path<i32>,
     Json(payload): Json<crate::controllers::purchase_quotes::SendEmailRequest>,
 ) -> Result<impl IntoResponse, AppError> {
-    let order = OrdenCompraRepuesto::find_by_id(id)
+    let order = orden_compra_repuesto::Entity::find_by_id(id)
         .one(&db)
         .await?
         .ok_or_else(|| AppError::NotFound("Order not found".to_string()))?;

@@ -284,6 +284,7 @@ const PurchaseQuotesPage = () => {
             <Modal
                 isOpen={showForm}
                 onClose={() => setShowForm(false)}
+                onSave={() => document.getElementById('quote-form')?.requestSubmit()}
                 title={selectedQuote ? 'Editar Solicitud' : 'Nueva Solicitud'}
                 width="max-w-4xl"
             >
@@ -293,10 +294,12 @@ const PurchaseQuotesPage = () => {
                     onSuccess={handleFormSubmit}
                 />
             </Modal>
+
             {/* Modal for Email Confirmation */}
             <Modal
                 isOpen={showEmailModal}
                 onClose={() => setShowEmailModal(false)}
+                onSave={handleConfirmSendEmail}
                 title="Confirmar Envío de Correo"
             >
                 <div className="p-4 space-y-4">
@@ -318,22 +321,6 @@ const PurchaseQuotesPage = () => {
                         <p className="text-xs text-slate-500 mt-1">
                             Separe múltiples correos con comas. Ej: <em>ventas@proveedor.com, gerente@proveedor.com</em>
                         </p>
-                    </div>
-
-                    <div className="flex justify-end gap-3 pt-4">
-                        <button
-                            onClick={() => setShowEmailModal(false)}
-                            className="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold transition-colors"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            onClick={handleConfirmSendEmail}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg shadow-blue-500/20 flex items-center gap-2"
-                        >
-                            <Mail size={18} />
-                            Enviar Solicitud
-                        </button>
                     </div>
                 </div>
             </Modal>

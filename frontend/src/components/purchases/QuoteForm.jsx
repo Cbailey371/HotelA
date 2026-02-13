@@ -179,7 +179,7 @@ const QuoteForm = ({ initialData, onCancel, onSuccess }) => {
                     {isEditing ? 'Editar Solicitud de Cotización' : 'Nueva Solicitud de Cotización'}
                 </h2>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form id="quote-form" onSubmit={handleSubmit} className="space-y-6">
                     {/* General Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -295,23 +295,6 @@ const QuoteForm = ({ initialData, onCancel, onSuccess }) => {
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-800">
-                        <button
-                            type="button"
-                            onClick={onCancel}
-                            className="px-5 py-2.5 text-slate-500 font-bold hover:text-slate-800 transition-colors"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-blue-500/20 flex items-center gap-2 disabled:opacity-50"
-                        >
-                            {loading ? <div className="animate-spin w-5 h-5 border-2 border-white rounded-full border-t-transparent" /> : <Save size={20} />}
-                            Guardar Solicitud
-                        </button>
-                    </div>
                 </form>
             </div>
 

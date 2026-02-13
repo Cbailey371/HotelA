@@ -242,21 +242,6 @@ const HolidaysPage = () => {
                         />
                         <label htmlFor="es_fijo" className="text-sm font-bold text-slate-700 dark:text-slate-300 cursor-pointer">Es Feriado Fijo (Recurrente)</label>
                     </div>
-                    <div className="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
-                        <button
-                            type="button"
-                            onClick={() => setShowModal(false)}
-                            className="px-4 py-2 text-slate-500 hover:text-slate-700 font-bold transition-colors"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-500/30 transition-all"
-                        >
-                            Guardar
-                        </button>
-                    </div>
                 </form>
             </Modal>
         </div>

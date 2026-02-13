@@ -669,10 +669,6 @@ const InventoryPage = () => {
                             )}
                         </div>
                     </div>
-                    <div className="flex justify-end gap-3 pt-6">
-                        <button type="button" onClick={() => setShowModal(false)} className="px-6 py-2.5 text-slate-500 font-bold uppercase text-[11px] tracking-widest hover:text-slate-800 transition-colors">Cancelar</button>
-                        <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-2.5 rounded-xl font-black uppercase text-[11px] tracking-widest shadow-xl shadow-blue-500/30 transition-all">Guardar SKU</button>
-                    </div>
                 </form>
             </Modal>
 

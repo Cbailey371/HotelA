@@ -365,12 +365,6 @@ const UsersPage = () => {
                         <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Cargo</label>
                         <input name="cargo" value={formData.cargo} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
                     </div>
-                    <div className="flex justify-end gap-3 pt-4">
-                        <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white text-sm">Cancelar</button>
-                        <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">
-                            {editingId ? 'Guardar Cambios' : 'Guardar Usuario'}
-                        </button>
-                    </div>
                 </form>
             </Modal>
         </div>

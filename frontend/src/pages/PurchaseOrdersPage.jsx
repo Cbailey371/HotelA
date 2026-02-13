@@ -696,12 +696,6 @@ const PurchaseOrdersPage = () => {
                                     <span>${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                             </div>
-                            <div className="flex justify-end pt-6">
-                                <button type="button" onClick={() => setShowForm(false)} className="px-5 py-2.5 text-slate-500 font-bold hover:text-slate-800 transition-colors mr-3">Cancelar</button>
-                                <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-2.5 rounded-xl shadow-lg shadow-blue-500/20 flex items-center gap-2">
-                                    <Save className="w-5 h-5" /> Guardar Orden
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </form>
@@ -838,6 +832,7 @@ const PurchaseOrdersPage = () => {
             <Modal
                 isOpen={showEmailModal}
                 onClose={() => setShowEmailModal(false)}
+                onSave={handleConfirmSendEmail}
                 title="Confirmar Envío de Orden de Compra"
             >
                 <div className="p-4 space-y-4">
@@ -860,25 +855,9 @@ const PurchaseOrdersPage = () => {
                             Se enviará una copia automática a su dirección de correo.
                         </p>
                     </div>
-
-                    <div className="flex justify-end gap-3 pt-4">
-                        <button
-                            onClick={() => setShowEmailModal(false)}
-                            className="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold transition-colors"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            onClick={handleConfirmSendEmail}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg shadow-blue-500/20 flex items-center gap-2"
-                        >
-                            <Mail size={18} />
-                            Enviar Orden
-                        </button>
-                    </div>
                 </div>
             </Modal>
-        </div>
+        </div >
     );
 };
 
