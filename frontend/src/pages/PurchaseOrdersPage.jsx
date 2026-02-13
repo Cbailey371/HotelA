@@ -91,7 +91,6 @@ const PurchaseOrdersPage = () => {
                 setShowForm(true);
                 setIsDirty(true);
             } catch (error) {
-                console.error("Error converting quote", error);
                 alert("Error al cargar datos de la cotización");
             } finally {
                 setLoading(false);
@@ -104,7 +103,6 @@ const PurchaseOrdersPage = () => {
             const data = await purchaseService.getAll();
             setOrders(data);
         } catch (error) {
-            console.error("Error fetching orders", error);
         } finally {
             setLoading(false);
         }

@@ -564,13 +564,14 @@ const SettingsPage = () => {
                 }
             }
 
-            console.log("Using filename for download:", filename);
             link.style.display = 'none';
             link.setAttribute('download', filename);
             document.body.appendChild(link);
 
             // Dispatch click event for better browser compatibility
-            link.click();
+            setTimeout(() => {
+                link.click();
+            }, 100); // Small delay to ensure link is appended before click
 
             // Clean up
             setTimeout(() => {

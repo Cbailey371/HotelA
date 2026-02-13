@@ -80,9 +80,8 @@ const ReportsPage = () => {
             setScheduledReports(scheduledRes.data);
             setCategories(categoriesRes.data);
         } catch (error) {
-            console.error("Error fetching reports data:", error);
         } finally {
-            setIsLoading(false);
+            setGenerating(false);
         }
     };
 

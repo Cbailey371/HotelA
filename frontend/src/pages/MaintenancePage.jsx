@@ -153,7 +153,6 @@ const MaintenancePage = () => {
                 await api.delete(`/maintenance/schedule/parts/${partId}`);
                 fetchMaintenanceParts(editingId);
             } catch (error) {
-                console.error("Error removing part", error);
             }
         } else {
             setMaintenanceParts(prev => prev.filter(p => p.repuesto_id != repuestoId));
@@ -166,7 +165,6 @@ const MaintenancePage = () => {
             const res = await api.get(`/maintenance/schedule/${scheduleId}/parts`);
             setMaintenanceParts(res.data);
         } catch (error) {
-            console.error("Error loading parts", error);
         }
     };
 
@@ -217,8 +215,7 @@ const MaintenancePage = () => {
             setIsDirty(false);
             fetchAllData();
         } catch (error) {
-            console.error("Error scheduling maintenance:", error.response?.data || error.message);
-            alert('Error al guardar el plan');
+            alert("Error al programar: " + (error.response?.data || error.message));
         }
     };
 

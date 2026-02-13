@@ -19,7 +19,6 @@ const AuditPage = () => {
             const res = await axios.get('/api/audit');
             setLogs(res.data);
         } catch (error) {
-            console.error("Error fetching audit logs", error);
         } finally {
             setLoading(false);
         }

@@ -40,7 +40,6 @@ const UsersPage = () => {
             const res = await axios.get('/api/roles');
             setRoles(res.data);
         } catch (error) {
-            console.error("Error fetching roles", error);
         }
     };
 
@@ -51,7 +50,6 @@ const UsersPage = () => {
             const res = await axios.get('/api/users');
             setUsers(res.data);
         } catch (error) {
-            console.error("Error fetching users", error);
             setError(error.response?.status === 403 ? "No tienes permisos para ver esta lista" : "Error al cargar usuarios");
         } finally {
             setLoading(false);
@@ -87,7 +85,6 @@ const UsersPage = () => {
             await axios.delete(`/api/users/${id}`);
             fetchUsers();
         } catch (error) {
-            console.error("Error deleting user", error);
             alert("Error al eliminar usuario");
         }
     };
@@ -110,7 +107,6 @@ const UsersPage = () => {
             await axios.put(`/api/users/${user.id}`, payload);
             fetchUsers();
         } catch (error) {
-            console.error("Error toggling status", error);
             alert("Error al cambiar estado");
         }
     };
@@ -132,7 +128,6 @@ const UsersPage = () => {
             resetForm();
             fetchUsers();
         } catch (error) {
-            console.error("Error saving user", error);
             alert("Error al guardar usuario");
         }
     };
