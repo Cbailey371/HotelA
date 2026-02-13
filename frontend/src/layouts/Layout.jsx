@@ -19,6 +19,11 @@ const Layout = () => {
 
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
+            {/* Global Notification Bell - Top Right */}
+            <div className="fixed top-6 right-8 z-[60]">
+                <NotificationBell />
+            </div>
+
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Mobile Header */}
                 <div className="md:hidden bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 p-4 flex items-center justify-between z-30">
@@ -29,7 +34,6 @@ const Layout = () => {
                         <Menu className="w-6 h-6" />
                     </button>
                     <span className="font-bold text-slate-800 dark:text-white">Andros Asset</span>
-                    <NotificationBell />
                 </div>
 
                 <main className="flex-1 overflow-y-auto w-full">

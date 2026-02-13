@@ -22,6 +22,7 @@ import ReceivingPage from './pages/ReceivingPage';
 import SettingsPage from './pages/SettingsPage';
 import ReportsPage from './pages/ReportsPage';
 import HolidaysPage from './pages/HolidaysPage';
+import NotificationsPage from './pages/NotificationsPage';
 import PublicCalendar from './pages/PublicCalendar';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -66,6 +67,7 @@ function App() {
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="holidays" element={<HolidaysPage />} />
                 <Route path="reports" element={<ReportsPage />} />
+                <Route path="notifications" element={<NotificationsPage />} />
               </Route>
             </Routes>
           </BrowserRouter>

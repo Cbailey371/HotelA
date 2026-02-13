@@ -468,16 +468,16 @@ const InvoiceForm = ({ isOpen, onClose, onSuccess, initialOrderId, initialDetail
                         <div className="col-span-1 bg-white dark:bg-[#1e293b] p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center gap-3">
                             <div className="flex justify-between text-sm text-slate-500 font-bold">
                                 <span>Subtotal:</span>
-                                <span>$ {subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                <span>$ {subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             <div className="flex justify-between text-sm text-slate-500 font-bold">
                                 <span>ITBMS (7%):</span>
-                                <span>$ {impuestos.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                <span>$ {impuestos.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
                             <div className="flex justify-between text-xl font-black text-slate-800 dark:text-white">
                                 <span>TOTAL:</span>
-                                <span className="text-blue-600">$ {total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                <span className="text-blue-600">$ {total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             <button
                                 type="submit"
@@ -558,7 +558,7 @@ const InvoiceForm = ({ isOpen, onClose, onSuccess, initialOrderId, initialDetail
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-sm font-black text-slate-800 dark:text-white">$ {parseFloat(order.total).toLocaleString()}</div>
+                                    <div className="text-sm font-black text-slate-800 dark:text-white">$ {parseFloat(order.total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                                     <div className="text-[10px] font-black text-blue-500 uppercase tracking-widest">{order.nombre_proveedor || `Prov ID: ${order.id_proveedor}`}</div>
                                 </div>
                             </button>
@@ -603,7 +603,7 @@ const InvoiceForm = ({ isOpen, onClose, onSuccess, initialOrderId, initialDetail
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-sm font-black text-slate-800 dark:text-white">$ {parseFloat(part.costo_promedio || 0).toLocaleString()}</div>
+                                    <div className="text-sm font-black text-slate-800 dark:text-white">$ {parseFloat(part.costo_promedio || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stock: {part.stock_actual || 0}</div>
                                 </div>
                             </button>

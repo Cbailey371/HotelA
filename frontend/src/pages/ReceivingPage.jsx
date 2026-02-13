@@ -343,7 +343,7 @@ const ReceivingPage = () => {
                                                 />
                                             </div>
                                         )}
-                                        {isComplete && <span className="text-xs font-bold text-slate-500">${item.costo_unitario}</span>}
+                                        {isComplete && <span className="text-xs font-bold text-slate-500">${parseFloat(item.costo_unitario || 0).toFixed(2)}</span>}
                                     </div>
 
                                     <div className="col-span-2 flex justify-center">
@@ -400,15 +400,15 @@ const ReceivingPage = () => {
                             <div className="flex gap-6">
                                 <div className="flex flex-col">
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Subtotal</span>
-                                    <span className="text-sm font-bold text-slate-600 dark:text-slate-300">$ {subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                    <span className="text-sm font-bold text-slate-600 dark:text-slate-300">$ {parseFloat(subtotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ITBMS (7%)</span>
-                                    <span className="text-sm font-bold text-slate-600 dark:text-slate-300">$ {impuestos.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                    <span className="text-sm font-bold text-slate-600 dark:text-slate-300">$ {parseFloat(impuestos || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Total Factura</span>
-                                    <span className="text-lg font-black text-blue-600">$ {total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                    <span className="text-lg font-black text-blue-600">$ {parseFloat(total || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                             </div>
                         </div>

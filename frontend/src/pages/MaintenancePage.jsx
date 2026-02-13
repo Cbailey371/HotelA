@@ -755,6 +755,7 @@ const MaintenancePage = () => {
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Costo Estimado ($)</label>
                             <input
                                 type="number"
+                                step="0.01"
                                 value={scheduleForm.costo_estimado}
                                 onChange={(e) => handleScheduleChange('costo_estimado', e.target.value)}
                                 className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
@@ -987,7 +988,7 @@ const MaintenancePage = () => {
                         </div>
                         <div className="col-span-1">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Costo M.O. ($)</label>
-                            <input type="number" value={executeForm.costo_mano_obra} onChange={(e) => handleExecuteChange('costo_mano_obra', e.target.value)} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none" />
+                            <input type="number" step="0.01" value={executeForm.costo_mano_obra} onChange={(e) => handleExecuteChange('costo_mano_obra', e.target.value)} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none" />
                         </div>
                         <div className="col-span-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Hallazgos y Observaciones</label>
@@ -1118,7 +1119,7 @@ const MaintenancePage = () => {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-black text-slate-700 dark:text-slate-300">${p.precio}</p>
+                                        <p className="text-sm font-black text-slate-700 dark:text-slate-300">${parseFloat(p.precio || 0).toFixed(2)}</p>
                                         <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">P/V</p>
                                     </div>
                                 </div>

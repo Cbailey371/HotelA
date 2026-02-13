@@ -4,7 +4,7 @@ import { LayoutDashboard, Wrench, Users, Settings, LogOut, Moon, Sun, Box, Calen
 import logo from '../assets/andros_logo.png';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import NotificationBell from './NotificationBell';
+
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { user, logout } = useAuth();
@@ -47,9 +47,6 @@ const Sidebar = ({ isOpen, onClose }) => {
         >
             <div className="p-6 flex items-center justify-between md:justify-center border-b border-slate-200 dark:border-slate-800/50">
                 <img src={logo} alt="Andros Logo" className="h-12 w-auto object-contain" />
-                <div className="hidden md:block absolute right-4">
-                    <NotificationBell />
-                </div>
                 {/* Close button for mobile */}
                 <button
                     onClick={onClose}
