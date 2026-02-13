@@ -20,7 +20,7 @@ const SearchableSelect = ({
     useEffect(() => {
         setFilteredOptions(
             options.filter(opt =>
-                opt.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+                (opt?.nombre || '').toLowerCase().includes(searchTerm.toLowerCase())
             )
         );
     }, [searchTerm, options]);

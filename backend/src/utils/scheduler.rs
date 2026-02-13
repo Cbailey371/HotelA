@@ -1,6 +1,6 @@
 use chrono::{NaiveDate, Datelike, Duration};
-use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait, ConnectionTrait};
-use crate::entities::{feriados_pa, excepciones_calendario, configuracion_calendario};
+use sea_orm::{EntityTrait, QueryFilter, ColumnTrait, ConnectionTrait};
+use crate::entities::{feriados_pa, excepciones_calendario};
 
 pub enum AjustePolitica {
     Anticipar, // Move to previous working day

@@ -34,4 +34,41 @@ api.interceptors.response.use(
     }
 );
 
+export const purchaseQuotes = {
+    getAll: () => api.get('/purchases/quotes'),
+    create: (data) => api.post('/purchases/quotes', data),
+    getById: (id) => api.get(`/purchases/quotes/${id}`),
+    update: (id, data) => api.put(`/purchases/quotes/${id}`, data),
+    delete: (id) => api.delete(`/purchases/quotes/${id}`),
+    sendEmail: (id, emailData) => api.post(`/purchases/quotes/${id}/send`, emailData),
+};
+
+export const providers = {
+    getAll: () => api.get('/providers'),
+};
+
+export const assets = {
+    getAllParts: () => api.get('/inventory/parts'),
+};
+
+export const purchaseOrders = {
+    getAll: () => api.get('/purchases/orders'),
+    create: (data) => api.post('/purchases/orders', data),
+    getById: (id) => api.get(`/purchases/orders/${id}`),
+    update: (id, data) => api.put(`/purchases/orders/${id}`, data),
+    updateStatus: (id, status) => api.put(`/purchases/orders/${id}/status`, { status }),
+    delete: (id) => api.delete(`/purchases/orders/${id}`),
+    sendEmail: (id, data) => api.post(`/purchases/orders/${id}/send`, data),
+};
+
+export const purchaseInvoices = {
+    getAll: () => api.get('/purchases/invoices'),
+    create: (data) => api.post('/purchases/invoices', data),
+    receive: (id) => api.post(`/purchases/invoices/${id}/receive`),
+    update: (id, data) => api.put(`/purchases/invoices/${id}`, data),
+    delete: (id) => api.delete(`/purchases/invoices/${id}`),
+};
+
+export const inventory = assets;
+
 export default api;

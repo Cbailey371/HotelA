@@ -1,5 +1,5 @@
 use axum::{Json, extract::{State, Path}, response::IntoResponse};
-use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, ColumnTrait};
+use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait};
 use serde::{Deserialize, Serialize};
 use crate::entities::tecnicos;
 use sea_orm::prelude::Decimal;

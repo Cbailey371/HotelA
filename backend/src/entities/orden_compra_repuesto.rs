@@ -27,6 +27,37 @@ pub struct Model {
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(has_many = "super::facturas_compras::Entity")]
+    FacturasCompras,
+    #[sea_orm(has_many = "super::orden_compra_detalle::Entity")]
+    OrdenCompraDetalle,
+    #[sea_orm(
+        belongs_to = "super::proveedores::Entity",
+        from = "Column::IdProveedor",
+        to = "super::proveedores::Column::IdProveedor",
+        on_update = "Cascade",
+        on_delete = "SetNull"
+    )]
+    Proveedores,
+}
+
+impl Related<super::facturas_compras::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::FacturasCompras.def()
+    }
+}
+
+impl Related<super::orden_compra_detalle::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::OrdenCompraDetalle.def()
+    }
+}
+
+impl Related<super::proveedores::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Proveedores.def()
+    }
+}
 
 impl ActiveModelBehavior for ActiveModel {}

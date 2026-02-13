@@ -47,5 +47,11 @@ export const purchaseService = {
     updateStatus: async (id, status) => {
         const response = await api.put(`/purchases/orders/${id}/status`, { estado: status });
         return response.data;
+    },
+
+    // Send order via email
+    sendEmail: async (id, data) => {
+        const response = await api.post(`/purchases/orders/${id}/send`, data);
+        return response.data;
     }
 };

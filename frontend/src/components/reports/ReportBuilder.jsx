@@ -22,7 +22,8 @@ const ReportBuilder = ({ reportType, onBack, categories }) => {
         'Depreciación': ['Activo', 'Modelo', 'Serie', 'Fecha Compra', 'Fin Vida Útil', 'Valor Compra', 'Valor Actual', 'Depreciación Acumulada'],
         'OrdenesCompra': ['Código', 'Estado', 'Fecha Solicitud', 'Fecha Entrega', 'Recepción', 'Total', 'Notas', 'Creado'],
         'OrdenesTrabajo': ['Código', 'Prioridad', 'Estado', 'Costo Estimado', 'Activo ID', 'Fecha Inicio Real', 'Creado', 'Observaciones'],
-        'ProveedoresTecnicos': ['Tipo', 'Nombre', 'Identificador', 'Email', 'Teléfono', 'Estado', 'Creado']
+        'ProveedoresTecnicos': ['Tipo', 'Nombre', 'Identificador', 'Email', 'Teléfono', 'Estado', 'Creado'],
+        'SugeridoCompra': ['SKU', 'Nombre', 'Categoría', 'Stock Actual', 'Stock Mínimo', 'Sugerido a Comprar', 'Costo Promedio']
     };
 
     const [selectedColumns, setSelectedColumns] = useState({});
@@ -68,6 +69,9 @@ const ReportBuilder = ({ reportType, onBack, categories }) => {
             ];
             case 'Depreciación': return [
                 { value: 'fecha_adquisicion', label: 'Fecha Adquisición' }
+            ];
+            case 'SugeridoCompra': return [
+                { value: 'fecha_ultima_compra', label: 'Fecha Última Compra' }
             ];
             default: return [];
         }

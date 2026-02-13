@@ -6,7 +6,7 @@ import { providerService } from '../services/providerService';
 import {
     Plus, Filter, Clock, CheckCircle, AlertTriangle, User, Calendar,
     Settings, Printer, Search, MoreVertical, FileText, Briefcase,
-    Building, ClipboardList, Info, Trash2, Edit, Link2Off, X
+    Building, ClipboardList, Info, Trash2, Edit, Link2Off, X, Mail
 } from 'lucide-react';
 import Modal from '../components/Modal';
 import { pdfGenerator } from '../utils/pdfGenerator';
@@ -27,6 +27,12 @@ const WorkOrdersPage = () => {
     const [editingOrder, setEditingOrder] = useState(null);
     const [paymentTerms, setPaymentTerms] = useState([]);
     const [isDirty, setIsDirty] = useState(false);
+
+    // Email Modal State
+    const [showEmailModal, setShowEmailModal] = useState(false);
+    const [selectedOrderForEmail, setSelectedOrderForEmail] = useState(null);
+    const [targetEmail, setTargetEmail] = useState('');
+    const [sendingEmail, setSendingEmail] = useState(null);
 
     // Filter & Search State
     const [searchTerm, setSearchTerm] = useState('');
@@ -71,9 +77,7 @@ const WorkOrdersPage = () => {
             setProviders(provsData);
             setMaintenanceTypes(mTypesRes.data);
             setPendingSchedules(schedulesRes.data.filter(s => s.estado === 'programado' && !s.tiene_ot));
-            setPaymentTerms(paymentTermsRes.data);
         } catch (error) {
-            console.error("Error fetching data", error);
         } finally {
             setLoading(false);
         }
@@ -127,7 +131,6 @@ const WorkOrdersPage = () => {
             });
             fetchData();
         } catch (error) {
-            console.error("Error unlinking work order", error);
             alert("No se pudo desvincular la orden.");
         }
     };
@@ -161,7 +164,6 @@ const WorkOrdersPage = () => {
             setIsDirty(false);
             fetchData();
         } catch (error) {
-            console.error("Error saving order", error);
         }
     };
 
@@ -224,7 +226,54 @@ const WorkOrdersPage = () => {
             await workOrderService.updateStatus(id, newStatus);
             fetchData();
         } catch (error) {
-            console.error("Error updating status", error);
+        }
+    };
+
+    const handleSendEmailClick = (order) => {
+        setSelectedOrderForEmail(order);
+        // Pre-populate with provider or technician email if available, otherwise empty
+        // Logic: if external provider, maybe they have email. Internal tech, maybe. 
+        // For now, leave empty or improve with data if available in the order object.
+        setTargetEmail('');
+        setShowEmailModal(true);
+    };
+
+    const handleConfirmSendEmail = async () => {
+        if (!selectedOrderForEmail) return;
+        if (!targetEmail) {
+            alert('Por favor ingrese un correo electrónico');
+            return;
+        }
+
+        setSendingEmail(selectedOrderForEmail.id_ot);
+        try {
+            // Generate PDF Blob
+            const pdfBlob = await pdfGenerator.generateWorkOrderPDF(selectedOrderForEmail, true);
+
+            // Convert Blob to Base64
+            const reader = new FileReader();
+            reader.readAsDataURL(pdfBlob);
+            reader.onloadend = async () => {
+                const base64data = reader.result.split(',')[1];
+                try {
+                    await workOrderService.sendEmail(selectedOrderForEmail.id_ot, {
+                        pdf_base64: base64data,
+                        email: targetEmail
+                    });
+                    alert('Orden de Trabajo enviada exitosamente');
+                    setShowEmailModal(false);
+                    setTargetEmail('');
+                    setSelectedOrderForEmail(null);
+                } catch (error) {
+                    alert('Error al enviar el correo');
+                } finally {
+                    setSendingEmail(null);
+                }
+            };
+        } catch (error) {
+            console.error('Error generating PDF for email:', error);
+            setSendingEmail(null);
+            alert('Error generando el PDF para enviar');
         }
     };
 
@@ -483,6 +532,18 @@ const WorkOrdersPage = () => {
                                                 title="Imprimir PDF"
                                             >
                                                 <Printer className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleSendEmailClick(order)}
+                                                className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-slate-100 rounded-lg transition-colors"
+                                                title="Enviar por Correo"
+                                                disabled={sendingEmail === order.id_ot}
+                                            >
+                                                {sendingEmail === order.id_ot ? (
+                                                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                                ) : (
+                                                    <Mail className="w-4 h-4" />
+                                                )}
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(order.id_ot)}
@@ -755,6 +816,51 @@ const WorkOrdersPage = () => {
                                 })}
                             </div>
                         )}
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Email Confirmation Modal */}
+            <Modal
+                isOpen={showEmailModal}
+                onClose={() => setShowEmailModal(false)}
+                title="Enviar Orden de Trabajo"
+            >
+                <div className="p-4 space-y-4">
+                    <p className="text-slate-600 dark:text-slate-400">
+                        Se enviará la Orden de Trabajo <strong>{selectedOrderForEmail?.codigo_ot || selectedOrderForEmail?.id_ot}</strong>.
+                        <br />
+                        Por favor, ingrese la dirección de correo electrónico del destinatario:
+                    </p>
+
+                    <div>
+                        <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Correo Destinatario</label>
+                        <input
+                            type="email"
+                            className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none text-slate-800 dark:text-slate-200"
+                            value={targetEmail}
+                            onChange={(e) => setTargetEmail(e.target.value)}
+                            placeholder="tecnico@ejemplo.com, proveedor@ejemplo.com"
+                        />
+                        <p className="text-xs text-slate-500 mt-1">
+                            Separe múltiples correos con comas. Ej: <em>ventas@proveedor.com, gerente@proveedor.com</em>
+                        </p>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-4">
+                        <button
+                            onClick={() => setShowEmailModal(false)}
+                            className="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={handleConfirmSendEmail}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg shadow-blue-500/20 flex items-center gap-2"
+                        >
+                            <Mail size={18} />
+                            Enviar Orden
+                        </button>
                     </div>
                 </div>
             </Modal>

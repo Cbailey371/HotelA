@@ -1,5 +1,5 @@
-use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode};
-use sea_orm::{DatabaseConnection, EntityTrait, QueryOrder, QuerySelect, RelationTrait, JoinType};
+use axum::{Json, extract::State, response::IntoResponse, http::StatusCode};
+use sea_orm::{DatabaseConnection, EntityTrait, QueryOrder};
 use serde::Serialize;
 use crate::entities::{auditoria_acciones, usuarios};
 

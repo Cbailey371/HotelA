@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { purchaseQuotes } from '../services/api';
 import {
     Plus, Search, FileText, ChevronLeft, Calendar,
-    Truck, DollarSign, Package, Trash2, Save, X, Edit, Download, MoreVertical, CheckCircle, AlertCircle
+    Truck, DollarSign, Package, Trash2, Save, X, Edit, Download, MoreVertical, CheckCircle, AlertCircle,
+    Mail, Loader
 } from 'lucide-react';
 import Modal from '../components/Modal';
 import { pdfGenerator } from '../utils/pdfGenerator';
@@ -10,9 +12,11 @@ import { purchaseService } from '../services/purchaseService';
 import { providerService } from '../services/providerService';
 import { inventoryService } from '../services/inventoryService';
 import { paymentTermsService } from '../services/paymentTermsService';
+import InvoiceForm from './InvoiceForm';
 
 const PurchaseOrdersPage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
@@ -41,9 +45,59 @@ const PurchaseOrdersPage = () => {
     const [showProviderModal, setShowProviderModal] = useState(false);
     const [providerSearch, setProviderSearch] = useState('');
 
+    // Modal State - Invoices
+    const [showInvoiceForm, setShowInvoiceForm] = useState(false);
+    const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState(null);
+
     useEffect(() => {
         fetchOrders();
-    }, []);
+        checkQuotationConversion();
+    }, [location.state]);
+
+    const checkQuotationConversion = async () => {
+        if (location.state?.fromQuoteId) {
+            const quoteId = location.state.fromQuoteId;
+            try {
+                setLoading(true);
+                // Clear state to avoid re-triggering
+                navigate(location.pathname, { replace: true, state: {} });
+
+                const { pData, invData, termsData } = await loadFormData();
+                const quoteRes = await purchaseQuotes.getById(quoteId);
+                const quote = quoteRes.data;
+
+                setFormData({
+                    proveedor_id: quote.proveedor_id?.toString() || '',
+                    fecha_entrega: '',
+                    terminos_pago: '',
+                    notes: `Convertido de cotización ${quote.codigo}`,
+                    items: quote.detalles.map(it => ({
+                        repuesto_id: it.id_repuesto?.toString() || '',
+                        repuesto_nombre: it.nombre_repuesto,
+                        cantidad: it.cantidad,
+                        costo_unitario: it.precio_unitario || 0,
+                        impuesto: 7 // Default tax
+                    }))
+                });
+
+                // Auto-set payment terms if provider found
+                const provider = pData.find(p => p.id === quote.proveedor_id);
+                if (provider?.metodos_pago_aceptados) {
+                    setFormData(prev => ({ ...prev, terminos_pago: provider.metodos_pago_aceptados }));
+                }
+
+                setIsEditing(false);
+                setCurrentOrderId(null);
+                setShowForm(true);
+                setIsDirty(true);
+            } catch (error) {
+                console.error("Error converting quote", error);
+                alert("Error al cargar datos de la cotización");
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
 
     const fetchOrders = async () => {
         try {
@@ -153,10 +207,68 @@ const PurchaseOrdersPage = () => {
         }
     };
 
+    const [showEmailModal, setShowEmailModal] = useState(false);
+    const [selectedOrderForEmail, setSelectedOrderForEmail] = useState(null);
+    const [targetEmail, setTargetEmail] = useState('');
+    const [sendingEmailId, setSendingEmailId] = useState(null);
+
+    const handleSendEmailClick = async (order) => {
+        try {
+            const orderDetail = await purchaseService.getById(order.id_orden_compra);
+            const provider = providers.find(p => p.id === orderDetail.id_proveedor);
+            setSelectedOrderForEmail(orderDetail);
+            setTargetEmail(provider?.email || '');
+            setShowEmailModal(true);
+        } catch (error) {
+            console.error("Error loading order for email", error);
+        }
+    };
+
+    const handleConfirmSendEmail = async () => {
+        if (!selectedOrderForEmail) return;
+
+        setShowEmailModal(false);
+        setSendingEmailId(selectedOrderForEmail.id_orden_compra);
+
+        try {
+            const orderDetail = selectedOrderForEmail;
+            const provider = providers.find(p => p.id === orderDetail.id_proveedor);
+
+            // Generate PDF Blob
+            const pdfBlob = await pdfGenerator.generatePurchaseOrderPDF(orderDetail, orderDetail.items, provider, true); // true = return blob
+
+            // Convert Blob to Base64
+            const reader = new FileReader();
+            reader.readAsDataURL(pdfBlob);
+            reader.onloadend = async () => {
+                const base64data = reader.result.split(',')[1];
+
+                try {
+                    await purchaseService.sendEmail(orderDetail.id_orden_compra, {
+                        pdf_base64: base64data,
+                        email: targetEmail
+                    });
+                    alert('Correo enviado exitosamente (con copia a su correo)');
+                    fetchOrders();
+                } catch (error) {
+                    console.error('Error sending email:', error);
+                    alert('Error al enviar el correo');
+                } finally {
+                    setSendingEmailId(null);
+                    setSelectedOrderForEmail(null);
+                }
+            };
+        } catch (error) {
+            console.error('Error generating PDF for email:', error);
+            setSendingEmailId(null);
+            alert('Error generando el PDF para enviar');
+        }
+    };
+
     const handleAddItem = () => {
         setFormData(prev => ({
             ...prev,
-            items: [...prev.items, { repuesto_id: '', repuesto_nombre: '', cantidad: 1, costo_unitario: 0, impuesto: 0 }]
+            items: [...prev.items, { repuesto_id: '', repuesto_nombre: '', cantidad: 1, costo_unitario: 0, impuesto: 7 }]
         }));
         setIsDirty(true);
     };
@@ -236,6 +348,7 @@ const PurchaseOrdersPage = () => {
         const payload = {
             ...formData,
             proveedor_id: parseInt(formData.proveedor_id),
+            fecha_entrega: formData.fecha_entrega || null, // Handle empty string for date
             items: formData.items.map(it => ({
                 repuesto_id: parseInt(it.repuesto_id),
                 cantidad: parseInt(it.cantidad),
@@ -309,7 +422,7 @@ const PurchaseOrdersPage = () => {
                             <tr key={o.id_orden_compra} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                 <td className="px-6 py-4 font-mono font-bold text-blue-600">{o.codigo_compra}</td>
                                 <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
-                                    {o.id_proveedor ? (providers.find(p => p.id === o.id_proveedor)?.nombre || `Proveedor #${o.id_proveedor}`) : 'N/A'}
+                                    {o.nombre_proveedor || (o.id_proveedor ? `Proveedor #${o.id_proveedor}` : 'N/A')}
                                 </td>
                                 <td className="px-6 py-4 text-slate-500">{o.fecha_solicitud || 'N/A'}</td>
                                 <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-200">${parseFloat(o.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -340,12 +453,32 @@ const PurchaseOrdersPage = () => {
                                                 <Package className="w-4 h-4" />
                                             </button>
                                         )}
+                                        {(o.estado === 'APROBADA' || o.estado === 'ENVIADA') && (
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedOrderForInvoice(o.id_orden_compra);
+                                                    setShowInvoiceForm(true);
+                                                }}
+                                                title="Registrar Factura"
+                                                className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/10 rounded-lg text-blue-600 transition-colors"
+                                            >
+                                                <FileText className="w-4 h-4" />
+                                            </button>
+                                        )}
                                         <button
                                             onClick={() => handleDownloadPDF(o)}
                                             title="Descargar PDF"
                                             className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/10 rounded-lg text-blue-500 transition-colors"
                                         >
                                             <Download className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleSendEmailClick(o)}
+                                            disabled={sendingEmailId === o.id_orden_compra}
+                                            className={`p-2 rounded-lg transition-colors ${sendingEmailId === o.id_orden_compra ? 'text-slate-300' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'}`}
+                                            title="Enviar por Correo"
+                                        >
+                                            {sendingEmailId === o.id_orden_compra ? <Loader className="animate-spin w-4 h-4" /> : <Mail className="w-4 h-4" />}
                                         </button>
                                         <button
                                             onClick={() => handleEdit(o)}
@@ -689,6 +822,61 @@ const PurchaseOrdersPage = () => {
                                 </button>
                             ))
                         )}
+                    </div>
+                </div>
+            </Modal>
+
+            <InvoiceForm
+                isOpen={showInvoiceForm}
+                initialOrderId={selectedOrderForInvoice}
+                onClose={() => {
+                    setShowInvoiceForm(false);
+                    setSelectedOrderForInvoice(null);
+                }}
+                onSuccess={fetchOrders}
+            />
+
+            {/* Email Confirmation Modal */}
+            <Modal
+                isOpen={showEmailModal}
+                onClose={() => setShowEmailModal(false)}
+                title="Confirmar Envío de Orden de Compra"
+            >
+                <div className="p-4 space-y-4">
+                    <p className="text-slate-600 dark:text-slate-400 text-sm">
+                        Se enviará la orden de compra <strong>{selectedOrderForEmail?.codigo_compra}</strong>.
+                        <br />
+                        Por favor, verifique el correo del destinatario:
+                    </p>
+
+                    <div>
+                        <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Correo del Proveedor</label>
+                        <input
+                            type="email"
+                            className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none text-slate-800 dark:text-slate-200"
+                            value={targetEmail}
+                            onChange={(e) => setTargetEmail(e.target.value)}
+                            placeholder="ejemplo@proveedor.com"
+                        />
+                        <p className="text-xs text-slate-500 mt-1">
+                            Se enviará una copia automática a su dirección de correo.
+                        </p>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-4">
+                        <button
+                            onClick={() => setShowEmailModal(false)}
+                            className="px-4 py-2 text-slate-500 hover:text-slate-800 font-bold transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={handleConfirmSendEmail}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow-lg shadow-blue-500/20 flex items-center gap-2"
+                        >
+                            <Mail size={18} />
+                            Enviar Orden
+                        </button>
                     </div>
                 </div>
             </Modal>

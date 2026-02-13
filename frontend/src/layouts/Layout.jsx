@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
+import NotificationBell from '../components/NotificationBell';
 
 const Layout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -28,7 +29,7 @@ const Layout = () => {
                         <Menu className="w-6 h-6" />
                     </button>
                     <span className="font-bold text-slate-800 dark:text-white">Andros Asset</span>
-                    <div className="w-6" /> {/* Spacer for centering if needed */}
+                    <NotificationBell />
                 </div>
 
                 <main className="flex-1 overflow-y-auto w-full">

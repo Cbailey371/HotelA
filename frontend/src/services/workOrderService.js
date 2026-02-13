@@ -24,5 +24,10 @@ export const workOrderService = {
     delete: async (id) => {
         const response = await api.delete(`/work-orders/${id}`);
         return response.data;
+    },
+
+    sendEmail: async (id, data) => {
+        const response = await api.post(`/work-orders/${id}/send`, data);
+        return response.data;
     }
 };

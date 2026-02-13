@@ -8,7 +8,7 @@ use sea_orm::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use chrono::{Utc, Datelike, NaiveDate, NaiveTime};
-use crate::entities::{prelude::*, *};
+use crate::entities::{*};
 use crate::utils::error::AppError;
 
 
@@ -621,6 +621,43 @@ async fn generate_report_data(
                 }));
             }
         },
+        "SugeridoCompra" | "Sugerido de Compra" => {
+            use sea_orm::sea_query::Expr;
+            let mut query = activos_repuestos::Entity::find()
+                .filter(Expr::col(activos_repuestos::Column::StockActual).lte(Expr::col(activos_repuestos::Column::StockMinimo)));
+            
+            for cond in conditions {
+                let field = cond.get("field").and_then(|v| v.as_str()).unwrap_or("");
+                let operator = cond.get("operator").and_then(|v| v.as_str()).unwrap_or("eq");
+                let value = cond.get("value").and_then(|v| v.as_str()).unwrap_or("");
+
+                if field.is_empty() || value.is_empty() { continue; }
+
+                let column = match field {
+                    "Nombre" => activos_repuestos::Column::NombreRepuesto,
+                    "Categoría" => activos_repuestos::Column::TipoRepuesto,
+                    _ => continue,
+                };
+                query = apply_filter(query, column, operator, value);
+            }
+
+            let parts = query.all(db).await?;
+            for part in parts {
+                let stock = part.stock_actual.unwrap_or(0);
+                let min = part.stock_minimo.unwrap_or(0);
+                let sug = if min > stock { min - stock } else { 1 };
+
+                results.push(serde_json::json!({
+                    "SKU": part.codigo_repuesto,
+                    "Nombre": part.nombre_repuesto,
+                    "Categoría": part.tipo_repuesto.unwrap_or_default(),
+                    "Stock Actual": stock,
+                    "Stock Mínimo": min,
+                    "Sugerido a Comprar": sug,
+                    "Costo Promedio": part.costo_unitario.unwrap_or_default().to_string(),
+                }));
+            }
+        },
         _ => return Err(AppError::BadRequest("Invalid report type".to_string())),
     }
 
@@ -708,6 +745,7 @@ pub async fn execute_scheduled_report(
             "OrdenesCompra" => "Fecha Solicitud",
             "Depreciación" => "Fecha Compra",
             "OrdenesTrabajo" => "Fecha Inicio Real",
+            "SugeridoCompra" => "Fecha Última Compra",
              _ => "Fecha Ejecución"
         };
         

@@ -17,19 +17,41 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::facturas_compras_detalle::Entity")]
+    FacturasComprasDetalle,
     #[sea_orm(
         belongs_to = "super::activos_repuestos::Entity",
         from = "Column::IdRepuesto",
         to = "super::activos_repuestos::Column::IdRepuesto",
-        on_update = "NoAction",
-        on_delete = "NoAction"
+        on_update = "Cascade",
+        on_delete = "Restrict"
     )]
     ActivosRepuestos,
+    #[sea_orm(
+        belongs_to = "super::orden_compra_repuesto::Entity",
+        from = "Column::IdOrdenCompra",
+        to = "super::orden_compra_repuesto::Column::IdOrdenCompra",
+        on_update = "Cascade",
+        on_delete = "Cascade"
+    )]
+    OrdenCompraRepuesto,
+}
+
+impl Related<super::facturas_compras_detalle::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::FacturasComprasDetalle.def()
+    }
 }
 
 impl Related<super::activos_repuestos::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ActivosRepuestos.def()
+    }
+}
+
+impl Related<super::orden_compra_repuesto::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::OrdenCompraRepuesto.def()
     }
 }
 

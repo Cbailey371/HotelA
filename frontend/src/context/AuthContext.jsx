@@ -14,7 +14,6 @@ export const AuthProvider = ({ children }) => {
             const savedUser = localStorage.getItem('user');
             if (savedUser) {
                 const parsedUser = JSON.parse(savedUser);
-                console.log("DEBUG - AuthContext - User data from storage:", parsedUser);
                 setUser(parsedUser);
             }
         }

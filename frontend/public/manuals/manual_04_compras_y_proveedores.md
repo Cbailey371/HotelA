@@ -24,42 +24,56 @@ Antes de registrar proveedores u órdenes de compra, asegúrese de tener:
 
 ---
 
-## 2. Ciclo de Compras
+## 2. Ciclo de Compras e Inventario
 
-El sistema maneja un flujo de tres pasos: Solicitud -> Orden -> Recepción.
+El sistema maneja un flujo flexible: Solicitud -> Cotización -> Orden -> Factura/Recepción.
 
-### 2.1. Solicitud de Compra (Requisición)
-Cualquier usuario autorizado puede pedir materiales.
+### 2.1. Solicitudes de Cotización (RFQ)
+Cuando necesita comparar precios o solicitar presupuestos antes de comprar.
 
-1.  Vaya a **Compras > Solicitudes**.
+1.  Vaya a **Compras > Solicitudes de Cotización**.
 2.  Clic en **"+ Nueva Solicitud"**.
-3.  Indique:
-    -   **Motivo**: Justificación (ej. "Stock crítico de luminarias").
-    -   **Prioridad**: Normal o Urgente.
-    -   **Ítems**: Liste qué necesita (descripción libre o referencia).
-4.  Estado Inicial: **PENDIENTE**.
+3.  Complete los ítems y cantidades requeridas.
+4.  **Envío Externo**: 
+    -   Desde la lista, use el botón de **"Enviar por Correo"**.
+    -   Permite enviar el PDF de la solicitud a uno o varios correos del proveedor (separados por coma).
+    -   > [!NOTE]
+    -   > El sistema envía automáticamente una copia oculta (CC) al correo del usuario que realiza el envío para su seguimiento.
+5.  **Conversión a OC**: 
+    -   Una vez que el proveedor responde, puede usar el botón **"Convertir a Orden de Compra"** en las solicitudes con estado "ENVIADA".
+    -   Esto abrirá el formulario de Nueva OC precargado con el proveedor y los ítems, permitiéndole ajustar precios finales antes de guardar.
 
-### 2.2. Aprobación y Generación de OC
-El Jefe de Compras o Gerente revisa las solicitudes.
+### 2.2. Órdenes de Compra (OC)
+Documento de compromiso de compra con un proveedor específico.
 
-1.  Abra una Solicitud Pendiente.
-2.  **Decisión**:
-    -   **Rechazar**: Se cierra el flujo.
-    -   **Aprobar**: Habilita el paso siguiente.
-3.  **Generar Orden de Compra (OC)**:
-    -   Clic en "Generar OC".
-    -   Seleccione al **Proveedor** adjudicado.
-    -   El sistema copia los ítems. Ahora debe ingresar los **Precios Pactados** y cantidades finales.
-    -   Guarde. Se genera una OC formal (ej. `OC-2024-889`).
+1.  **Generación**: Puede crearla desde cero o desde una solicitud previa (ver punto 2.1.5).
+2.  **Envío**: 
+    -   Use el botón **"Enviar por Correo"** para enviar formalmente la orden al proveedor. 
+    -   Al igual que en las RFQ, recibirá una copia automática en su correo personal.
+3.  **Estado**: Una vez enviada, queda en estado "ENVIADA" a la espera de la mercadería.
 
-### 2.3. Envío de OC
-Puede descargar la OC en formato PDF para enviarla por correo al proveedor. El documento incluye logo de la empresa, datos del proveedor, detalle de ítems, impuestos y términos de pago.
+### 2.3. Facturas de Compra y Recepción
+Este es el paso final que oficializa el ingreso del gasto y del stock. El sistema utiliza una **pantalla única** para simplificar este proceso.
 
-### 2.4. Recepción de Mercadería
-Cuando llega el camión del proveedor:
+#### A. Registro desde Orden de Compra (Flujo Unificado)
+1.  Busque la OC correspondiente en el listado.
+2.  Clic en **"Recibir Mercancía"**.
+3.  **Datos de Factura**: Ingrese el número de factura del proveedor, la fecha de emisión y notas si existen.
+4.  **Validación de Costos**: El sistema muestra el costo unitario pactado en la OC. Usted puede **ajustar el costo** si hubo variaciones en la factura final.
+5.  **Cantidades y Destino**: 
+    -   Indique la cantidad real recibida en la columna "Ingresar Ahora".
+    -   Seleccione la **Bodega y Ubicación** física exacta para cada ítem.
+6.  **Cálculo Automático**: Verifique que el subtotal e impuestos coincidan con su documento físico en la barra de totales inferior.
+7.  **Finalizar**: Al hacer clic en **"Finalizar Recepción"**, el sistema registra la factura contable y carga el stock al inventario automáticamente.
 
-1.  Busque la **Orden de Compra** (Estado "Enviada" o "Pendiente").
-2.  Clic en **"Recibir Ítems"**.
-3.  Coteje el remito/factura con la OC.
-4.  Ingrese las **Cantidades Recibidas** para cada ítem.
-5.  **Impacto Automático**: Al guardar la recepción, el inventario de estos ítems **aumenta** automáticamente en la bodega seleccionada.
+> [!NOTE]
+> **Recepciones Parciales**: Si solo llega una parte de los ítems, ingrese solo lo recibido. La OC quedará con estado de recepción "PARCIAL" y podrá realizar nuevas recepciones hasta completar el pedido.
+
+#### B. Registro Directo (Sin OC previa)
+1.  Vaya a **Facturas de Compra**.
+2.  Clic en **"+ Nueva Factura Directa"**.
+3.  Seleccione el proveedor, bodega e ingrese los ítems manualmente. Esto es ideal para compras menores o gastos urgentes.
+
+#### C. Control y Reversión
+> [!IMPORTANT]
+> **Gestión de Errores**: Solo los usuarios con rol **SUPER-ADMIN** pueden "Eliminar/Revertir" una factura recibida. Esto devolverá el stock al estado anterior (restándolo del inventario) y anulará el movimiento contable.

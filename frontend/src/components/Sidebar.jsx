@@ -1,13 +1,15 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Wrench, Users, Settings, LogOut, Moon, Sun, Box, Calendar, ClipboardList, Building2, ShoppingCart, Shield, FileText, CalendarDays } from 'lucide-react';
 import logo from '../assets/andros_logo.png';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import NotificationBell from './NotificationBell';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
+    const location = useLocation();
 
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -15,7 +17,9 @@ const Sidebar = ({ isOpen, onClose }) => {
         { icon: Calendar, label: 'Mantenimiento', path: '/maintenance' },
 
         { icon: ClipboardList, label: 'Órdenes de Trabajo', path: '/work-orders' },
+        { icon: FileText, label: 'Solicitudes de Cotización', path: '/purchases/quotes' },
         { icon: ShoppingCart, label: 'Órdenes de Compra', path: '/purchases' },
+        { icon: FileText, label: 'Facturas de Compra', path: '/purchases/invoices' },
         { icon: Box, label: 'Inventario', path: '/inventory' },
         { icon: Building2, label: 'Proveedores', path: '/providers' },
         { icon: Wrench, label: 'Técnicos', path: '/technicians' },
@@ -43,6 +47,9 @@ const Sidebar = ({ isOpen, onClose }) => {
         >
             <div className="p-6 flex items-center justify-between md:justify-center border-b border-slate-200 dark:border-slate-800/50">
                 <img src={logo} alt="Andros Logo" className="h-12 w-auto object-contain" />
+                <div className="hidden md:block absolute right-4">
+                    <NotificationBell />
+                </div>
                 {/* Close button for mobile */}
                 <button
                     onClick={onClose}
@@ -60,12 +67,18 @@ const Sidebar = ({ isOpen, onClose }) => {
                         key={item.path}
                         to={item.path}
                         onClick={() => onClose && onClose()}
-                        className={({ isActive }) =>
-                            `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
+                        className={({ isActive }) => {
+                            let active = isActive;
+                            // Special case: Purchase Orders (/purchases) should NOT be active when viewing Invoices OR Quotes
+                            if (item.path === '/purchases' && (location.pathname.startsWith('/purchases/invoices') || location.pathname.startsWith('/purchases/quotes'))) {
+                                active = false;
+                            }
+
+                            return `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${active
                                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
                                 : 'hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-                            }`
-                        }
+                                }`;
+                        }}
                     >
                         <item.icon className="w-5 h-5 flex-shrink-0" />
                         <span className="font-medium">{item.label}</span>

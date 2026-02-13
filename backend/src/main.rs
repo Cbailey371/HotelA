@@ -74,7 +74,7 @@ async fn main() {
                 .route("/inventory/import", post(controllers::inventory::import_inventory_csv)
                      .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "inventory_edit")))
                 )
-                .route("/inventory/{id}", put(controllers::inventory::update_part).delete(controllers::inventory::delete_part)
+                .route("/inventory/{id}", get(controllers::inventory::get_part_by_id).put(controllers::inventory::update_part).delete(controllers::inventory::delete_part)
                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "inventory_edit")))
                 )
                 .route("/inventory/{id}/image", post(controllers::inventory::upload_part_image)
@@ -164,11 +164,46 @@ async fn main() {
                 .route("/purchases/orders/{id}/status", put(controllers::purchases::update_order_status)
                      .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "purchases_edit")))
                 )
+                .route("/purchases/orders/{id}/send", post(controllers::purchases::send_order_email)
+                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "purchases_edit")))
+                )
+                
+                // Purchase Invoices
+                .route("/purchases/invoices", get(controllers::purchase_invoices::get_invoices).post(controllers::purchase_invoices::create_invoice))
+                .route("/purchases/invoices/{id}", get(controllers::purchase_invoices::get_invoice_by_id)
+                    .delete(controllers::purchase_invoices::delete_invoice)
+                    .put(controllers::purchase_invoices::update_invoice)
+                )
+                .route("/purchases/invoices/{id}/receive", post(controllers::purchase_invoices::receive_invoice))
+
+                // Purchase Quotes
+                .route("/purchases/quotes", 
+                    post(controllers::purchase_quotes::create_quote)
+                        .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "quotes_create")))
+                    .get(controllers::purchase_quotes::get_quotes)
+                        .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "quotes_view")))
+                )
+                .route("/purchases/quotes/{id}", 
+                    get(controllers::purchase_quotes::get_quote_by_id)
+                        .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "quotes_view")))
+                    .put(controllers::purchase_quotes::update_quote)
+                        .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "quotes_edit")))
+                    .delete(controllers::purchase_quotes::delete_quote)
+                        .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "quotes_delete")))
+                )
+                .route("/purchases/quotes/{id}/send", 
+                    post(controllers::purchase_quotes::send_quote_email)
+                        .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "quotes_edit")))
+                )
                 
                 // Work Orders
                 .route("/work-orders", get(controllers::work_orders::get_work_orders).post(controllers::work_orders::create_work_order))
                 .route("/work-orders/{id}", put(controllers::work_orders::update_work_order).delete(controllers::work_orders::delete_work_order))
                 .route("/work-orders/{id}/status", put(controllers::work_orders::update_work_order_status))
+                .route("/work-orders/{id}/send", post(controllers::work_orders::send_work_order_email))
+                
+                // Notifications
+                .route("/notifications/alerts", get(controllers::notifications::get_alerts))
                 
 
 

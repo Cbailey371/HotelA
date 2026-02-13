@@ -1,8 +1,9 @@
 use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode};
-use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, ColumnTrait, QuerySelect, RelationTrait, JoinType, QueryOrder};
+use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryOrder};
 use serde::{Deserialize, Serialize};
 use crate::entities::{orden_trabajo, activos_equipos, tecnicos, proveedores, mantenimiento_tipo, mantenimiento_calendario};
 use std::str::FromStr;
+use base64::{Engine as _, engine::general_purpose};
 
 #[derive(Deserialize)]
 pub struct CreateWorkOrderRequest {
@@ -294,5 +295,69 @@ pub async fn delete_work_order(
     ot_active.delete(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+
     Ok(Json("Work Order deleted"))
+}
+
+#[derive(Deserialize)]
+pub struct SendEmailRequest {
+    pub email: Option<String>,
+    pub pdf_base64: String,
+}
+
+pub async fn send_work_order_email(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+    Json(payload): Json<SendEmailRequest>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let ot = orden_trabajo::Entity::find_by_id(id)
+        .find_also_related(activos_equipos::Entity)
+        .one(&db)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "Orden de Trabajo no encontrada".to_string()))?;
+
+    let (ot_model, activo) = ot;
+    let codigo = ot_model.codigo_ot.clone().unwrap_or_else(|| format!("OT-{}", ot_model.id_ot));
+    
+    // Determine recipient
+    // 1. Payload email (override)
+    // 2. Technician email (if internal) - Not in simple schema, maybe user relation?
+    // 3. Provider email (if external)
+    let email_dest = if let Some(e) = payload.email {
+        e
+    } else if let Some(prov_id) = ot_model.id_proveedor {
+         let prov = proveedores::Entity::find_by_id(prov_id).one(&db).await
+            .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "DB Error".to_string()))?
+            .ok_or((StatusCode::BAD_REQUEST, "Proveedor no encontrado".to_string()))?;
+         prov.email.ok_or((StatusCode::BAD_REQUEST, "Proveedor sin correo".to_string()))?
+    } else {
+        return Err((StatusCode::BAD_REQUEST, "Debe especificar un correo de destino".to_string()));
+    };
+
+    // Decode PDF
+    let pdf_data = general_purpose::STANDARD
+        .decode(&payload.pdf_base64)
+        .map_err(|_| (StatusCode::BAD_REQUEST, "PDF Base64 inválido".to_string()))?;
+
+    // Send Email
+    let subject = format!("Orden de Trabajo: {} - {}", codigo, activo.map(|a| a.nombre_equipo).unwrap_or_default());
+    let body = format!(
+        "<h2>Orden de Trabajo {}</h2><p>Adjunto encontrará la orden de trabajo solicitada.</p>",
+        codigo
+    );
+
+    crate::utils::mailer::send_email_with_attachment(
+        &db,
+        &email_dest,
+        &subject,
+        &body,
+        &format!("{}.pdf", codigo),
+        pdf_data,
+        "application/pdf"
+    ).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))?;
+
+    // Note: We do NOT update status automatically for Work Orders as per requirement
+
+    Ok(Json("Correo enviado exitosamente"))
 }

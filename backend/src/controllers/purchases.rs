@@ -33,8 +33,9 @@ pub struct PurchaseRequestDetailDto {
 
 #[derive(Serialize)]
 pub struct PurchaseOrderDto {
-    pub id: i32,
+    pub id_orden_compra: i32,
     pub id_proveedor: Option<i32>,
+    pub nombre_proveedor: Option<String>,
     pub fecha_solicitud: Option<NaiveDate>,
     pub estado: Option<String>,
     pub total: Option<Decimal>,
@@ -60,7 +61,7 @@ pub struct CreatePurchaseRequestDetailDto {
     pub cantidad: i32,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct UpdatePurchaseRequestStatusDto {
     pub estado: String,
 }
@@ -81,6 +82,7 @@ pub struct OrderDetailWithPartDto {
 pub struct OrderWithDetailsDto {
     pub id_orden_compra: i32,
     pub id_proveedor: Option<i32>,
+    pub nombre_proveedor: Option<String>,
     pub fecha_solicitud: Option<NaiveDate>,
     pub estado: Option<String>,
     pub total: Option<Decimal>,
@@ -90,6 +92,7 @@ pub struct OrderWithDetailsDto {
     pub fecha_entrega: Option<NaiveDate>,
     pub terminos_pago: Option<String>,
     pub notas: Option<String>,
+    pub estado_recepcion: Option<String>,
     pub items: Vec<OrderDetailWithPartDto>,
 }
 
@@ -97,11 +100,25 @@ pub async fn get_orders(
     State(db): State<DatabaseConnection>,
 ) -> Result<impl IntoResponse, AppError> {
     let orders = OrdenCompraRepuesto::find()
+        .find_also_related(Proveedores)
         .order_by_asc(orden_compra_repuesto::Column::IdOrdenCompra)
         .all(&db)
         .await?;
     
-    Ok(Json(orders))
+    let dtos: Vec<PurchaseOrderDto> = orders.into_iter().map(|(o, p)| PurchaseOrderDto {
+        id_orden_compra: o.id_orden_compra,
+        id_proveedor: o.id_proveedor,
+        nombre_proveedor: p.map(|x| x.nombre_proveedor),
+        fecha_solicitud: o.fecha_solicitud,
+        estado: o.estado,
+        total: o.total,
+        codigo_compra: o.codigo_compra,
+        solicitud_id: o.solicitud_id,
+        estado_recepcion: o.estado_recepcion,
+        created_at: o.created_at,
+    }).collect();
+    
+    Ok(Json(dtos))
 }
 
 pub async fn get_requests(
@@ -352,9 +369,18 @@ pub async fn get_order_by_id(
         })
         .collect();
 
+    let prov = if let Some(pid) = order.id_proveedor {
+        crate::entities::proveedores::Entity::find_by_id(pid)
+            .one(&db)
+            .await?
+    } else {
+        None
+    };
+
     let dto = OrderWithDetailsDto {
         id_orden_compra: order.id_orden_compra,
         id_proveedor: order.id_proveedor,
+        nombre_proveedor: prov.map(|p| p.nombre_proveedor),
         fecha_solicitud: order.fecha_solicitud,
         estado: order.estado,
         total: order.total,
@@ -364,6 +390,7 @@ pub async fn get_order_by_id(
         fecha_entrega: order.fecha_entrega,
         terminos_pago: order.terminos_pago,
         notas: order.notas,
+        estado_recepcion: order.estado_recepcion,
         items,
     };
 
@@ -426,6 +453,7 @@ pub async fn update_order_status(
         .ok_or_else(|| AppError::NotFound("Order not found".to_string()))?;
 
     let mut order: orden_compra_repuesto::ActiveModel = order.into();
+    tracing::info!("Updating order {} status to: {}", id, payload.estado);
     order.estado = Set(Some(payload.estado));
 
     let updated = order.update(&db).await?;
@@ -554,10 +582,84 @@ pub async fn receive_order_items(
         order_active.estado = Set(Some("RECIBIDA".to_string()));
     } else if some_items_received {
         order_active.estado_recepcion = Set(Some("PARCIAL".to_string()));
+    } else {
+        order_active.estado_recepcion = Set(Some("PENDIENTE".to_string()));
     }
 
     order_active.update(&txn).await?;
     txn.commit().await?;
 
     Ok(StatusCode::OK)
+}
+
+pub async fn send_order_email(
+    State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<crate::utils::jwt::Claims>,
+    Path(id): Path<i32>,
+    Json(payload): Json<crate::controllers::purchase_quotes::SendEmailRequest>,
+) -> Result<impl IntoResponse, AppError> {
+    let order = OrdenCompraRepuesto::find_by_id(id)
+        .one(&db)
+        .await?
+        .ok_or_else(|| AppError::NotFound("Order not found".to_string()))?;
+
+    // Determine target emails
+    let mut target_emails: Vec<String> = if let Some(e) = payload.email {
+        e.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect()
+    } else {
+        if let Some(pid) = order.id_proveedor {
+            let prov = proveedores::Entity::find_by_id(pid)
+                .one(&db)
+                .await?
+                .ok_or_else(|| AppError::NotFound("Provider not found".to_string()))?;
+            let email = prov.email.ok_or_else(|| AppError::BadRequest("Provider has no email and none provided".to_string()))?;
+            vec![email]
+        } else {
+            return Err(AppError::BadRequest("Order has no provider and no email provided".to_string()));
+        }
+    };
+
+    // Add sender CC
+    let user = crate::entities::usuarios::Entity::find_by_id(claims.user_id)
+        .one(&db)
+        .await?
+        .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
+    
+    if !target_emails.contains(&user.email) {
+        target_emails.push(user.email);
+    }
+
+    let final_to = target_emails.join(",");
+
+    // Decode PDF
+    use base64::{Engine as _, engine::general_purpose};
+    let pdf_data = general_purpose::STANDARD
+        .decode(&payload.pdf_base64)
+        .map_err(|e| AppError::BadRequest(format!("Invalid Base64: {}", e)))?;
+
+    // Send Email
+    let subject = format!("Orden de Compra {}", order.codigo_compra.as_deref().unwrap_or(""));
+    let body = format!(
+        "Estimado proveedor,<br><br>Adjunto encontrará la orden de compra {}.<br><br>Saludos,<br>Hotel A",
+        order.codigo_compra.as_deref().unwrap_or("")
+    );
+
+    crate::utils::mailer::send_email_with_attachment(
+        &db,
+        &final_to,
+        &subject,
+        &body,
+        "orden_compra.pdf",
+        pdf_data,
+        "application/pdf"
+    ).await.map_err(|e| AppError::Internal(e))?;
+
+    // Update status to ENVIADA (if it was APROBADA)
+    if order.estado.as_deref() == Some("APROBADA") {
+        let mut active: orden_compra_repuesto::ActiveModel = order.into();
+        active.estado = Set(Some("ENVIADA".to_string()));
+        active.update(&db).await?;
+    }
+
+    Ok(Json("Email sent successfully".to_string()))
 }

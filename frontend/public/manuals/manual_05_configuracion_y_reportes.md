@@ -11,8 +11,14 @@ Visualice la salud operativa del hotel.
 -   **Resumen de Activos**: Valoración total, distribución por estado y categoría.
 -   **Mantenimiento**: Cumplimiento del plan (Programado vs Realizado), costos por activo.
 -   **Inventario**: Valor del stock actual, rotación de ítems, históricos de consumo.
+-   **Sugerido de Compra**: Listado automático de repuestos cuyo stock actual es menor o igual al stock mínimo configurado. Ideal para planificación de compras.
 
-### 1.2. Filtros y Exportación
+### 1.2. Programación y Vista Previa
+Además de generar reportes al instante, puede programar envíos periódicos:
+1.  **Vista Previa**: Antes de guardar una programación, use el botón **"Ver Vista Previa"**. Esto cargará los datos reales en la tabla de fondo para que pueda validar la información que se enviará.
+2.  **Guardar**: Una vez validado, asigne un nombre, frecuencia y destinatarios para automatizar el reporte.
+
+### 1.3. Filtros y Exportación
 Todos los reportes permiten:
 -   Filtrar por rango de fechas.
 -   Filtrar por departamento o categoría.

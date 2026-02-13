@@ -9,7 +9,7 @@ const formatMoney = (amount) => {
 
 export const pdfGenerator = {
     // --- Work Order PDF ---
-    generateWorkOrderPDF: async (workOrder) => {
+    generateWorkOrderPDF: async (workOrder, returnBlob = false) => {
         const doc = new jsPDF();
         const primaryColor = [41, 128, 185]; // Blue
 
@@ -146,6 +146,9 @@ export const pdfGenerator = {
         doc.setTextColor(150);
         doc.text('Este documento es una orden oficial de trabajo. Por favor adjunte este reporte a la factura si aplica.', 105, 285, null, 'center');
 
+        if (returnBlob) {
+            return doc.output('blob');
+        }
         doc.save(`OT_${workOrder.codigo_ot || workOrder.id_ot}.pdf`);
     },
 

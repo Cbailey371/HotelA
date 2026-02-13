@@ -1,4 +1,4 @@
-use sea_orm::{DatabaseConnection, DbErr, ConnectionTrait, Statement, DatabaseBackend};
+use sea_orm::{DbErr, ConnectionTrait, Statement, DatabaseBackend};
 
 pub async fn generate_next_code<C>(
     db: &C,

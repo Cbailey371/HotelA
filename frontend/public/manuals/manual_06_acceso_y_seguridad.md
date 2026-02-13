@@ -21,6 +21,18 @@ Una vez dentro, encontrará:
 -   **Barra Lateral (Menú)**: Acceso a todos los módulos (Activos, Mantenimiento, Inventario, etc.) según sus permisos.
 -   **Área de Trabajo**: Donde se realizan las tareas.
 -   **Barra Superior**: Información del usuario actual, botón de logout y cambio de tema (Claro/Oscuro).
+-   **Centro de Notificaciones (Campana)**: Localizada en la barra lateral (escritorio) o superior (móvil). Proporciona alertas críticas en tiempo real.
+
+### 1.3. Centro de Notificaciones
+El sistema monitorea constantemente el estado de la operación y genera alertas preventivas:
+
+*   **Stock Crítico**: Notifica cuando un repuesto alcanza el stock mínimo definido por el usuario.
+*   **Mantenimientos Próximos**: Avisa sobre tareas preventivas programadas para los siguientes 7 días.
+*   **Activos Desatendidos**: Señala equipos que no han recibido mantenimiento en más de 3 meses.
+*   **Gestión Operativa**: Incluye avisos sobre Órdenes de Trabajo atrasadas, solicitudes de compra pendientes y garantías de equipos próximas a vencer.
+
+> [!TIP]
+> Haga clic en una notificación para navegar directamente al módulo correspondiente y resolver la alerta.
 
 ---
 
@@ -65,9 +77,14 @@ En lugar de borrar usuarios (lo cual rompería el historial de auditoría), se r
 El sistema utiliza un control de acceso basado en roles (RBAC).
 
 ### 3.1. Roles Predefinidos
--   **SUPER-ADMIN**: Acceso total a todas las funciones, incluyendo configuración crítica y auditoría.
--   **ADMIN**: Acceso de gestión (Activos, Mantenimiento, Inventario, Usuarios), pero sin acceso a configuraciones de sistema profundo.
--   **USUARIO**: Acceso operativo limitado (Ver tareas, ejecutar mantenimientos, solicitar compras). No puede crear usuarios ni borrar registros críticos.
+-   **SUPER-ADMIN**: Acceso total y absoluto a todas las funciones, incluyendo configuraciones críticas de sistema, auditoría avanzada y gestión de todos los módulos.
+-   **ADMINISTRADOR**: Acceso de gestión completa (Activos, Mantenimiento, Inventario, Usuarios). Es el rol principal para la administración operativa del hotel.
+-   **ALMACENERO**: Rol especializado para el control de suministros. Incluye gestión de inventario, ajustes de stock, marcas, ubicaciones y recepción de mercancía de compras.
+-   **SUPERVISOR**: Rol de supervisión operativa. Permite visualizar activos, órdenes de trabajo, planes de mantenimiento e inventario, además de generar y exportar todos los reportes y ver la auditoría del sistema.
+-   **TECNICO**: Acceso enfocado a la ejecución de tareas. Puede ver y ejecutar mantenimientos, gestionar órdenes de trabajo y visualizar repuestos.
+
+### 3.2. Granularidad de Permisos
+Cada rol está compuesto por permisos específicos (ej. `work_orders_close`, `inventory_adjust`, `invoices_view`). Un Administrador puede crear nuevos roles personalizados combinando estos permisos según la necesidad de la empresa.
 
 ---
 

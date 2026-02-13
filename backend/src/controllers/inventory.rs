@@ -1,8 +1,8 @@
-use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode, Extension};
+use axum::{Json, extract::{State, Path}, response::IntoResponse, Extension};
 use axum_extra::extract::Multipart;
-use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QueryOrder};
+use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QueryOrder, ModelTrait};
 use serde::{Deserialize, Serialize};
-use crate::entities::{activos_repuestos, historial_repuestos, activos_equipos, mantenimiento_calendario};
+use crate::entities::{activos_repuestos, historial_repuestos, activos_equipos, repuestos_equipos};
 use crate::utils::{jwt, audit, error::AppError};
 use sea_orm::prelude::Decimal;
 use std::str::FromStr;
@@ -31,6 +31,8 @@ pub struct CreatePartRequest {
     pub bodega_id: Option<i32>,
     pub ubicacion_bodega_id: Option<i32>,
     pub estado: Option<String>,
+    pub sku: Option<String>,
+    pub equipos_ids: Option<Vec<i32>>,
 }
 
 #[derive(Serialize)]
@@ -55,6 +57,15 @@ pub struct PartDto {
     pub bodega_id: Option<i32>,
     pub ubicacion_bodega_id: Option<i32>,
     pub estado: Option<String>,
+    pub sku: Option<String>,
+    pub equipos: Option<Vec<EquipmentSummaryDto>>,
+}
+
+#[derive(Serialize)]
+pub struct EquipmentSummaryDto {
+    pub id: i32,
+    pub nombre: String,
+    pub codigo: String,
 }
 
 pub async fn get_parts(
@@ -63,9 +74,10 @@ pub async fn get_parts(
     let parts = activos_repuestos::Entity::find()
         .filter(activos_repuestos::Column::Estado.ne("baja"))
         .order_by_asc(activos_repuestos::Column::IdRepuesto)
+        .find_with_related(activos_equipos::Entity)
         .all(&db).await?;
 
-    let dtos: Vec<PartDto> = parts.into_iter().map(|p| PartDto {
+    let dtos: Vec<PartDto> = parts.into_iter().map(|(p, equipos)| PartDto {
         id: p.id_repuesto,
         nombre: p.nombre_repuesto,
         descripcion: p.descripcion,
@@ -86,6 +98,12 @@ pub async fn get_parts(
         bodega_id: p.bodega_id,
         ubicacion_bodega_id: p.ubicacion_bodega_id,
         estado: p.estado,
+        sku: p.sku,
+        equipos: Some(equipos.into_iter().map(|e| EquipmentSummaryDto {
+            id: e.id_equipo,
+            nombre: e.nombre_equipo,
+            codigo: e.codigo_equipo,
+        }).collect()),
     }).collect();
 
     Ok(Json(dtos))
@@ -117,10 +135,24 @@ pub async fn create_part(
         bodega_id: Set(payload.bodega_id),
         ubicacion_bodega_id: Set(payload.ubicacion_bodega_id),
         estado: Set(payload.estado.or(Some("activo".to_string()))),
+        sku: Set(payload.sku),
         ..Default::default()
     };
 
     let p = new_part.insert(&db).await?;
+
+    if let Some(equipos) = payload.equipos_ids {
+        if !equipos.is_empty() {
+            let relations: Vec<repuestos_equipos::ActiveModel> = equipos.into_iter().map(|eq_id| {
+                repuestos_equipos::ActiveModel {
+                    repuesto_id: Set(p.id_repuesto),
+                    equipo_id: Set(eq_id),
+                    ..Default::default()
+                }
+            }).collect();
+            repuestos_equipos::Entity::insert_many(relations).exec(&db).await?;
+        }
+    }
 
     Ok(Json(PartDto {
         id: p.id_repuesto,
@@ -143,6 +175,8 @@ pub async fn create_part(
         bodega_id: p.bodega_id,
         ubicacion_bodega_id: p.ubicacion_bodega_id,
         estado: p.estado,
+        sku: p.sku,
+        equipos: None, // Simplified return or fetch if needed (skipping for perf on create unless requested)
     }))
 }
 
@@ -198,8 +232,30 @@ pub async fn update_part(
     part.bodega_id = Set(payload.bodega_id);
     part.ubicacion_bodega_id = Set(payload.ubicacion_bodega_id);
     if let Some(v) = payload.estado { part.estado = Set(Some(v)); }
+    part.sku = Set(payload.sku);
 
     let updated = part.update(&db).await?;
+
+    // Update equipment relations
+    if let Some(equipos) = payload.equipos_ids {
+        // Delete existing
+        repuestos_equipos::Entity::delete_many()
+            .filter(repuestos_equipos::Column::RepuestoId.eq(id))
+            .exec(&db)
+            .await?;
+        
+        // Insert new
+        if !equipos.is_empty() {
+            let relations: Vec<repuestos_equipos::ActiveModel> = equipos.into_iter().map(|eq_id| {
+                repuestos_equipos::ActiveModel {
+                    repuesto_id: Set(id),
+                    equipo_id: Set(eq_id),
+                    ..Default::default()
+                }
+            }).collect();
+            repuestos_equipos::Entity::insert_many(relations).exec(&db).await?;
+        }
+    }
 
     Ok(Json(PartDto {
         id: updated.id_repuesto,
@@ -222,6 +278,51 @@ pub async fn update_part(
         bodega_id: updated.bodega_id,
         ubicacion_bodega_id: updated.ubicacion_bodega_id,
         estado: updated.estado,
+        sku: updated.sku,
+        equipos: None, // Or fetch
+    }))
+}
+
+
+pub async fn get_part_by_id(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, AppError> {
+    let p = activos_repuestos::Entity::find_by_id(id)
+        .one(&db)
+        .await?
+        .ok_or_else(|| AppError::NotFound("Repuesto no encontrado".to_string()))?;
+
+    // Fetch related equipments
+    let equipos: Vec<activos_equipos::Model> = p.find_related(activos_equipos::Entity).all(&db).await?;
+
+    Ok(Json(PartDto {
+        id: p.id_repuesto,
+        nombre: p.nombre_repuesto,
+        descripcion: p.descripcion,
+        categoria: p.tipo_repuesto,
+        marca: p.marca,
+        modelo: p.modelo,
+        stock: p.stock_actual.unwrap_or(0),
+        stock_minimo: p.stock_minimo.unwrap_or(0),
+        unidad: p.unidad_medida.unwrap_or_default(),
+        precio: p.costo_unitario.map(|v| v.to_string().parse().unwrap_or(0.0)).unwrap_or(0.0),
+        ubicacion: p.ubicacion_almacen,
+        codigo: Some(p.codigo_repuesto),
+        imagen: p.imagen,
+        ubicacion_detallada: p.ubicacion_fisica_exacta,
+        proveedor_id: p.proveedor_id,
+        fecha_vencimiento: p.fecha_vencimiento.map(|d| d.to_string()),
+        compatibilidad: p.compatibilidad_modelos,
+        bodega_id: p.bodega_id,
+        ubicacion_bodega_id: p.ubicacion_bodega_id,
+        estado: p.estado,
+        sku: p.sku,
+        equipos: Some(equipos.into_iter().map(|e| EquipmentSummaryDto {
+            id: e.id_equipo,
+            nombre: e.nombre_equipo,
+            codigo: e.codigo_equipo,
+        }).collect()),
     }))
 }
 
@@ -320,7 +421,21 @@ pub async fn import_inventory_csv(
             for result in reader.deserialize() {
                 // Reuse CreatePartRequest for CSV rows, assuming columns match struct fields (mapped by serde)
                 // Note: CSV headers must match struct field names exactly.
-                let record: CreatePartRequest = result.map_err(|e| AppError::BadRequest(format!("CSV format error: {}", e)))?;
+                #[derive(Deserialize)]
+                struct CsvRow {
+                    nombre_repuesto: String,
+                    descripcion: Option<String>,
+                    categoria: Option<String>,
+                    marca: Option<String>,
+                    modelo: Option<String>,
+                    stock_actual: i32,
+                    stock_minimo: i32,
+                    unidad_medida: String,
+                    precio_unitario: f64,
+                    ubicacion_almacen: Option<String>,
+                    sku: Option<String>,
+                }
+                let record: CsvRow = result.map_err(|e| AppError::BadRequest(format!("CSV format error: {}", e)))?;
                 
                 let new_part = activos_repuestos::ActiveModel {
                     codigo_repuesto: Set(format!("REP-{}", chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0) % 100000)), // Simple unique code gen
@@ -334,6 +449,7 @@ pub async fn import_inventory_csv(
                     unidad_medida: Set(Some(record.unidad_medida)),
                     costo_unitario: Set(Some(Decimal::from_str(&record.precio_unitario.to_string()).unwrap_or_default())),
                     ubicacion_almacen: Set(record.ubicacion_almacen),
+                    sku: Set(record.sku),
                     ..Default::default()
                 };
 

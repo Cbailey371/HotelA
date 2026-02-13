@@ -1,12 +1,11 @@
 use axum::{Json, extract::{State, Path}, response::IntoResponse};
-use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QuerySelect, RelationTrait, JoinType, QueryOrder};
+use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QueryOrder, TransactionTrait};
 use serde::{Deserialize, Serialize};
-use crate::entities::{mantenimiento_calendario, mantenimiento_historial, mantenimiento_tipo, activos_equipos, tecnicos, orden_trabajo, mantenimiento_repuestos};
+use crate::entities::{mantenimiento_calendario, mantenimiento_historial, mantenimiento_tipo, activos_equipos, orden_trabajo, mantenimiento_repuestos};
 
 use chrono::NaiveDate;
 use crate::utils::{code_generator::generate_next_code, error::AppError};
 use crate::controllers::inventory_transaction;
-use sea_orm::TransactionTrait;
 
 #[derive(Deserialize)]
 pub struct CreateScheduleRequest {
@@ -187,8 +186,8 @@ pub async fn update_schedule(
 
     let mut schedule_active: mantenimiento_calendario::ActiveModel = schedule.into();
 
-    use sea_orm::prelude::Decimal;
-    use std::str::FromStr;
+    
+    
 
     if let Some(v) = payload.equipo_id { schedule_active.equipo_id = Set(v); }
     if let Some(v) = payload.tipo_mantenimiento_id { schedule_active.tipo_mantenimiento_id = Set(v); }

@@ -53,26 +53,26 @@ warning: unused variable: `db`
 warning: unused variable: `manager`
   --> migration/src/m20260126_000004_seed_roles_permissions.rs:54:26
    |
-54 | ...c fn down(&self, manager: &SchemaManager) -> Res...
-   |                     ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+54 | ...fn down(&self, manager: &SchemaManager) -> Re...
+   |                   ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
 
 warning: unused variable: `manager`
   --> migration/src/m20260127_000008_fix_admin_permissions.rs:57:26
    |
-57 | ...c fn down(&self, manager: &SchemaManager) -> Res...
-   |                     ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+57 | ...fn down(&self, manager: &SchemaManager) -> Re...
+   |                   ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
 
 warning: unused variable: `manager`
   --> migration/src/m20260127_000009_create_super_admin.rs:14:26
    |
-14 | ...c fn down(&self, manager: &SchemaManager) -> Res...
-   |                     ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+14 | ...fn down(&self, manager: &SchemaManager) -> Re...
+   |                   ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
 
 warning: unused variable: `manager`
   --> migration/src/m20260127_000010_setup_super_admin.rs:48:26
    |
-48 | ...c fn down(&self, manager: &SchemaManager) -> Res...
-   |                     ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+48 | ...fn down(&self, manager: &SchemaManager) -> Re...
+   |                   ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
 
 warning: enum `Roles` is never used
   --> migration/src/m20260128_002201_seed_super_admin_and_more_permissions.rs:62:6
@@ -107,7 +107,14 @@ warning: enum `Post` is never used
    |      ^^^^
 
 warning: `migration` (lib) generated 17 warnings (run `cargo fix --lib -p migration` to apply 12 suggestions)
-    Checking backend v0.1.0 (/Users/cbailey/Documents/Proyectos/HotelA/backend)
+warning: unused imports: `PasswordHash` and `PasswordVerifier`
+ --> src/bin/gen_hash.rs:3:27
+  |
+3 | ...g, PasswordHash, PasswordHasher, PasswordVerifier, S...
+  |       ^^^^^^^^^^^^                  ^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
 warning: unused import: `super::activos_documentos::Entity as ActivosDocumentos`
  --> src/bin/../entities/prelude.rs:3:9
   |
@@ -152,358 +159,292 @@ warning: unused import: `super::categorias_activos::Entity as CategoriasActivos`
 9 | ...se super::categorias_activos::Entity as CategoriasActivos;
   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-warning: unused import: `super::compras_solicitud_detalle::Entity as ComprasSolicitudDetalle`
+warning: unused import: `super::compras_cotizacion_detalle::Entity as ComprasCotizacionDetalle`
   --> src/bin/../entities/prelude.rs:10:9
    |
-10 | ...se super::compras_solicitud_detalle::Entity as ComprasSolicitudDetalle;
+10 | ...se super::compras_cotizacion_detalle::Entity as ComprasCotizacionDetalle;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compras_cotizaciones::Entity as ComprasCotizaciones`
+  --> src/bin/../entities/prelude.rs:11:9
+   |
+11 | ...se super::compras_cotizaciones::Entity as ComprasCotizaciones;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compras_solicitud_detalle::Entity as ComprasSolicitudDetalle`
+  --> src/bin/../entities/prelude.rs:12:9
+   |
+12 | ...se super::compras_solicitud_detalle::Entity as ComprasSolicitudDetalle;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::compras_solicitudes::Entity as ComprasSolicitudes`
-  --> src/bin/../entities/prelude.rs:11:9
+  --> src/bin/../entities/prelude.rs:13:9
    |
-11 | ...se super::compras_solicitudes::Entity as ComprasSolicitudes;
+13 | ...se super::compras_solicitudes::Entity as ComprasSolicitudes;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::config_empresa::Entity as ConfigEmpresa`
-  --> src/bin/../entities/prelude.rs:12:9
+  --> src/bin/../entities/prelude.rs:14:9
    |
-12 | ...se super::config_empresa::Entity as ConfigEmpresa;
+14 | ...se super::config_empresa::Entity as ConfigEmpresa;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-warning: unused import: `super::configuraciones::Entity as Configuraciones`
-  --> src/bin/../entities/prelude.rs:13:9
+warning: unused import: `super::configuracion_calendario::Entity as ConfiguracionCalendario`
+  --> src/bin/../entities/prelude.rs:15:9
    |
-13 | ...se super::configuraciones::Entity as Configuraciones;
+15 | ...se super::configuracion_calendario::Entity as ConfiguracionCalendario;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::configuraciones::Entity as Configuraciones`
+  --> src/bin/../entities/prelude.rs:16:9
+   |
+16 | ...se super::configuraciones::Entity as Configuraciones;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::empresas::Entity as Empresas`
-  --> src/bin/../entities/prelude.rs:14:9
+  --> src/bin/../entities/prelude.rs:17:9
    |
-14 | pub use super::empresas::Entity as Empresas;
+17 | pub use super::empresas::Entity as Empresas;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-warning: unused import: `super::historial_repuestos::Entity as HistorialRepuestos`
-  --> src/bin/../entities/prelude.rs:15:9
+warning: unused import: `super::excepciones_calendario::Entity as ExcepcionesCalendario`
+  --> src/bin/../entities/prelude.rs:18:9
    |
-15 | ...se super::historial_repuestos::Entity as HistorialRepuestos;
+18 | ...se super::excepciones_calendario::Entity as ExcepcionesCalendario;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::facturas_compras::Entity as FacturasCompras`
+  --> src/bin/../entities/prelude.rs:19:9
+   |
+19 | ...se super::facturas_compras::Entity as FacturasCompras;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::facturas_compras_detalle::Entity as FacturasComprasDetalle`
+  --> src/bin/../entities/prelude.rs:20:9
+   |
+20 | ...se super::facturas_compras_detalle::Entity as FacturasComprasDetalle;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::feriados_pa::Entity as FeriadosPa`
+  --> src/bin/../entities/prelude.rs:21:9
+   |
+21 | pub use super::feriados_pa::Entity as FeriadosPa;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::historial_repuestos::Entity as HistorialRepuestos`
+  --> src/bin/../entities/prelude.rs:22:9
+   |
+22 | ...se super::historial_repuestos::Entity as HistorialRepuestos;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::inventario_movimientos::Entity as InventarioMovimientos`
-  --> src/bin/../entities/prelude.rs:16:9
+  --> src/bin/../entities/prelude.rs:23:9
    |
-16 | ...se super::inventario_movimientos::Entity as InventarioMovimientos;
+23 | ...se super::inventario_movimientos::Entity as InventarioMovimientos;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::mantenimiento_calendario::Entity as MantenimientoCalendario`
-  --> src/bin/../entities/prelude.rs:17:9
+  --> src/bin/../entities/prelude.rs:24:9
    |
-17 | ...se super::mantenimiento_calendario::Entity as MantenimientoCalendario;
+24 | ...se super::mantenimiento_calendario::Entity as MantenimientoCalendario;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::mantenimiento_historial::Entity as MantenimientoHistorial`
-  --> src/bin/../entities/prelude.rs:18:9
+  --> src/bin/../entities/prelude.rs:25:9
    |
-18 | ...se super::mantenimiento_historial::Entity as MantenimientoHistorial;
+25 | ...se super::mantenimiento_historial::Entity as MantenimientoHistorial;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::mantenimiento_repuestos::Entity as MantenimientoRepuestos`
-  --> src/bin/../entities/prelude.rs:19:9
+  --> src/bin/../entities/prelude.rs:26:9
    |
-19 | ...se super::mantenimiento_repuestos::Entity as MantenimientoRepuestos;
+26 | ...se super::mantenimiento_repuestos::Entity as MantenimientoRepuestos;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::mantenimiento_tareas::Entity as MantenimientoTareas`
-  --> src/bin/../entities/prelude.rs:20:9
+  --> src/bin/../entities/prelude.rs:27:9
    |
-20 | ...se super::mantenimiento_tareas::Entity as MantenimientoTareas;
+27 | ...se super::mantenimiento_tareas::Entity as MantenimientoTareas;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::mantenimiento_tipo::Entity as MantenimientoTipo`
-  --> src/bin/../entities/prelude.rs:21:9
+  --> src/bin/../entities/prelude.rs:28:9
    |
-21 | ...se super::mantenimiento_tipo::Entity as MantenimientoTipo;
+28 | ...se super::mantenimiento_tipo::Entity as MantenimientoTipo;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::marcas::Entity as Marcas`
-  --> src/bin/../entities/prelude.rs:22:9
+  --> src/bin/../entities/prelude.rs:29:9
    |
-22 | pub use super::marcas::Entity as Marcas;
+29 | pub use super::marcas::Entity as Marcas;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::orden_compra_detalle::Entity as OrdenCompraDetalle`
-  --> src/bin/../entities/prelude.rs:23:9
+  --> src/bin/../entities/prelude.rs:30:9
    |
-23 | ...se super::orden_compra_detalle::Entity as OrdenCompraDetalle;
+30 | ...se super::orden_compra_detalle::Entity as OrdenCompraDetalle;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::orden_compra_repuesto::Entity as OrdenCompraRepuesto`
-  --> src/bin/../entities/prelude.rs:24:9
+  --> src/bin/../entities/prelude.rs:31:9
    |
-24 | ...se super::orden_compra_repuesto::Entity as OrdenCompraRepuesto;
+31 | ...se super::orden_compra_repuesto::Entity as OrdenCompraRepuesto;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::orden_trabajo::Entity as OrdenTrabajo`
-  --> src/bin/../entities/prelude.rs:25:9
+  --> src/bin/../entities/prelude.rs:32:9
    |
-25 | pub use super::orden_trabajo::Entity as OrdenTrabajo;
-   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+32 | ...se super::orden_trabajo::Entity as OrdenTrabajo;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::permisos::Entity as Permisos`
-  --> src/bin/../entities/prelude.rs:26:9
+  --> src/bin/../entities/prelude.rs:33:9
    |
-26 | pub use super::permisos::Entity as Permisos;
+33 | pub use super::permisos::Entity as Permisos;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::proveedores::Entity as Proveedores`
-  --> src/bin/../entities/prelude.rs:27:9
+  --> src/bin/../entities/prelude.rs:34:9
    |
-27 | pub use super::proveedores::Entity as Proveedores;
+34 | pub use super::proveedores::Entity as Proveedores;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::reportes_programados::Entity as ReportesProgramados`
-  --> src/bin/../entities/prelude.rs:28:9
+  --> src/bin/../entities/prelude.rs:35:9
    |
-28 | ...se super::reportes_programados::Entity as ReportesProgramados;
+35 | ...se super::reportes_programados::Entity as ReportesProgramados;
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::rol_permisos::Entity as RolPermisos`
-  --> src/bin/../entities/prelude.rs:29:9
+  --> src/bin/../entities/prelude.rs:36:9
    |
-29 | pub use super::rol_permisos::Entity as RolPermisos;
+36 | pub use super::rol_permisos::Entity as RolPermisos;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::roles::Entity as Roles`
-  --> src/bin/../entities/prelude.rs:30:9
+  --> src/bin/../entities/prelude.rs:37:9
    |
-30 | pub use super::roles::Entity as Roles;
+37 | pub use super::roles::Entity as Roles;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::tecnicos::Entity as Tecnicos`
-  --> src/bin/../entities/prelude.rs:31:9
+  --> src/bin/../entities/prelude.rs:38:9
    |
-31 | pub use super::tecnicos::Entity as Tecnicos;
+38 | pub use super::tecnicos::Entity as Tecnicos;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::terminos_pago::Entity as TerminosPago`
-  --> src/bin/../entities/prelude.rs:32:9
+  --> src/bin/../entities/prelude.rs:39:9
    |
-32 | pub use super::terminos_pago::Entity as TerminosPago;
-   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+39 | ...se super::terminos_pago::Entity as TerminosPago;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::tipos_activos::Entity as TiposActivos`
-  --> src/bin/../entities/prelude.rs:33:9
+  --> src/bin/../entities/prelude.rs:40:9
    |
-33 | pub use super::tipos_activos::Entity as TiposActivos;
-   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+40 | ...se super::tipos_activos::Entity as TiposActivos;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::ubicaciones::Entity as Ubicaciones`
-  --> src/bin/../entities/prelude.rs:34:9
+  --> src/bin/../entities/prelude.rs:41:9
    |
-34 | pub use super::ubicaciones::Entity as Ubicaciones;
+41 | pub use super::ubicaciones::Entity as Ubicaciones;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::usuario_roles::Entity as UsuarioRoles`
-  --> src/bin/../entities/prelude.rs:35:9
+  --> src/bin/../entities/prelude.rs:42:9
    |
-35 | pub use super::usuario_roles::Entity as UsuarioRoles;
-   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+42 | ...se super::usuario_roles::Entity as UsuarioRoles;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::usuarios::Entity as Usuarios`
-  --> src/bin/../entities/prelude.rs:36:9
+  --> src/bin/../entities/prelude.rs:43:9
    |
-36 | pub use super::usuarios::Entity as Usuarios;
+43 | pub use super::usuarios::Entity as Usuarios;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-warning: unused import: `super::feriados_pa::Entity as FeriadosPa`
-  --> src/bin/../entities/prelude.rs:37:9
-   |
-37 | pub use super::feriados_pa::Entity as FeriadosPa;
-   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-warning: unused import: `super::configuracion_calendario::Entity as ConfiguracionCalendario`
-  --> src/bin/../entities/prelude.rs:38:9
-   |
-38 | ...se super::configuracion_calendario::Entity as ConfiguracionCalendario;
-   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-warning: unused import: `super::excepciones_calendario::Entity as ExcepcionesCalendario`
-  --> src/bin/../entities/prelude.rs:39:9
-   |
-39 | ...se super::excepciones_calendario::Entity as ExcepcionesCalendario;
-   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-warning: unused imports: `Deserialize` and `Serialize`
- --> src/bin/../entities/feriados_pa.rs:4:13
-  |
-4 | use serde::{Deserialize, Serialize};
-  |             ^^^^^^^^^^^  ^^^^^^^^^
-
-warning: unused imports: `Deserialize` and `Serialize`
- --> src/bin/../entities/configuracion_calendario.rs:4:13
-  |
-4 | use serde::{Deserialize, Serialize};
-  |             ^^^^^^^^^^^  ^^^^^^^^^
-
-warning: unused imports: `Deserialize` and `Serialize`
- --> src/bin/../entities/excepciones_calendario.rs:4:13
-  |
-4 | use serde::{Deserialize, Serialize};
-  |             ^^^^^^^^^^^  ^^^^^^^^^
-
 warning: struct `Model` is never constructed
- --> src/bin/../entities/categorias_activos.rs:7:12
+ --> src/bin/../entities/categorias_activos.rs:8:12
   |
-7 | pub struct Model {
+8 | pub struct Model {
   |            ^^^^^
   |
   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
 
 warning: enum `Relation` is never used
-  --> src/bin/../entities/categorias_activos.rs:17:10
-   |
-17 | pub enum Relation {}
-   |          ^^^^^^^^
-
-warning: struct `Model` is never constructed
- --> src/bin/../entities/compras_solicitud_detalle.rs:7:12
-  |
-7 | pub struct Model {
-  |            ^^^^^
-
-warning: enum `Relation` is never used
-  --> src/bin/../entities/compras_solicitud_detalle.rs:17:10
-   |
-17 | pub enum Relation {
-   |          ^^^^^^^^
-
-warning: struct `Model` is never constructed
- --> src/bin/../entities/compras_solicitudes.rs:7:12
-  |
-7 | pub struct Model {
-  |            ^^^^^
-
-warning: enum `Relation` is never used
-  --> src/bin/../entities/compras_solicitudes.rs:21:10
-   |
-21 | pub enum Relation {
-   |          ^^^^^^^^
-
-warning: struct `Model` is never constructed
- --> src/bin/../entities/config_empresa.rs:7:12
-  |
-7 | pub struct Model {
-  |            ^^^^^
-
-warning: enum `Relation` is never used
-  --> src/bin/../entities/config_empresa.rs:24:10
-   |
-24 | pub enum Relation {}
-   |          ^^^^^^^^
-
-warning: struct `Model` is never constructed
- --> src/bin/../entities/configuraciones.rs:7:12
-  |
-7 | pub struct Model {
-  |            ^^^^^
-
-warning: enum `Relation` is never used
-  --> src/bin/../entities/configuraciones.rs:18:10
+  --> src/bin/../entities/categorias_activos.rs:18:10
    |
 18 | pub enum Relation {}
    |          ^^^^^^^^
 
 warning: struct `Model` is never constructed
- --> src/bin/../entities/inventario_movimientos.rs:7:12
+ --> src/bin/../entities/compras_solicitud_detalle.rs:8:12
   |
-7 | pub struct Model {
+8 | pub struct Model {
   |            ^^^^^
 
 warning: enum `Relation` is never used
-  --> src/bin/../entities/inventario_movimientos.rs:19:10
+  --> src/bin/../entities/compras_solicitud_detalle.rs:18:10
    |
-19 | pub enum Relation {}
+18 | pub enum Relation {
    |          ^^^^^^^^
 
 warning: struct `Model` is never constructed
- --> src/bin/../entities/marcas.rs:7:12
+ --> src/bin/../entities/compras_solicitudes.rs:8:12
   |
-7 | pub struct Model {
+8 | pub struct Model {
   |            ^^^^^
 
 warning: enum `Relation` is never used
-  --> src/bin/../entities/marcas.rs:17:10
+  --> src/bin/../entities/compras_solicitudes.rs:22:10
    |
-17 | pub enum Relation {}
+22 | pub enum Relation {
    |          ^^^^^^^^
 
 warning: struct `Model` is never constructed
- --> src/bin/../entities/orden_compra_detalle.rs:7:12
+ --> src/bin/../entities/config_empresa.rs:8:12
   |
-7 | pub struct Model {
+8 | pub struct Model {
   |            ^^^^^
 
 warning: enum `Relation` is never used
-  --> src/bin/../entities/orden_compra_detalle.rs:18:10
+  --> src/bin/../entities/config_empresa.rs:25:10
    |
-18 | pub enum Relation {}
+25 | pub enum Relation {}
    |          ^^^^^^^^
 
 warning: struct `Model` is never constructed
- --> src/bin/../entities/orden_compra_repuesto.rs:7:12
+ --> src/bin/../entities/configuracion_calendario.rs:8:12
   |
-7 | pub struct Model {
+8 | pub struct Model {
   |            ^^^^^
 
 warning: enum `Relation` is never used
-  --> src/bin/../entities/orden_compra_repuesto.rs:29:10
-   |
-29 | pub enum Relation {}
-   |          ^^^^^^^^
-
-warning: struct `Model` is never constructed
- --> src/bin/../entities/reportes_programados.rs:7:12
-  |
-7 | pub struct Model {
-  |            ^^^^^
-
-warning: enum `Relation` is never used
-  --> src/bin/../entities/reportes_programados.rs:27:10
-   |
-27 | pub enum Relation {}
-   |          ^^^^^^^^
-
-warning: struct `Model` is never constructed
- --> src/bin/../entities/terminos_pago.rs:7:12
-  |
-7 | pub struct Model {
-  |            ^^^^^
-
-warning: enum `Relation` is never used
-  --> src/bin/../entities/terminos_pago.rs:16:10
+  --> src/bin/../entities/configuracion_calendario.rs:16:10
    |
 16 | pub enum Relation {}
    |          ^^^^^^^^
 
 warning: struct `Model` is never constructed
- --> src/bin/../entities/tipos_activos.rs:7:12
+ --> src/bin/../entities/configuraciones.rs:8:12
   |
-7 | pub struct Model {
+8 | pub struct Model {
   |            ^^^^^
 
 warning: enum `Relation` is never used
-  --> src/bin/../entities/tipos_activos.rs:17:10
+  --> src/bin/../entities/configuraciones.rs:19:10
    |
-17 | pub enum Relation {}
+19 | pub enum Relation {}
    |          ^^^^^^^^
 
 warning: struct `Model` is never constructed
- --> src/bin/../entities/ubicaciones.rs:7:12
+ --> src/bin/../entities/excepciones_calendario.rs:8:12
   |
-7 | pub struct Model {
+8 | pub struct Model {
   |            ^^^^^
 
 warning: enum `Relation` is never used
-  --> src/bin/../entities/ubicaciones.rs:17:10
+  --> src/bin/../entities/excepciones_calendario.rs:17:10
    |
 17 | pub enum Relation {}
    |          ^^^^^^^^
@@ -521,107 +462,91 @@ warning: enum `Relation` is never used
    |          ^^^^^^^^
 
 warning: struct `Model` is never constructed
- --> src/bin/../entities/configuracion_calendario.rs:8:12
+ --> src/bin/../entities/inventario_movimientos.rs:8:12
   |
 8 | pub struct Model {
   |            ^^^^^
 
 warning: enum `Relation` is never used
-  --> src/bin/../entities/configuracion_calendario.rs:16:10
+  --> src/bin/../entities/inventario_movimientos.rs:20:10
    |
-16 | pub enum Relation {}
+20 | pub enum Relation {}
    |          ^^^^^^^^
 
 warning: struct `Model` is never constructed
- --> src/bin/../entities/excepciones_calendario.rs:8:12
+ --> src/bin/../entities/marcas.rs:8:12
   |
 8 | pub struct Model {
   |            ^^^^^
 
 warning: enum `Relation` is never used
-  --> src/bin/../entities/excepciones_calendario.rs:17:10
+  --> src/bin/../entities/marcas.rs:18:10
+   |
+18 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/reportes_programados.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/reportes_programados.rs:28:10
+   |
+28 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/terminos_pago.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/terminos_pago.rs:17:10
    |
 17 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/tipos_activos.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/tipos_activos.rs:18:10
+   |
+18 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/ubicaciones.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/ubicaciones.rs:18:10
+   |
+18 | pub enum Relation {}
    |          ^^^^^^^^
 
 warning: function `verify_password` is never used
   --> src/bin/../utils/hash.rs:18:8
    |
-18 | pub fn verify_password(password: &str, password_has...
+18 | pub fn verify_password(password: &str, password_...
    |        ^^^^^^^^^^^^^^^
 
-warning: unused imports: `PasswordHash` and `PasswordVerifier`
- --> src/bin/gen_hash.rs:3:27
-  |
-3 | ...g, PasswordHash, PasswordHasher, PasswordVerifier, S...
-  |       ^^^^^^^^^^^^                  ^^^^^^^^^^^^^^^^
-  |
-  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-warning: `backend` (bin "reset_password") generated 73 warnings (run `cargo fix --bin "reset_password" -p backend` to apply 40 suggestions)
+    Checking backend v0.1.0 (/Users/cbailey/Documents/Proyectos/HotelA/backend)
 warning: `backend` (bin "gen_hash") generated 1 warning (run `cargo fix --bin "gen_hash" -p backend` to apply 1 suggestion)
-error[E0432]: unresolved import `crate::utils::audit`
- --> src/controllers/assets.rs:6:25
-  |
-6 | use crate::utils::{jwt, audit, code_generator::generate_next_code, error::AppError};
-  |                         ^^^^^ no `audit` in `utils`
-  |
-  = help: consider importing this module instead:
-          crate::controllers::audit
-
-error[E0432]: unresolved import `crate::utils::audit`
- --> src/controllers/inventory.rs:6:25
-  |
-6 | use crate::utils::{jwt, audit, error::AppError};
-  |                         ^^^^^ no `audit` in `utils`
-  |
-  = help: consider importing this module instead:
-          crate::controllers::audit
-
-error[E0432]: unresolved import `crate::utils::audit`
- --> src/controllers/asset_config.rs:5:25
-  |
-5 | use crate::utils::{jwt, audit};
-  |                         ^^^^^ no `audit` in `utils`
-  |
-  = help: consider importing this module instead:
-          crate::controllers::audit
-
-error[E0432]: unresolved import `crate::utils::audit`
- --> src/controllers/payment_terms.rs:5:25
-  |
-5 | use crate::utils::{jwt, audit};
-  |                         ^^^^^ no `audit` in `utils`
-  |
-  = help: consider importing this module instead:
-          crate::controllers::audit
-
-error[E0432]: unresolved import `crate::utils::audit`
- --> src/controllers/brands.rs:4:25
-  |
-4 | use crate::utils::{jwt, audit};
-  |                         ^^^^^ no `audit` in `utils`
-  |
-  = help: consider importing this module instead:
-          crate::controllers::audit
-
-error[E0433]: failed to resolve: could not find `audit` in `utils`
-  --> src/controllers/auth.rs:70:19
-   |
-70 |     crate::utils::audit::log_action(
-   |                   ^^^^^ could not find `audit` in `utils`
-
-error[E0425]: cannot find value `base_date` in this scope
-   --> src/controllers/maintenance.rs:300:29
+warning: `backend` (bin "reset_password") generated 70 warnings (run `cargo fix --bin "reset_password" -p backend` to apply 41 suggestions)
+error[E0433]: failed to resolve: could not find `base64` in `utils`
+   --> src/controllers/work_orders.rs:338:34
     |
-300 |         if let Some(base) = base_date {
-    |                             ^^^^^^^^^ not found in this scope
-
-error[E0425]: cannot find value `get_transactions` in module `controllers::inventory_transaction`
-  --> src/main.rs:68:91
-   |
-68 |                 .route("/inventory/transactions", get(controllers::inventory_transaction::get_transactions))
-   |                                                                                           ^^^^^^^^^^^^^^^^ not found in `controllers::inventory_transaction`
+338 |     let pdf_data = crate::utils::base64::decode(&payload.pdf_base64)
+    |                                  ^^^^^^ could not find `base64` in `utils`
 
 warning: unused import: `super::activos_documentos::Entity as ActivosDocumentos`
  --> src/entities/prelude.rs:3:9
@@ -661,179 +586,179 @@ warning: unused import: `super::categorias_activos::Entity as CategoriasActivos`
 9 | pub use super::categorias_activos::Entity as CategoriasActivos;
   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-warning: unused import: `super::config_empresa::Entity as ConfigEmpresa`
-  --> src/entities/prelude.rs:12:9
+warning: unused import: `super::compras_cotizacion_detalle::Entity as ComprasCotizacionDetalle`
+  --> src/entities/prelude.rs:10:9
    |
-12 | pub use super::config_empresa::Entity as ConfigEmpresa;
+10 | pub use super::compras_cotizacion_detalle::Entity as ComprasCotizacionDetalle;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compras_cotizaciones::Entity as ComprasCotizaciones`
+  --> src/entities/prelude.rs:11:9
+   |
+11 | pub use super::compras_cotizaciones::Entity as ComprasCotizaciones;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::config_empresa::Entity as ConfigEmpresa`
+  --> src/entities/prelude.rs:14:9
+   |
+14 | pub use super::config_empresa::Entity as ConfigEmpresa;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-warning: unused import: `super::configuraciones::Entity as Configuraciones`
-  --> src/entities/prelude.rs:13:9
+warning: unused import: `super::configuracion_calendario::Entity as ConfiguracionCalendario`
+  --> src/entities/prelude.rs:15:9
    |
-13 | pub use super::configuraciones::Entity as Configuraciones;
+15 | pub use super::configuracion_calendario::Entity as ConfiguracionCalendario;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::configuraciones::Entity as Configuraciones`
+  --> src/entities/prelude.rs:16:9
+   |
+16 | pub use super::configuraciones::Entity as Configuraciones;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::empresas::Entity as Empresas`
-  --> src/entities/prelude.rs:14:9
+  --> src/entities/prelude.rs:17:9
    |
-14 | pub use super::empresas::Entity as Empresas;
+17 | pub use super::empresas::Entity as Empresas;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-warning: unused import: `super::historial_repuestos::Entity as HistorialRepuestos`
-  --> src/entities/prelude.rs:15:9
+warning: unused import: `super::excepciones_calendario::Entity as ExcepcionesCalendario`
+  --> src/entities/prelude.rs:18:9
    |
-15 | pub use super::historial_repuestos::Entity as HistorialRepuestos;
+18 | pub use super::excepciones_calendario::Entity as ExcepcionesCalendario;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::facturas_compras::Entity as FacturasCompras`
+  --> src/entities/prelude.rs:19:9
+   |
+19 | pub use super::facturas_compras::Entity as FacturasCompras;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::facturas_compras_detalle::Entity as FacturasComprasDetalle`
+  --> src/entities/prelude.rs:20:9
+   |
+20 | pub use super::facturas_compras_detalle::Entity as FacturasComprasDetalle;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::feriados_pa::Entity as FeriadosPa`
+  --> src/entities/prelude.rs:21:9
+   |
+21 | pub use super::feriados_pa::Entity as FeriadosPa;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::historial_repuestos::Entity as HistorialRepuestos`
+  --> src/entities/prelude.rs:22:9
+   |
+22 | pub use super::historial_repuestos::Entity as HistorialRepuestos;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::inventario_movimientos::Entity as InventarioMovimientos`
-  --> src/entities/prelude.rs:16:9
+  --> src/entities/prelude.rs:23:9
    |
-16 | pub use super::inventario_movimientos::Entity as InventarioMovimientos;
+23 | pub use super::inventario_movimientos::Entity as InventarioMovimientos;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::mantenimiento_calendario::Entity as MantenimientoCalendario`
-  --> src/entities/prelude.rs:17:9
+  --> src/entities/prelude.rs:24:9
    |
-17 | pub use super::mantenimiento_calendario::Entity as MantenimientoCalendario;
+24 | pub use super::mantenimiento_calendario::Entity as MantenimientoCalendario;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::mantenimiento_historial::Entity as MantenimientoHistorial`
-  --> src/entities/prelude.rs:18:9
+  --> src/entities/prelude.rs:25:9
    |
-18 | pub use super::mantenimiento_historial::Entity as MantenimientoHistorial;
+25 | pub use super::mantenimiento_historial::Entity as MantenimientoHistorial;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::mantenimiento_repuestos::Entity as MantenimientoRepuestos`
-  --> src/entities/prelude.rs:19:9
+  --> src/entities/prelude.rs:26:9
    |
-19 | pub use super::mantenimiento_repuestos::Entity as MantenimientoRepuestos;
+26 | pub use super::mantenimiento_repuestos::Entity as MantenimientoRepuestos;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::mantenimiento_tareas::Entity as MantenimientoTareas`
-  --> src/entities/prelude.rs:20:9
+  --> src/entities/prelude.rs:27:9
    |
-20 | pub use super::mantenimiento_tareas::Entity as MantenimientoTareas;
+27 | pub use super::mantenimiento_tareas::Entity as MantenimientoTareas;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::mantenimiento_tipo::Entity as MantenimientoTipo`
-  --> src/entities/prelude.rs:21:9
+  --> src/entities/prelude.rs:28:9
    |
-21 | pub use super::mantenimiento_tipo::Entity as MantenimientoTipo;
+28 | pub use super::mantenimiento_tipo::Entity as MantenimientoTipo;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::marcas::Entity as Marcas`
-  --> src/entities/prelude.rs:22:9
+  --> src/entities/prelude.rs:29:9
    |
-22 | pub use super::marcas::Entity as Marcas;
+29 | pub use super::marcas::Entity as Marcas;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::orden_trabajo::Entity as OrdenTrabajo`
-  --> src/entities/prelude.rs:25:9
+  --> src/entities/prelude.rs:32:9
    |
-25 | pub use super::orden_trabajo::Entity as OrdenTrabajo;
+32 | pub use super::orden_trabajo::Entity as OrdenTrabajo;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::permisos::Entity as Permisos`
-  --> src/entities/prelude.rs:26:9
+  --> src/entities/prelude.rs:33:9
    |
-26 | pub use super::permisos::Entity as Permisos;
+33 | pub use super::permisos::Entity as Permisos;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-warning: unused import: `super::proveedores::Entity as Proveedores`
-  --> src/entities/prelude.rs:27:9
-   |
-27 | pub use super::proveedores::Entity as Proveedores;
-   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 warning: unused import: `super::reportes_programados::Entity as ReportesProgramados`
-  --> src/entities/prelude.rs:28:9
+  --> src/entities/prelude.rs:35:9
    |
-28 | pub use super::reportes_programados::Entity as ReportesProgramados;
+35 | pub use super::reportes_programados::Entity as ReportesProgramados;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::rol_permisos::Entity as RolPermisos`
-  --> src/entities/prelude.rs:29:9
+  --> src/entities/prelude.rs:36:9
    |
-29 | pub use super::rol_permisos::Entity as RolPermisos;
+36 | pub use super::rol_permisos::Entity as RolPermisos;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::roles::Entity as Roles`
-  --> src/entities/prelude.rs:30:9
+  --> src/entities/prelude.rs:37:9
    |
-30 | pub use super::roles::Entity as Roles;
+37 | pub use super::roles::Entity as Roles;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::tecnicos::Entity as Tecnicos`
-  --> src/entities/prelude.rs:31:9
+  --> src/entities/prelude.rs:38:9
    |
-31 | pub use super::tecnicos::Entity as Tecnicos;
+38 | pub use super::tecnicos::Entity as Tecnicos;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::terminos_pago::Entity as TerminosPago`
-  --> src/entities/prelude.rs:32:9
+  --> src/entities/prelude.rs:39:9
    |
-32 | pub use super::terminos_pago::Entity as TerminosPago;
+39 | pub use super::terminos_pago::Entity as TerminosPago;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::tipos_activos::Entity as TiposActivos`
-  --> src/entities/prelude.rs:33:9
+  --> src/entities/prelude.rs:40:9
    |
-33 | pub use super::tipos_activos::Entity as TiposActivos;
+40 | pub use super::tipos_activos::Entity as TiposActivos;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::ubicaciones::Entity as Ubicaciones`
-  --> src/entities/prelude.rs:34:9
+  --> src/entities/prelude.rs:41:9
    |
-34 | pub use super::ubicaciones::Entity as Ubicaciones;
+41 | pub use super::ubicaciones::Entity as Ubicaciones;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::usuario_roles::Entity as UsuarioRoles`
-  --> src/entities/prelude.rs:35:9
+  --> src/entities/prelude.rs:42:9
    |
-35 | pub use super::usuario_roles::Entity as UsuarioRoles;
+42 | pub use super::usuario_roles::Entity as UsuarioRoles;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `super::usuarios::Entity as Usuarios`
-  --> src/entities/prelude.rs:36:9
+  --> src/entities/prelude.rs:43:9
    |
-36 | pub use super::usuarios::Entity as Usuarios;
+43 | pub use super::usuarios::Entity as Usuarios;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-warning: unused import: `super::feriados_pa::Entity as FeriadosPa`
-  --> src/entities/prelude.rs:37:9
-   |
-37 | pub use super::feriados_pa::Entity as FeriadosPa;
-   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-warning: unused import: `super::configuracion_calendario::Entity as ConfiguracionCalendario`
-  --> src/entities/prelude.rs:38:9
-   |
-38 | pub use super::configuracion_calendario::Entity as ConfiguracionCalendario;
-   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-warning: unused import: `super::excepciones_calendario::Entity as ExcepcionesCalendario`
-  --> src/entities/prelude.rs:39:9
-   |
-39 | pub use super::excepciones_calendario::Entity as ExcepcionesCalendario;
-   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-warning: unused imports: `Deserialize` and `Serialize`
- --> src/entities/feriados_pa.rs:4:13
-  |
-4 | use serde::{Deserialize, Serialize};
-  |             ^^^^^^^^^^^  ^^^^^^^^^
-
-warning: unused imports: `Deserialize` and `Serialize`
- --> src/entities/configuracion_calendario.rs:4:13
-  |
-4 | use serde::{Deserialize, Serialize};
-  |             ^^^^^^^^^^^  ^^^^^^^^^
-
-warning: unused imports: `Deserialize` and `Serialize`
- --> src/entities/excepciones_calendario.rs:4:13
-  |
-4 | use serde::{Deserialize, Serialize};
-  |             ^^^^^^^^^^^  ^^^^^^^^^
 
 warning: unused imports: `ColumnTrait` and `QueryFilter`
  --> src/utils/mailer.rs:3:48
@@ -845,6 +770,12 @@ warning: unused import: `DatabaseConnection`
  --> src/utils/code_generator.rs:1:15
   |
 1 | use sea_orm::{DatabaseConnection, DbErr, ConnectionTrait, Statement, DatabaseBackend};
+  |               ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `DatabaseConnection`
+ --> src/utils/scheduler.rs:2:15
+  |
+2 | use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait, ConnectionTrait};
   |               ^^^^^^^^^^^^^^^^^^
 
 warning: unused import: `configuracion_calendario`
@@ -862,7 +793,7 @@ warning: unused import: `http::StatusCode`
 warning: unused imports: `ModelTrait` and `RelationTrait`
  --> src/controllers/assets.rs:5:97
   |
-5 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, RelationTrait};
+5 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, RelationTrait, QueryOrder};
   |                                                                                                 ^^^^^^^^^^  ^^^^^^^^^^^^^
 
 warning: unused import: `ColumnTrait`
@@ -895,6 +826,18 @@ warning: unused import: `tecnicos`
 4 | use crate::entities::{mantenimiento_calendario, mantenimiento_historial, mantenimiento_tipo, activos_equipos, tecnicos, orden_trabajo, ma...
   |                                                                                                               ^^^^^^^^
 
+warning: unused import: `sea_orm::prelude::Decimal`
+   --> src/controllers/maintenance.rs:190:9
+    |
+190 |     use sea_orm::prelude::Decimal;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::str::FromStr`
+   --> src/controllers/maintenance.rs:191:9
+    |
+191 |     use std::str::FromStr;
+    |         ^^^^^^^^^^^^^^^^^
+
 warning: unused import: `Path`
  --> src/controllers/audit.rs:1:35
   |
@@ -913,1602 +856,30 @@ warning: unused import: `prelude::*`
 11 | use crate::entities::{prelude::*, *};
    |                       ^^^^^^^^^^
 
-warning: unused imports: `JoinType`, `QuerySelect`, and `RelationTrait`
- --> src/controllers/work_orders.rs:2:97
+warning: unused imports: `ColumnTrait`, `JoinType`, `QuerySelect`, and `RelationTrait`
+ --> src/controllers/work_orders.rs:2:71
   |
-2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QuerySelect, RelationTrait, JoinType};
-  |                                                                                                 ^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^
+2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, ColumnTrait, QuerySelect, RelationTrait, JoinType, QueryOrder};
+  |                                                                       ^^^^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^
 
-warning: unused import: `ModelTrait`
- --> src/controllers/roles.rs:2:97
+warning: unused import: `Related`
+ --> src/controllers/purchase_invoices.rs:2:101
   |
-2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, LoaderTrait};
-  |                                                                                                 ^^^^^^^^^^
+2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, TransactionTrait, QueryOrder, Related, QueryFilter, ColumnTrait};
+  |                                                                                                     ^^^^^^^
 
-error[E0214]: parenthesized type parameters may only be used with a `Fn` trait
-   --> src/controllers/holidays.rs:109:45
-    |
-109 |     axum::extract::Path(id): axum::extract::Path(i32),
-    |                                             ^^^^^^^^^ only `Fn` traits may use parentheses
-    |
-help: use angle brackets instead
-    |
-109 -     axum::extract::Path(id): axum::extract::Path(i32),
-109 +     axum::extract::Path(id): axum::extract::Path<i32>,
-    |
-
-error[E0214]: parenthesized type parameters may only be used with a `Fn` trait
-   --> src/controllers/holidays.rs:130:45
-    |
-130 |     axum::extract::Path(id): axum::extract::Path(i32),
-    |                                             ^^^^^^^^^ only `Fn` traits may use parentheses
-    |
-help: use angle brackets instead
-    |
-130 -     axum::extract::Path(id): axum::extract::Path(i32),
-130 +     axum::extract::Path(id): axum::extract::Path<i32>,
-    |
-
-error[E0277]: the trait bound `usuarios::Entity: sea_orm::Related<entities::roles::Entity>` is not satisfied
-   --> src/controllers/user.rs:118:28
-    |
-118 |     let roles_list = users.load_many_to_many(roles::Entity, usuario_roles::Entity, &db).await
-    |                            ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-    |
-help: the trait `sea_orm::Related<entities::roles::Entity>` is not implemented for `usuarios::Entity`
-   --> src/entities/usuarios.rs:5:35
-    |
-  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-    |                                   ^^^^^^^^^^^^^^^^^
-    = help: the following other types implement trait `sea_orm::Related<R>`:
-              `usuarios::Entity` implements `sea_orm::Related<auditoria_acciones::Entity>`
-              `usuarios::Entity` implements `sea_orm::Related<empresas::Entity>`
-              `usuarios::Entity` implements `sea_orm::Related<entities::activos_equipos::Entity>`
-              `usuarios::Entity` implements `sea_orm::Related<entities::mantenimiento_calendario::Entity>`
-              `usuarios::Entity` implements `sea_orm::Related<usuario_roles::Entity>`
-note: required by a bound in `load_many_to_many`
-   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/loader.rs:56:63
-    |
- 43 |     async fn load_many_to_many<R, S, V, C>(
-    |              ----------------- required by a bound in this associated function
-...
- 56 |         <<Self as LoaderTrait>::Model as ModelTrait>::Entity: Related<R>;
-    |                                                               ^^^^^^^^^^ required by this bound in `LoaderTrait::load_many_to_many`
-    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `usuarios::Entity: sea_orm::Related<entities::roles::Entity>` is not satisfied
-   --> src/controllers/user.rs:206:38
-    |
-206 |     let roles = updated.find_related(roles::Entity).all(&db).await
-    |                         ------------ ^^^^^^^^^^^^^ unsatisfied trait bound
-    |                         |
-    |                         required by a bound introduced by this call
-    |
-help: the trait `sea_orm::Related<entities::roles::Entity>` is not implemented for `usuarios::Entity`
-   --> src/entities/usuarios.rs:5:35
-    |
-  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-    |                                   ^^^^^^^^^^^^^^^^^
-    = help: the following other types implement trait `sea_orm::Related<R>`:
-              `usuarios::Entity` implements `sea_orm::Related<auditoria_acciones::Entity>`
-              `usuarios::Entity` implements `sea_orm::Related<empresas::Entity>`
-              `usuarios::Entity` implements `sea_orm::Related<entities::activos_equipos::Entity>`
-              `usuarios::Entity` implements `sea_orm::Related<entities::mantenimiento_calendario::Entity>`
-              `usuarios::Entity` implements `sea_orm::Related<usuario_roles::Entity>`
-note: required by a bound in `sea_orm::ModelTrait::find_related`
-   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/entity/model.rs:26:23
-    |
- 23 |     fn find_related<R>(&self, _: R) -> Select<R>
-    |        ------------ required by a bound in this associated function
-...
- 26 |         Self::Entity: Related<R>,
-    |                       ^^^^^^^^^^ required by this bound in `ModelTrait::find_related`
-    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `activos_documentos::Model: serde::Serialize` is not satisfied
-   --> src/controllers/assets.rs:513:42
-    |
-513 |   ) -> Result<impl IntoResponse, AppError> {
-    |  __________________________________________^
-514 | |     let new_doc = activos_documentos::ActiveModel {
-515 | |         activo_id: Set(id),
-516 | |         nombre_archivo: Set(payload.nombre_archivo),
-...   |
-523 | |     Ok(Json(doc))
-524 | | }
-    | |_^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `activos_documentos::Model`
-   --> src/entities/activos_documentos.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `activos_documentos::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `axum::Json<activos_documentos::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `activos_documentos::Model: serde::Serialize` is not satisfied
-   --> src/controllers/assets.rs:513:13
-    |
-513 | ) -> Result<impl IntoResponse, AppError> {
-    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `activos_documentos::Model`
-   --> src/entities/activos_documentos.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `activos_documentos::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `axum::Json<activos_documentos::Model>` to implement `IntoResponse`
-
-error[E0308]: mismatched types
-   --> src/controllers/maintenance.rs:304:17
-    |
-303 |             let next = crate::utils::scheduler::calculate_next_valid_date(
-    |                        -------------------------------------------------- arguments to this function are incorrect
-304 |                 &txn, 
-    |                 ^^^^ expected `&DatabaseConnection`, found `&DatabaseTransaction`
-    |
-    = note: expected reference `&sea_orm::DatabaseConnection`
-               found reference `&sea_orm::DatabaseTransaction`
-note: function defined here
-   --> src/utils/scheduler.rs:11:14
-    |
- 11 | pub async fn calculate_next_valid_date(
-    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
- 12 |     db: &DatabaseConnection,
-    |     -----------------------
-
-error[E0277]: the trait bound `mantenimiento_tipo::Model: serde::Serialize` is not satisfied
-   --> src/controllers/maintenance.rs:339:42
-    |
-339 |   ) -> Result<impl IntoResponse, AppError> {
-    |  __________________________________________^
-340 | |     let types = mantenimiento_tipo::Entity::find().all(&db).await?;
-341 | |     Ok(Json(types))
-342 | | }
-    | |_^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `mantenimiento_tipo::Model`
-   --> src/entities/mantenimiento_tipo.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `mantenimiento_tipo::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `Vec<mantenimiento_tipo::Model>` to implement `jwt::_::_serde::Serialize`
-    = note: required for `axum::Json<Vec<mantenimiento_tipo::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `mantenimiento_tipo::Model: serde::Serialize` is not satisfied
-   --> src/controllers/maintenance.rs:339:13
-    |
-339 | ) -> Result<impl IntoResponse, AppError> {
-    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `mantenimiento_tipo::Model`
-   --> src/entities/mantenimiento_tipo.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `mantenimiento_tipo::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `Vec<mantenimiento_tipo::Model>` to implement `jwt::_::_serde::Serialize`
-    = note: required for `axum::Json<Vec<mantenimiento_tipo::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `entities::reportes_programados::Model: serde::Serialize` is not satisfied
-   --> src/controllers/reports.rs:191:42
-    |
-191 |   ) -> Result<impl IntoResponse, AppError> {
-    |  __________________________________________^
-192 | |     let reports = reportes_programados::Entity::find()
-193 | |         .order_by_desc(reportes_programados::Column::CreatedAt)
-194 | |         .all(&db)
-195 | |         .await?;
-196 | |     Ok(Json(reports))
-197 | | }
-    | |_^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::reportes_programados::Model`
-   --> src/entities/reportes_programados.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::reportes_programados::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `Vec<entities::reportes_programados::Model>` to implement `jwt::_::_serde::Serialize`
-    = note: required for `axum::Json<Vec<entities::reportes_programados::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `entities::reportes_programados::Model: serde::Serialize` is not satisfied
-   --> src/controllers/reports.rs:191:13
-    |
-191 | ) -> Result<impl IntoResponse, AppError> {
-    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::reportes_programados::Model`
-   --> src/entities/reportes_programados.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::reportes_programados::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `Vec<entities::reportes_programados::Model>` to implement `jwt::_::_serde::Serialize`
-    = note: required for `axum::Json<Vec<entities::reportes_programados::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `entities::reportes_programados::Model: serde::Serialize` is not satisfied
-   --> src/controllers/reports.rs:214:42
-    |
-214 |   ) -> Result<impl IntoResponse, AppError> {
-    |  __________________________________________^
-215 | |     let new_report = reportes_programados::ActiveModel {
-216 | |         nombre: Set(payload.nombre),
-217 | |         tipo_reporte: Set(payload.tipo_reporte),
-...   |
-229 | |     Ok(Json(saved))
-230 | | }
-    | |_^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::reportes_programados::Model`
-   --> src/entities/reportes_programados.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::reportes_programados::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `axum::Json<entities::reportes_programados::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `entities::reportes_programados::Model: serde::Serialize` is not satisfied
-   --> src/controllers/reports.rs:214:13
-    |
-214 | ) -> Result<impl IntoResponse, AppError> {
-    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::reportes_programados::Model`
-   --> src/entities/reportes_programados.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::reportes_programados::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `axum::Json<entities::reportes_programados::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `entities::reportes_programados::Model: serde::Serialize` is not satisfied
-   --> src/controllers/reports.rs:236:42
-    |
-236 |   ) -> Result<impl IntoResponse, AppError> {
-    |  __________________________________________^
-237 | |     let report: Option<reportes_programados::Model> = reportes_programados::Entity::find_by_id(id)
-238 | |         .one(&db)
-239 | |         .await?;
-...   |
-255 | |     Ok(Json(updated))
-256 | | }
-    | |_^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::reportes_programados::Model`
-   --> src/entities/reportes_programados.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::reportes_programados::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `axum::Json<entities::reportes_programados::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `entities::reportes_programados::Model: serde::Serialize` is not satisfied
-   --> src/controllers/reports.rs:236:13
-    |
-236 | ) -> Result<impl IntoResponse, AppError> {
-    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::reportes_programados::Model`
-   --> src/entities/reportes_programados.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::reportes_programados::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `axum::Json<entities::reportes_programados::Model>` to implement `IntoResponse`
-
-error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
-   --> src/controllers/work_orders.rs:103:61
-    |
-103 |                 .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot.id_ot))
-    |                                                             ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
-    |
-   ::: src/entities/mantenimiento_calendario.rs:5:35
-    |
-  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
-
-error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
-   --> src/controllers/work_orders.rs:112:57
-    |
-112 |             .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot.id_ot))
-    |                                                         ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
-    |
-   ::: src/entities/mantenimiento_calendario.rs:5:35
-    |
-  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
-
-error[E0308]: mismatched types
-   --> src/controllers/work_orders.rs:126:28
-    |
-126 |         .find_also_related(activos_equipos::Entity)
-    |          ----------------- ^^^^^^^^^^^^^^^^^^^^^^^ expected `Entity`, found `entities::activos_equipos::Entity`
-    |          |
-    |          arguments to this method are incorrect
-    |
-    = note: `entities::activos_equipos::Entity` and `Entity` have similar names, but are actually distinct types
-note: `entities::activos_equipos::Entity` is defined in module `crate::entities::activos_equipos` of the current crate
-   --> src/entities/activos_equipos.rs:5:35
-    |
-  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-    |                                   ^^^^^^^^^^^^^^^^^
-note: `Entity` is defined in module `crate::entities::mantenimiento_calendario` of the current crate
-   --> src/entities/mantenimiento_calendario.rs:5:35
-    |
-  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-    |                                   ^^^^^^^^^^^^^^^^^
-help: the return type of this call is `entities::activos_equipos::Entity` due to the type of the argument passed
-   --> src/controllers/work_orders.rs:125:18
-    |
-125 |       let orders = orden_trabajo::Entity::find()
-    |  __________________^
-126 | |         .find_also_related(activos_equipos::Entity)
-    | |____________________________-----------------------^
-    |                              |
-    |                              this argument influences the return type of `find_also_related`
-note: method defined here
-   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/join.rs:49:12
-    |
- 49 |     pub fn find_also_related<R>(self, r: R) -> SelectTwo<E, R>
-    |            ^^^^^^^^^^^^^^^^^
-    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0609]: no field `orden_trabajo_id` on type `&entities::mantenimiento_calendario::Model`
-   --> src/controllers/work_orders.rs:166:32
-    |
-166 | ...   .filter(|(s, _)| s.orden_trabajo_id == Some(ot.id_ot) || (ot.id_calendario.is_some() && Some(s.id_mantenimiento_calendario) == ot.i...
-    |                          ^^^^^^^^^^^^^^^^ unknown field
-    |
-    = note: available fields are: `id_mantenimiento_calendario`, `equipo_id`, `tipo_mantenimiento_id`, `frecuencia`, `intervalo_valor` ... and 17 others
-
-error[E0308]: mismatched types
-   --> src/controllers/work_orders.rs:199:13
-    |
-199 |             activo,
-    |             ^^^^^^ expected `entities::activos_equipos::Model`, found `Model`
-    |
-    = note: `Model` and `entities::activos_equipos::Model` have similar names, but are actually distinct types
-note: `Model` is defined in module `crate::entities::mantenimiento_calendario` of the current crate
-   --> src/entities/mantenimiento_calendario.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-note: `entities::activos_equipos::Model` is defined in module `crate::entities::activos_equipos` of the current crate
-   --> src/entities/activos_equipos.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-
-error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
-   --> src/controllers/work_orders.rs:295:57
-    |
-295 |             .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(Option::<i32>::None))
-    |                                                         ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
-    |
-   ::: src/entities/mantenimiento_calendario.rs:5:35
-    |
-  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
-
-error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
-   --> src/controllers/work_orders.rs:296:55
-    |
-296 |             .filter(mantenimiento_calendario::Column::OrdenTrabajoId.eq(ot_id))
-    |                                                       ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
-    |
-   ::: src/entities/mantenimiento_calendario.rs:5:35
-    |
-  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
-
-error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
-   --> src/controllers/work_orders.rs:304:61
-    |
-304 |                 .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(ot_id))
-    |                                                             ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
-    |
-   ::: src/entities/mantenimiento_calendario.rs:5:35
-    |
-  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
-
-error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
-   --> src/controllers/work_orders.rs:318:61
-    |
-318 |                 .col_expr(mantenimiento_calendario::Column::OrdenTrabajoId, sea_orm::sea_query::Expr::value(Option::<i32>::None))
-    |                                                             ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
-    |
-   ::: src/entities/mantenimiento_calendario.rs:5:35
-    |
-  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
-
-error[E0599]: no variant or associated item named `OrdenTrabajoId` found for enum `entities::mantenimiento_calendario::Column` in the current scope
-   --> src/controllers/work_orders.rs:319:59
-    |
-319 |                 .filter(mantenimiento_calendario::Column::OrdenTrabajoId.eq(ot_id))
-    |                                                           ^^^^^^^^^^^^^^ variant or associated item not found in `entities::mantenimiento_calendario::Column`
-    |
-   ::: src/entities/mantenimiento_calendario.rs:5:35
-    |
-  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-    |                                   ----------------- variant or associated item `OrdenTrabajoId` not found for this enum
-
-error[E0277]: the trait bound `entities::roles::Entity: sea_orm::Related<permisos::Entity>` is not satisfied
-  --> src/controllers/roles.rs:53:34
-   |
-53 |     let permissions = roles_list.load_many_to_many(permisos::Entity, rol_permisos::Entity, &db).await
-   |                                  ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-   |
-help: the trait `sea_orm::Related<permisos::Entity>` is not implemented for `entities::roles::Entity`
-  --> src/entities/roles.rs:5:35
-   |
- 5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-   |                                   ^^^^^^^^^^^^^^^^^
-   = help: the following other types implement trait `sea_orm::Related<R>`:
-             `entities::roles::Entity` implements `sea_orm::Related<rol_permisos::Entity>`
-             `entities::roles::Entity` implements `sea_orm::Related<usuario_roles::Entity>`
-note: required by a bound in `load_many_to_many`
-  --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/loader.rs:56:63
-   |
-43 |     async fn load_many_to_many<R, S, V, C>(
-   |              ----------------- required by a bound in this associated function
-...
-56 |         <<Self as LoaderTrait>::Model as ModelTrait>::Entity: Related<R>;
-   |                                                               ^^^^^^^^^^ required by this bound in `LoaderTrait::load_many_to_many`
-   = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `entities::roles::Entity: sea_orm::Related<usuarios::Entity>` is not satisfied
-  --> src/controllers/roles.rs:58:37
-   |
-58 |     let users_assigned = roles_list.load_many_to_many(crate::entities::usuarios::Entity, usuario_roles::Entity, &db).await
-   |                                     ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-   |
-help: the trait `sea_orm::Related<usuarios::Entity>` is not implemented for `entities::roles::Entity`
-  --> src/entities/roles.rs:5:35
-   |
- 5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-   |                                   ^^^^^^^^^^^^^^^^^
-   = help: the following other types implement trait `sea_orm::Related<R>`:
-             `entities::roles::Entity` implements `sea_orm::Related<rol_permisos::Entity>`
-             `entities::roles::Entity` implements `sea_orm::Related<usuario_roles::Entity>`
-note: required by a bound in `load_many_to_many`
-  --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/loader.rs:56:63
-   |
-43 |     async fn load_many_to_many<R, S, V, C>(
-   |              ----------------- required by a bound in this associated function
-...
-56 |         <<Self as LoaderTrait>::Model as ModelTrait>::Entity: Related<R>;
-   |                                                               ^^^^^^^^^^ required by this bound in `LoaderTrait::load_many_to_many`
-   = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `entities::orden_compra_repuesto::Model: serde::Serialize` is not satisfied
-   --> src/controllers/purchases.rs:98:42
-    |
- 98 |   ) -> Result<impl IntoResponse, AppError> {
-    |  __________________________________________^
- 99 | |     let orders = OrdenCompraRepuesto::find()
-100 | |         .order_by_desc(orden_compra_repuesto::Column::CreatedAt)
-101 | |         .all(&db)
-...   |
-104 | |     Ok(Json(orders))
-105 | | }
-    | |_^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::orden_compra_repuesto::Model`
-   --> src/entities/orden_compra_repuesto.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::orden_compra_repuesto::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `Vec<entities::orden_compra_repuesto::Model>` to implement `jwt::_::_serde::Serialize`
-    = note: required for `axum::Json<Vec<entities::orden_compra_repuesto::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `entities::orden_compra_repuesto::Model: serde::Serialize` is not satisfied
-  --> src/controllers/purchases.rs:98:13
-   |
-98 | ) -> Result<impl IntoResponse, AppError> {
-   |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::orden_compra_repuesto::Model`
-  --> src/entities/orden_compra_repuesto.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::orden_compra_repuesto::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `Vec<entities::orden_compra_repuesto::Model>` to implement `jwt::_::_serde::Serialize`
-   = note: required for `axum::Json<Vec<entities::orden_compra_repuesto::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `entities::compras_solicitudes::Model: serde::Serialize` is not satisfied
-   --> src/controllers/purchases.rs:109:42
-    |
-109 |   ) -> Result<impl IntoResponse, AppError> {
-    |  __________________________________________^
-110 | |     let requests = ComprasSolicitudes::find()
-111 | |         .order_by_desc(compras_solicitudes::Column::CreatedAt)
-112 | |         .all(&db)
-...   |
-115 | |     Ok(Json(requests))
-116 | | }
-    | |_^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::compras_solicitudes::Model`
-   --> src/entities/compras_solicitudes.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::compras_solicitudes::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `Vec<entities::compras_solicitudes::Model>` to implement `jwt::_::_serde::Serialize`
-    = note: required for `axum::Json<Vec<entities::compras_solicitudes::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `entities::compras_solicitudes::Model: serde::Serialize` is not satisfied
-   --> src/controllers/purchases.rs:109:13
-    |
-109 | ) -> Result<impl IntoResponse, AppError> {
-    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::compras_solicitudes::Model`
-   --> src/entities/compras_solicitudes.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::compras_solicitudes::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `Vec<entities::compras_solicitudes::Model>` to implement `jwt::_::_serde::Serialize`
-    = note: required for `axum::Json<Vec<entities::compras_solicitudes::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `(axum::http::StatusCode, axum::Json<entities::compras_solicitudes::Model>): IntoResponse` is not satisfied
-   --> src/controllers/purchases.rs:121:42
-    |
-121 |   ) -> Result<impl IntoResponse, AppError> {
-    |  __________________________________________^
-122 | |     let txn = db.begin().await?;
-123 | |
-124 | |     let new_request = compras_solicitudes::ActiveModel {
-...   |
-149 | |     Ok((StatusCode::CREATED, Json(inserted_request)))
-150 | | }
-    | |_^ the trait `IntoResponse` is not implemented for `(axum::http::StatusCode, axum::Json<entities::compras_solicitudes::Model>)`
-    |
-    = help: the following other types implement trait `IntoResponse`:
-              ()
-              (R,)
-              (T1, R)
-              (T1, T2, R)
-              (T1, T2, T3, R)
-              (T1, T2, T3, T4, R)
-              (T1, T2, T3, T4, T5, R)
-              (T1, T2, T3, T4, T5, T6, R)
-            and 61 others
-    = note: the full name for the type has been written to '/Users/cbailey/Documents/Proyectos/HotelA/backend/target/debug/deps/backend-966b599bb61ed5e6.long-type-3957684373545764490.txt'
-    = note: consider using `--verbose` to print the full type name to the console
-
-error[E0277]: the trait bound `(axum::http::StatusCode, axum::Json<entities::compras_solicitudes::Model>): IntoResponse` is not satisfied
-   --> src/controllers/purchases.rs:121:13
-    |
-121 | ) -> Result<impl IntoResponse, AppError> {
-    |             ^^^^^^^^^^^^^^^^^ the trait `IntoResponse` is not implemented for `(axum::http::StatusCode, axum::Json<entities::compras_solicitudes::Model>)`
-    |
-    = help: the following other types implement trait `IntoResponse`:
-              ()
-              (R,)
-              (T1, R)
-              (T1, T2, R)
-              (T1, T2, T3, R)
-              (T1, T2, T3, T4, R)
-              (T1, T2, T3, T4, T5, R)
-              (T1, T2, T3, T4, T5, T6, R)
-            and 61 others
-    = note: the full name for the type has been written to '/Users/cbailey/Documents/Proyectos/HotelA/backend/target/debug/deps/backend-966b599bb61ed5e6.long-type-3957684373545764490.txt'
-    = note: consider using `--verbose` to print the full type name to the console
-
-error[E0277]: the trait bound `entities::compras_solicitudes::Model: serde::Serialize` is not satisfied
-   --> src/controllers/purchases.rs:192:42
-    |
-192 |   ) -> Result<impl IntoResponse, AppError> {
-    |  __________________________________________^
-193 | |     let mut request: compras_solicitudes::ActiveModel = ComprasSolicitudes::find_by_id(id)
-194 | |         .one(&db)
-195 | |         .await?
-...   |
-203 | |     Ok(Json(updated_request))
-204 | | }
-    | |_^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::compras_solicitudes::Model`
-   --> src/entities/compras_solicitudes.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::compras_solicitudes::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `axum::Json<entities::compras_solicitudes::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `entities::compras_solicitudes::Model: serde::Serialize` is not satisfied
-   --> src/controllers/purchases.rs:192:13
-    |
-192 | ) -> Result<impl IntoResponse, AppError> {
-    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::compras_solicitudes::Model`
-   --> src/entities/compras_solicitudes.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::compras_solicitudes::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `axum::Json<entities::compras_solicitudes::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `(axum::http::StatusCode, axum::Json<entities::orden_compra_repuesto::Model>): IntoResponse` is not satisfied
-   --> src/controllers/purchases.rs:235:42
-    |
-235 |   ) -> Result<impl IntoResponse, AppError> {
-    |  __________________________________________^
-236 | |      let txn = db.begin().await?;
-237 | |
-238 | |     let request = ComprasSolicitudes::find_by_id(request_id)
-...   |
-281 | |     Ok((StatusCode::CREATED, Json(inserted_order)))
-282 | | }
-    | |_^ the trait `IntoResponse` is not implemented for `(axum::http::StatusCode, axum::Json<entities::orden_compra_repuesto::Model>)`
-    |
-    = help: the following other types implement trait `IntoResponse`:
-              ()
-              (R,)
-              (T1, R)
-              (T1, T2, R)
-              (T1, T2, T3, R)
-              (T1, T2, T3, T4, R)
-              (T1, T2, T3, T4, T5, R)
-              (T1, T2, T3, T4, T5, T6, R)
-            and 61 others
-    = note: the full name for the type has been written to '/Users/cbailey/Documents/Proyectos/HotelA/backend/target/debug/deps/backend-966b599bb61ed5e6.long-type-3957684373545764490.txt'
-    = note: consider using `--verbose` to print the full type name to the console
-
-error[E0277]: the trait bound `(axum::http::StatusCode, axum::Json<entities::orden_compra_repuesto::Model>): IntoResponse` is not satisfied
-   --> src/controllers/purchases.rs:235:13
-    |
-235 | ) -> Result<impl IntoResponse, AppError> {
-    |             ^^^^^^^^^^^^^^^^^ the trait `IntoResponse` is not implemented for `(axum::http::StatusCode, axum::Json<entities::orden_compra_repuesto::Model>)`
-    |
-    = help: the following other types implement trait `IntoResponse`:
-              ()
-              (R,)
-              (T1, R)
-              (T1, T2, R)
-              (T1, T2, T3, R)
-              (T1, T2, T3, T4, R)
-              (T1, T2, T3, T4, T5, R)
-              (T1, T2, T3, T4, T5, T6, R)
-            and 61 others
-    = note: the full name for the type has been written to '/Users/cbailey/Documents/Proyectos/HotelA/backend/target/debug/deps/backend-966b599bb61ed5e6.long-type-3957684373545764490.txt'
-    = note: consider using `--verbose` to print the full type name to the console
-
-error[E0277]: the trait bound `(axum::http::StatusCode, axum::Json<entities::orden_compra_repuesto::Model>): IntoResponse` is not satisfied
-   --> src/controllers/purchases.rs:287:42
-    |
-287 |   ) -> Result<impl IntoResponse, AppError> {
-    |  __________________________________________^
-288 | |      let txn = db.begin().await?;
-289 | |
-290 | |     let next_code = crate::utils::code_generator::generate_next_code(&txn, "orden_compra_repuesto", "codigo_compra", "OC-").await?;
-...   |
-323 | |     Ok((StatusCode::CREATED, Json(inserted_order)))
-324 | | }
-    | |_^ the trait `IntoResponse` is not implemented for `(axum::http::StatusCode, axum::Json<entities::orden_compra_repuesto::Model>)`
-    |
-    = help: the following other types implement trait `IntoResponse`:
-              ()
-              (R,)
-              (T1, R)
-              (T1, T2, R)
-              (T1, T2, T3, R)
-              (T1, T2, T3, T4, R)
-              (T1, T2, T3, T4, T5, R)
-              (T1, T2, T3, T4, T5, T6, R)
-            and 61 others
-    = note: the full name for the type has been written to '/Users/cbailey/Documents/Proyectos/HotelA/backend/target/debug/deps/backend-966b599bb61ed5e6.long-type-3957684373545764490.txt'
-    = note: consider using `--verbose` to print the full type name to the console
-
-error[E0277]: the trait bound `(axum::http::StatusCode, axum::Json<entities::orden_compra_repuesto::Model>): IntoResponse` is not satisfied
-   --> src/controllers/purchases.rs:287:13
-    |
-287 | ) -> Result<impl IntoResponse, AppError> {
-    |             ^^^^^^^^^^^^^^^^^ the trait `IntoResponse` is not implemented for `(axum::http::StatusCode, axum::Json<entities::orden_compra_repuesto::Model>)`
-    |
-    = help: the following other types implement trait `IntoResponse`:
-              ()
-              (R,)
-              (T1, R)
-              (T1, T2, R)
-              (T1, T2, T3, R)
-              (T1, T2, T3, T4, R)
-              (T1, T2, T3, T4, T5, R)
-              (T1, T2, T3, T4, T5, T6, R)
-            and 61 others
-    = note: the full name for the type has been written to '/Users/cbailey/Documents/Proyectos/HotelA/backend/target/debug/deps/backend-966b599bb61ed5e6.long-type-3957684373545764490.txt'
-    = note: consider using `--verbose` to print the full type name to the console
-
-error[E0277]: the trait bound `entities::orden_compra_detalle::Entity: sea_orm::Related<_>` is not satisfied
-   --> src/controllers/purchases.rs:337:28
-    |
-337 |         .find_also_related(ActivosRepuestos)
-    |          ----------------- ^^^^^^^^^^^^^^^^ unsatisfied trait bound
-    |          |
-    |          required by a bound introduced by this call
-    |
-help: the trait `sea_orm::Related<_>` is not implemented for `entities::orden_compra_detalle::Entity`
-   --> src/entities/orden_compra_detalle.rs:5:35
-    |
-  5 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-    |                                   ^^^^^^^^^^^^^^^^^
-    = help: the following other types implement trait `sea_orm::Related<R>`:
-              `activos_documentos::Entity` implements `sea_orm::Related<entities::activos_equipos::Entity>`
-              `auditoria_acciones::Entity` implements `sea_orm::Related<usuarios::Entity>`
-              `bodega_ubicaciones::Entity` implements `sea_orm::Related<bodegas::Entity>`
-              `bodega_ubicaciones::Entity` implements `sea_orm::Related<entities::activos_repuestos::Entity>`
-              `bodegas::Entity` implements `sea_orm::Related<bodega_ubicaciones::Entity>`
-              `bodegas::Entity` implements `sea_orm::Related<entities::activos_repuestos::Entity>`
-              `empresas::Entity` implements `sea_orm::Related<usuarios::Entity>`
-              `entities::activos_equipos::Entity` implements `sea_orm::Related<activos_documentos::Entity>`
-            and 52 others
-note: required by a bound in `sea_orm::query::join::<impl sea_orm::Select<E>>::find_also_related`
-   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/join.rs:52:12
-    |
- 49 |     pub fn find_also_related<R>(self, r: R) -> SelectTwo<E, R>
-    |            ----------------- required by a bound in this associated function
-...
- 52 |         E: Related<R>,
-    |            ^^^^^^^^^^ required by this bound in `sea_orm::query::join::<impl Select<E>>::find_also_related`
-    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `entities::orden_compra_repuesto::Model: serde::Serialize` is not satisfied
-   --> src/controllers/purchases.rs:422:42
-    |
-422 |   ) -> Result<impl IntoResponse, AppError> {
-    |  __________________________________________^
-423 | |     let order = OrdenCompraRepuesto::find_by_id(id)
-424 | |         .one(&db)
-425 | |         .await?
-...   |
-433 | |     Ok(Json(updated))
-434 | | }
-    | |_^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::orden_compra_repuesto::Model`
-   --> src/entities/orden_compra_repuesto.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::orden_compra_repuesto::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `axum::Json<entities::orden_compra_repuesto::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `entities::orden_compra_repuesto::Model: serde::Serialize` is not satisfied
-   --> src/controllers/purchases.rs:422:13
-    |
-422 | ) -> Result<impl IntoResponse, AppError> {
-    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::orden_compra_repuesto::Model`
-   --> src/entities/orden_compra_repuesto.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::orden_compra_repuesto::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `axum::Json<entities::orden_compra_repuesto::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `config_empresa::Model: serde::Serialize` is not satisfied
-   --> src/controllers/settings.rs:109:54
-    |
-109 |   ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    |  ______________________________________________________^
-110 | |     let settings = config_empresa::Entity::find().one(&db).await
-111 | |         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-...   |
-114 | | }
-    | |_^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `config_empresa::Model`
-   --> src/entities/config_empresa.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `config_empresa::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `std::option::Option<config_empresa::Model>` to implement `jwt::_::_serde::Serialize`
-    = note: required for `axum::Json<std::option::Option<config_empresa::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `config_empresa::Model: serde::Serialize` is not satisfied
-   --> src/controllers/settings.rs:109:13
-    |
-109 | ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-    |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `config_empresa::Model`
-   --> src/entities/config_empresa.rs:7:1
-    |
-  7 | pub struct Model {
-    | ^^^^^^^^^^^^^^^^
-    = note: for local types consider adding `#[derive(serde::Serialize)]` to your `config_empresa::Model` type
-    = note: for types from other crates check whether the crate offers a `serde` feature flag
-    = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-              &'a T
-              &'a mut T
-              ()
-              (T,)
-              (T0, T1)
-              (T0, T1, T2)
-              (T0, T1, T2, T3)
-              (T0, T1, T2, T3, T4)
-            and 242 others
-    = note: required for `std::option::Option<config_empresa::Model>` to implement `jwt::_::_serde::Serialize`
-    = note: required for `axum::Json<std::option::Option<config_empresa::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `marcas::Model: serde::Serialize` is not satisfied
-  --> src/controllers/brands.rs:8:54
-   |
- 8 |   ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |  ______________________________________________________^
- 9 | |     let brands = marcas::Entity::find()
-10 | |         .order_by_asc(marcas::Column::Nombre)
-11 | |         .all(&db)
-...  |
-15 | |     Ok(Json(brands))
-16 | | }
-   | |_^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `marcas::Model`
-  --> src/entities/marcas.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `marcas::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `Vec<marcas::Model>` to implement `jwt::_::_serde::Serialize`
-   = note: required for `axum::Json<Vec<marcas::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `marcas::Model: serde::Serialize` is not satisfied
- --> src/controllers/brands.rs:8:13
+warning: unused import: `Related`
+ --> src/controllers/purchase_quotes.rs:2:101
   |
-8 | ) -> Result<impl IntoResponse, (StatusCode, String)> {
-  |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, TransactionTrait, QueryOrder, Related, QueryFilter, ColumnTrait};
+  |                                                                                                     ^^^^^^^
+
+warning: unused import: `sea_orm::prelude::Decimal`
+ --> src/controllers/purchase_quotes.rs:5:5
   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `marcas::Model`
- --> src/entities/marcas.rs:7:1
-  |
-7 | pub struct Model {
-  | ^^^^^^^^^^^^^^^^
-  = note: for local types consider adding `#[derive(serde::Serialize)]` to your `marcas::Model` type
-  = note: for types from other crates check whether the crate offers a `serde` feature flag
-  = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-            &'a T
-            &'a mut T
-            ()
-            (T,)
-            (T0, T1)
-            (T0, T1, T2)
-            (T0, T1, T2, T3)
-            (T0, T1, T2, T3, T4)
-          and 242 others
-  = note: required for `Vec<marcas::Model>` to implement `jwt::_::_serde::Serialize`
-  = note: required for `axum::Json<Vec<marcas::Model>>` to implement `IntoResponse`
+5 | use sea_orm::prelude::Decimal;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error[E0277]: the trait bound `marcas::Model: serde::Serialize` is not satisfied
-  --> src/controllers/brands.rs:28:54
-   |
-28 |   ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |  ______________________________________________________^
-29 | |     let new_brand = marcas::ActiveModel {
-30 | |         nombre: Set(payload.nombre.clone()),
-31 | |         descripcion: Set(payload.descripcion.clone()),
-...  |
-48 | |     Ok(Json(res))
-49 | | }
-   | |_^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `marcas::Model`
-  --> src/entities/marcas.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `marcas::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `axum::Json<marcas::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `marcas::Model: serde::Serialize` is not satisfied
-  --> src/controllers/brands.rs:28:13
-   |
-28 | ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `marcas::Model`
-  --> src/entities/marcas.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `marcas::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `axum::Json<marcas::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `marcas::Model: serde::Serialize` is not satisfied
-  --> src/controllers/brands.rs:56:54
-   |
-56 |   ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |  ______________________________________________________^
-57 | |     let item = marcas::Entity::find_by_id(id)
-58 | |         .one(&db)
-59 | |         .await
-...  |
-80 | |     Ok(Json(updated))
-81 | | }
-   | |_^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `marcas::Model`
-  --> src/entities/marcas.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `marcas::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `axum::Json<marcas::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `marcas::Model: serde::Serialize` is not satisfied
-  --> src/controllers/brands.rs:56:13
-   |
-56 | ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `marcas::Model`
-  --> src/entities/marcas.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `marcas::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `axum::Json<marcas::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `bodegas::Model: serde::Serialize` is not satisfied
-  --> src/controllers/warehouses.rs:7:54
-   |
- 7 |   ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |  ______________________________________________________^
- 8 | |     let warehouses = bodegas::Entity::find()
- 9 | |         .order_by_asc(bodegas::Column::Nombre)
-10 | |         .all(&db)
-...  |
-14 | |     Ok(Json(warehouses))
-15 | | }
-   | |_^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `bodegas::Model`
-  --> src/entities/bodegas.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `bodegas::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `Vec<bodegas::Model>` to implement `jwt::_::_serde::Serialize`
-   = note: required for `axum::Json<Vec<bodegas::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `bodegas::Model: serde::Serialize` is not satisfied
- --> src/controllers/warehouses.rs:7:13
-  |
-7 | ) -> Result<impl IntoResponse, (StatusCode, String)> {
-  |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-  |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `bodegas::Model`
- --> src/entities/bodegas.rs:7:1
-  |
-7 | pub struct Model {
-  | ^^^^^^^^^^^^^^^^
-  = note: for local types consider adding `#[derive(serde::Serialize)]` to your `bodegas::Model` type
-  = note: for types from other crates check whether the crate offers a `serde` feature flag
-  = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-            &'a T
-            &'a mut T
-            ()
-            (T,)
-            (T0, T1)
-            (T0, T1, T2)
-            (T0, T1, T2, T3)
-            (T0, T1, T2, T3, T4)
-          and 242 others
-  = note: required for `Vec<bodegas::Model>` to implement `jwt::_::_serde::Serialize`
-  = note: required for `axum::Json<Vec<bodegas::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `bodegas::Model: serde::Serialize` is not satisfied
-  --> src/controllers/warehouses.rs:27:54
-   |
-27 |   ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |  ______________________________________________________^
-28 | |     let new_warehouse = bodegas::ActiveModel {
-29 | |         nombre: Set(payload.nombre),
-30 | |         ubicacion: Set(payload.ubicacion),
-...  |
-38 | |     Ok(Json(res))
-39 | | }
-   | |_^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `bodegas::Model`
-  --> src/entities/bodegas.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `bodegas::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `axum::Json<bodegas::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `bodegas::Model: serde::Serialize` is not satisfied
-  --> src/controllers/warehouses.rs:27:13
-   |
-27 | ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `bodegas::Model`
-  --> src/entities/bodegas.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `bodegas::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `axum::Json<bodegas::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `bodegas::Model: serde::Serialize` is not satisfied
-  --> src/controllers/warehouses.rs:45:54
-   |
-45 |   ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |  ______________________________________________________^
-46 | |     let mut warehouse: bodegas::ActiveModel = bodegas::Entity::find_by_id(id)
-47 | |         .one(&db)
-48 | |         .await
-...  |
-60 | |     Ok(Json(updated))
-61 | | }
-   | |_^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `bodegas::Model`
-  --> src/entities/bodegas.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `bodegas::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `axum::Json<bodegas::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `bodegas::Model: serde::Serialize` is not satisfied
-  --> src/controllers/warehouses.rs:45:13
-   |
-45 | ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `bodegas::Model`
-  --> src/entities/bodegas.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `bodegas::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `axum::Json<bodegas::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `bodega_ubicaciones::Model: serde::Serialize` is not satisfied
-  --> src/controllers/warehouse_locations.rs:8:54
-   |
- 8 |   ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |  ______________________________________________________^
- 9 | |     let locations = bodega_ubicaciones::Entity::find()
-10 | |         .filter(bodega_ubicaciones::Column::BodegaId.eq(bodega_id))
-11 | |         .order_by_asc(bodega_ubicaciones::Column::Nombre)
-...  |
-16 | |     Ok(Json(locations))
-17 | | }
-   | |_^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `bodega_ubicaciones::Model`
-  --> src/entities/bodega_ubicaciones.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `bodega_ubicaciones::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `Vec<bodega_ubicaciones::Model>` to implement `jwt::_::_serde::Serialize`
-   = note: required for `axum::Json<Vec<bodega_ubicaciones::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `bodega_ubicaciones::Model: serde::Serialize` is not satisfied
- --> src/controllers/warehouse_locations.rs:8:13
-  |
-8 | ) -> Result<impl IntoResponse, (StatusCode, String)> {
-  |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-  |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `bodega_ubicaciones::Model`
- --> src/entities/bodega_ubicaciones.rs:7:1
-  |
-7 | pub struct Model {
-  | ^^^^^^^^^^^^^^^^
-  = note: for local types consider adding `#[derive(serde::Serialize)]` to your `bodega_ubicaciones::Model` type
-  = note: for types from other crates check whether the crate offers a `serde` feature flag
-  = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-            &'a T
-            &'a mut T
-            ()
-            (T,)
-            (T0, T1)
-            (T0, T1, T2)
-            (T0, T1, T2, T3)
-            (T0, T1, T2, T3, T4)
-          and 242 others
-  = note: required for `Vec<bodega_ubicaciones::Model>` to implement `jwt::_::_serde::Serialize`
-  = note: required for `axum::Json<Vec<bodega_ubicaciones::Model>>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `bodega_ubicaciones::Model: serde::Serialize` is not satisfied
-  --> src/controllers/warehouse_locations.rs:29:54
-   |
-29 |   ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |  ______________________________________________________^
-30 | |     let new_location = bodega_ubicaciones::ActiveModel {
-31 | |         bodega_id: Set(bodega_id),
-32 | |         nombre: Set(payload.nombre),
-...  |
-40 | |     Ok(Json(res))
-41 | | }
-   | |_^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `bodega_ubicaciones::Model`
-  --> src/entities/bodega_ubicaciones.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `bodega_ubicaciones::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `axum::Json<bodega_ubicaciones::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `bodega_ubicaciones::Model: serde::Serialize` is not satisfied
-  --> src/controllers/warehouse_locations.rs:29:13
-   |
-29 | ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `bodega_ubicaciones::Model`
-  --> src/entities/bodega_ubicaciones.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `bodega_ubicaciones::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `axum::Json<bodega_ubicaciones::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `bodega_ubicaciones::Model: serde::Serialize` is not satisfied
-  --> src/controllers/warehouse_locations.rs:47:54
-   |
-47 |   ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |  ______________________________________________________^
-48 | |     let mut location: bodega_ubicaciones::ActiveModel = bodega_ubicaciones::Entity::find_by_id(id)
-49 | |         .one(&db)
-50 | |         .await
-...  |
-61 | |     Ok(Json(updated))
-62 | | }
-   | |_^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `bodega_ubicaciones::Model`
-  --> src/entities/bodega_ubicaciones.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `bodega_ubicaciones::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `axum::Json<bodega_ubicaciones::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `bodega_ubicaciones::Model: serde::Serialize` is not satisfied
-  --> src/controllers/warehouse_locations.rs:47:13
-   |
-47 | ) -> Result<impl IntoResponse, (StatusCode, String)> {
-   |             ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
-   |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `bodega_ubicaciones::Model`
-  --> src/entities/bodega_ubicaciones.rs:7:1
-   |
- 7 | pub struct Model {
-   | ^^^^^^^^^^^^^^^^
-   = note: for local types consider adding `#[derive(serde::Serialize)]` to your `bodega_ubicaciones::Model` type
-   = note: for types from other crates check whether the crate offers a `serde` feature flag
-   = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-             &'a T
-             &'a mut T
-             ()
-             (T,)
-             (T0, T1)
-             (T0, T1, T2)
-             (T0, T1, T2, T3)
-             (T0, T1, T2, T3, T4)
-           and 242 others
-   = note: required for `axum::Json<bodega_ubicaciones::Model>` to implement `IntoResponse`
-
-error[E0277]: the trait bound `entities::activos_equipos::Model: serde::Serialize` is not satisfied
-    --> src/controllers/work_orders.rs:34:10
-     |
-  34 | #[derive(Serialize)]
-     |          ^^^^^^^^^ unsatisfied trait bound
-...
-  48 |     pub activo: Option<activos_equipos::Model>,
-     |     --- required by a bound introduced by this call
-     |
-help: the trait `jwt::_::_serde::Serialize` is not implemented for `entities::activos_equipos::Model`
-    --> src/entities/activos_equipos.rs:7:1
-     |
-   7 | pub struct Model {
-     | ^^^^^^^^^^^^^^^^
-     = note: for local types consider adding `#[derive(serde::Serialize)]` to your `entities::activos_equipos::Model` type
-     = note: for types from other crates check whether the crate offers a `serde` feature flag
-     = help: the following other types implement trait `jwt::_::_serde::Serialize`:
-               &'a T
-               &'a mut T
-               ()
-               (T,)
-               (T0, T1)
-               (T0, T1, T2)
-               (T0, T1, T2, T3)
-               (T0, T1, T2, T3, T4)
-             and 242 others
-     = note: required for `std::option::Option<entities::activos_equipos::Model>` to implement `jwt::_::_serde::Serialize`
-note: required by a bound in `jwt::_::_serde::ser::SerializeStruct::serialize_field`
-    --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_core-1.0.228/src/ser/mod.rs:1917:21
-     |
-1915 |     fn serialize_field<T>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error>
-     |        --------------- required by a bound in this associated function
-1916 |     where
-1917 |         T: ?Sized + Serialize;
-     |                     ^^^^^^^^^ required by this bound in `SerializeStruct::serialize_field`
-     = note: this error originates in the derive macro `Serialize` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-Some errors have detailed explanations: E0214, E0277, E0308, E0425, E0432, E0433, E0599, E0609.
-For more information about an error, try `rustc --explain E0214`.
-warning: `backend` (bin "backend") generated 50 warnings
-error: could not compile `backend` (bin "backend") due to 71 previous errors; 50 warnings emitted
+For more information about this error, try `rustc --explain E0433`.
+warning: `backend` (bin "backend") generated 55 warnings
+error: could not compile `backend` (bin "backend") due to 1 previous error; 55 warnings emitted

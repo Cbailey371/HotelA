@@ -45,6 +45,16 @@ mod m20260131_090000_fix_admin_password;
 mod m20260131_114000_seed_new_modules_permissions;
 pub mod m20260211_170000_field_permissions;
 pub mod m20260211_180000_fix_field_permissions_module;
+mod m20260211_200000_create_purchase_invoices;
+mod m20260207_120000_link_maintenance_to_ot;
+mod m20260207_233929_create_feriados_pa_table;
+mod m20260207_235500_seed_holidays_permissions;
+mod m20260212_012712_flexibilize_purchase_invoices;
+mod m20260212_999999_reset_admin_password;
+mod m20260212_044302_create_purchase_quotes;
+mod m20260212_044420_seed_quotes_permissions;
+mod m20260212_200000_add_sku_and_part_assets;
+mod m20260213_000000_update_rbac_v2;
 
 pub struct Migrator;
 
@@ -94,15 +104,19 @@ impl MigratorTrait for Migrator {
             Box::new(m20260129_152408_add_scheduling_fields_to_reports::Migration),
             Box::new(m20260131_090000_fix_admin_password::Migration),
             Box::new(m20260131_114000_seed_new_modules_permissions::Migration),
+            Box::new(m20260211_170000_field_permissions::Migration),
+            Box::new(m20260211_180000_fix_field_permissions_module::Migration),
+            Box::new(m20260211_200000_create_purchase_invoices::Migration),
             Box::new(m20260207_120000_link_maintenance_to_ot::Migration),
             Box::new(m20260207_233929_create_feriados_pa_table::Migration),
             Box::new(m20260207_235500_seed_holidays_permissions::Migration),
-            Box::new(m20260211_170000_field_permissions::Migration),
-            Box::new(m20260211_180000_fix_field_permissions_module::Migration),
+            Box::new(m20260212_012712_flexibilize_purchase_invoices::Migration),
+            Box::new(m20260212_999999_reset_admin_password::Migration),
+            Box::new(m20260212_044302_create_purchase_quotes::Migration),
+            Box::new(m20260212_044420_seed_quotes_permissions::Migration),
+            Box::new(m20260212_200000_add_sku_and_part_assets::Migration),
+            Box::new(m20260213_000000_update_rbac_v2::Migration),
         ]
     }
 }
-mod m20260207_120000_link_maintenance_to_ot;
-mod m20260207_233929_create_feriados_pa_table;
-mod m20260207_235500_seed_holidays_permissions;
 

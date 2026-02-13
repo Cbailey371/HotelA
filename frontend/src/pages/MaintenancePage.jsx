@@ -96,7 +96,6 @@ const MaintenancePage = () => {
             setInventory(iRes?.data || []); // New state
             setUsers(uRes?.data || []);
         } catch (error) {
-            console.error("Error loading maintenance data", error);
         } finally {
             setLoading(false);
         }
@@ -243,12 +242,9 @@ const MaintenancePage = () => {
             const res = await api.post(`/maintenance/execute/${selectedSchedule.id}`, payload);
             setShowExecuteModal(false);
             setIsDirty(false);
-            console.log('Ejecución registrada correctamente');
             alert(res.data); // Show detailed message from backend
             fetchAllData();
         } catch (error) {
-            console.error("Error executing maintenance:", error);
-            alert("Error al registrar la ejecución: " + (error.response?.data || error.message));
         }
     };
 
@@ -269,8 +265,6 @@ const MaintenancePage = () => {
             alert('Orden de Trabajo generada exitosamente');
             fetchAllData();
         } catch (error) {
-            console.error("Error creating work order:", error);
-            alert('Error al crear la orden de trabajo');
         }
     };
 
@@ -302,8 +296,6 @@ const MaintenancePage = () => {
             setSelectedIds([]); // Clear selection
             fetchAllData();
         } catch (error) {
-            console.error("Error creating bulk work order:", error);
-            alert('Error al crear la orden de trabajo masiva');
         }
     };
 

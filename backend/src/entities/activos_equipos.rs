@@ -67,6 +67,8 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Usuarios,
+    #[sea_orm(has_many = "super::repuestos_equipos::Entity")]
+    RepuestosEquipos,
 }
 
 impl Related<super::activos_documentos::Entity> for Entity {
@@ -104,5 +106,20 @@ impl Related<super::usuarios::Entity> for Entity {
         Relation::Usuarios.def()
     }
 }
+
+
+
+impl Related<super::activos_repuestos::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::repuestos_equipos::Relation::ActivosRepuestos.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::repuestos_equipos::Relation::ActivosEquipos.def().rev())
+    }
+}
+
+
+
+
 
 impl ActiveModelBehavior for ActiveModel {}

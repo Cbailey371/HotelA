@@ -21,3 +21,6 @@ pub mod brands;
 pub mod warehouses;
 pub mod warehouse_locations;
 pub mod backup;
+pub mod purchase_invoices;
+pub mod purchase_quotes;
+pub mod notifications;

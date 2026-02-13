@@ -76,6 +76,15 @@ const ReportSelection = ({ onSelect }) => {
             color: 'text-pink-500',
             bg: 'bg-pink-50 dark:bg-pink-900/20',
             borderColor: 'hover:border-pink-500/50'
+        },
+        {
+            id: 'SugeridoCompra',
+            title: 'Sugerido de Compra',
+            description: 'Repuestos bajo el stock mínimo.',
+            icon: ShoppingCart,
+            color: 'text-red-500',
+            bg: 'bg-red-50 dark:bg-red-900/20',
+            borderColor: 'hover:border-red-500/50'
         }
     ];
 

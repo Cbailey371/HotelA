@@ -22,13 +22,19 @@ Antes de tener stock, debe existir la ficha de la parte.
 2.  Clic en **"+ Nuevo Ítem"**.
 3.  Datos Clave:
     -   **Nombre**: Descripción clara (ej. "Filtro de Aceite 5W30").
-    -   **SKU / Código**: Código interno o del fabricante (ej. `FIL-001`).
+    -   **SKU / Código**: Código único de identificación (Stock Keeping Unit). Indispensable para el escaneo y control de inventario.
     -   **Categoría**: Eléctrico, Mecánico, Plomería, Insumos.
     -   **Unidad**: Pieza, Litro, Metro, Caja.
     -   **Stock Mínimo / Máximo**: Niveles para alertas de re-compra.
     -   **Ubicación**: Pasillo, Estante, Nivel (ej. "A-04-B").
 
-### 1.3. Movimientos de Stock
+### 1.3. Compatibilidad con Activos (Equipos)
+A diferencia de versiones anteriores, un mismo repuesto puede estar vinculado a **múltiples activos**.
+-   En la ficha del repuesto, utilice el selector de **"Activos Relacionados"**.
+-   Puede buscar y añadir todos los equipos que utilicen esa misma parte.
+-   Esto facilita la búsqueda de repuestos específicos cuando se está trabajando en una Orden de Trabajo de un equipo particular.
+
+### 1.4. Movimientos de Stock
 El stock nunca se edita "a mano" (salvo ajustes), se mueve por transacciones.
 
 #### A. Entradas (Compras)

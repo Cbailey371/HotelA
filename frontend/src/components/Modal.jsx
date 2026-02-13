@@ -67,8 +67,25 @@ const Modal = ({
                         </button>
                     </div>
 
-                    <div className="p-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                    <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
                         {children}
+                    </div>
+
+                    <div className="p-6 border-t border-slate-100 dark:border-slate-800 flex justify-end items-center gap-3">
+                        <button
+                            onClick={onClose}
+                            className="px-6 py-2 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                        >
+                            Cancelar
+                        </button>
+                        {onSave && (
+                            <button
+                                onClick={handleSave}
+                                className="px-6 py-2 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 transition-all"
+                            >
+                                Guardar Cambios
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

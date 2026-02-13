@@ -10,6 +10,7 @@ import {
     deleteScheduledReport,
     executeScheduledReport
 } from '../services/reportsService';
+import api from '../services/api';
 import { getCategories } from '../services/assetConfigService';
 import Modal from '../components/Modal';
 import ReportSelection from '../components/reports/ReportSelection';
@@ -42,9 +43,32 @@ const ReportsPage = () => {
         dynamic_date_range: ''
     });
 
+    const [previewData, setPreviewData] = useState(null);
+    const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+
     useEffect(() => {
         fetchData();
     }, []);
+
+    const handlePreview = async () => {
+        setIsPreviewLoading(true);
+        setPreviewData(null);
+        try {
+            const res = await api.post('/reports/generate', {
+                report_type: newReport.tipo_reporte,
+                filters: {
+                    dynamic_date_range: newReport.dynamic_date_range,
+                    conditions: [] // Modal doesn't have custom conditions yet, using type-specific filter
+                }
+            });
+            setPreviewData(res.data);
+        } catch (error) {
+            console.error("Error generating preview:", error);
+            alert("Error al cargar la vista previa");
+        } finally {
+            setIsPreviewLoading(false);
+        }
+    };
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -294,6 +318,7 @@ const ReportsPage = () => {
                                 <option value="OrdenesCompra">Ordenes de Compra</option>
                                 <option value="OrdenesTrabajo">Ordenes de Trabajo</option>
                                 <option value="ProveedoresTecnicos">Proveedores</option>
+                                <option value="SugeridoCompra">Sugerido de Compra</option>
                             </select>
                         </div>
                         <div>
@@ -305,6 +330,51 @@ const ReportsPage = () => {
                             </select>
                         </div>
                     </div>
+
+                    {/* Preview Section */}
+                    <div className="pt-2">
+                        <button
+                            type="button"
+                            onClick={handlePreview}
+                            disabled={isPreviewLoading}
+                            className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-xs uppercase tracking-widest hover:underline"
+                        >
+                            <Clock className="w-4 h-4" /> {isPreviewLoading ? 'Cargando...' : 'Ver Vista Previa del Reporte'}
+                        </button>
+
+                        {previewData && (
+                            <div className="mt-4 border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/50">
+                                <div className="max-h-[200px] overflow-auto text-[10px]">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0">
+                                            <tr>
+                                                {previewData.length > 0 && Object.keys(previewData[0]).map(k => (
+                                                    <th key={k} className="px-3 py-2 font-black uppercase text-slate-400">{k}</th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                            {previewData.length > 0 ? previewData.slice(0, 5).map((row, i) => (
+                                                <tr key={i}>
+                                                    {Object.values(row).map((v, j) => (
+                                                        <td key={j} className="px-3 py-2 text-slate-600 dark:text-slate-400 truncate max-w-[100px]">{String(v)}</td>
+                                                    ))}
+                                                </tr>
+                                            )) : (
+                                                <tr><td className="p-4 text-center text-slate-400" colSpan="10">No hay datos para mostrar</td></tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {previewData.length > 5 && (
+                                    <div className="p-2 text-center text-[9px] text-slate-400 font-bold border-t border-slate-100 dark:border-slate-800">
+                                        + {previewData.length - 5} registros más...
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
                     {/* Dynamic Range */}
                     <div>
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Rango Dinámico</label>

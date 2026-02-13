@@ -73,6 +73,15 @@ Si se rompe algo inesperadamente:
 2.  Clic en **"+ Nueva OT Correctiva"**.
 3.  Seleccione el Activo, describa la falla y asigne al técnico de urgencia.
 
+### 2.4. Envío de OT por Correo Electrónico
+Puede notificar formalmente a los técnicos o proveedores externos:
+1.  En el listado o detalle de la OT, haga clic en el icono de **"Enviar por Correo" (Carta)**.
+2.  Se abrirá un modal donde podrá:
+    -   Verificar y editar el **Destinatario**.
+    -   Añadir múltiples correos separados por coma (ej. `tecnico@empresa.com, supervisor@empresa.com`).
+3.  El sistema adjuntará automáticamente el **PDF de la Orden de Trabajo**.
+4.  Confirme el envío. El sistema le notificará si el correo fue enviado exitosamente.
+
 ---
 
 ## 3. Gestión de Técnicos
