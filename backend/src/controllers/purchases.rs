@@ -7,8 +7,10 @@ use axum::{
 use sea_orm::{prelude::*, QueryOrder, TransactionTrait, Set};
 use serde::{Deserialize, Serialize};
 use chrono::prelude::*;
+use chrono::{Local, NaiveDate};
 use crate::entities::{inventario_movimientos, *};
-use crate::utils::error::AppError;
+use crate::utils::{error::AppError, audit};
+use crate::utils::jwt::Claims;
 
 #[derive(Serialize)]
 pub struct PurchaseRequestDto {
@@ -134,6 +136,7 @@ pub async fn get_requests(
 
 pub async fn create_request(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Json(payload): Json<CreatePurchaseRequestDto>,
 ) -> Result<impl IntoResponse, AppError> {
     let txn = db.begin().await?;
@@ -141,7 +144,7 @@ pub async fn create_request(
     let new_request = compras_solicitudes::ActiveModel {
         solicitante_id: Set(payload.solicitante_id),
         fecha_solicitud: Set(payload.fecha_solicitud),
-        motivo: Set(payload.motivo),
+        motivo: Set(payload.motivo.clone()),
         estado: Set("PENDIENTE".to_string()),
         prioridad: Set(payload.prioridad),
         ..Default::default()
@@ -160,6 +163,15 @@ pub async fn create_request(
         };
         new_detail.insert(&txn).await?;
     }
+    audit::log_action(
+        &txn,
+        claims.user_id,
+        "CREATE_REQUEST",
+        "compras_solicitudes",
+        Some(request_id),
+        Some(format!("Solicitud de compra creada: {}", payload.motivo)),
+        None,
+    ).await;
 
     txn.commit().await?;
 
@@ -204,6 +216,7 @@ pub async fn get_request_by_id(
 
 pub async fn update_request_status(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Path(id): Path<i32>,
     Json(payload): Json<UpdatePurchaseRequestStatusDto>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -213,9 +226,19 @@ pub async fn update_request_status(
         .ok_or_else(|| AppError::NotFound("Request not found".to_string()))?
         .into();
 
-    request.estado = Set(payload.estado);
+    request.estado = Set(payload.estado.clone());
 
     let updated_request = request.update(&db).await?;
+
+    audit::log_action(
+        &db,
+        claims.user_id,
+        "UPDATE_REQUEST_STATUS",
+        "compras_solicitudes",
+        Some(id),
+        Some(format!("Estado de solicitud {} cambiado a: {}", id, updated_request.estado)),
+        None,
+    ).await;
 
     Ok(Json(updated_request))
 }
@@ -247,6 +270,7 @@ pub struct CreateDirectOrderDto {
 
 pub async fn create_order_from_request(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Path(request_id): Path<i32>,
     Json(payload): Json<CreateOrderFromRequestDto>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -289,9 +313,15 @@ pub async fn create_order_from_request(
         }
     }
 
-    let mut request_active: compras_solicitudes::ActiveModel = request.into();
-    request_active.estado = Set("PROCESADA".to_string());
-    request_active.update(&txn).await?;
+    audit::log_action(
+        &txn,
+        claims.user_id,
+        "CREATE_ORDER_FROM_REQUEST",
+        "orden_compra_repuesto",
+        Some(inserted_order.id_orden_compra),
+        Some(format!("Orden de compra generada desde solicitud {}", request_id)),
+        None,
+    ).await;
 
     txn.commit().await?;
 
@@ -300,6 +330,7 @@ pub async fn create_order_from_request(
 
 pub async fn create_direct_order(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Json(payload): Json<CreateDirectOrderDto>,
 ) -> Result<impl IntoResponse, AppError> {
      let txn = db.begin().await?;
@@ -334,6 +365,16 @@ pub async fn create_direct_order(
         };
         new_order_detail.insert(&txn).await?;
     }
+
+    audit::log_action(
+        &txn,
+        claims.user_id,
+        "CREATE_ORDER",
+        "orden_compra_repuesto",
+        Some(inserted_order.id_orden_compra),
+        Some(format!("Orden de compra directa creada: {}", inserted_order.codigo_compra.clone().unwrap_or_default())),
+        None,
+    ).await;
 
     txn.commit().await?;
 
@@ -444,6 +485,7 @@ pub async fn update_order(
 
 pub async fn update_order_status(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Path(id): Path<i32>,
     Json(payload): Json<UpdatePurchaseRequestStatusDto>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -454,9 +496,19 @@ pub async fn update_order_status(
 
     let mut order: orden_compra_repuesto::ActiveModel = order.into();
     tracing::info!("Updating order {} status to: {}", id, payload.estado);
-    order.estado = Set(Some(payload.estado));
+    order.estado = Set(Some(payload.estado.clone()));
 
     let updated = order.update(&db).await?;
+
+    audit::log_action(
+        &db,
+        claims.user_id,
+        "UPDATE_ORDER_STATUS",
+        "orden_compra_repuesto",
+        Some(id),
+        Some(format!("Estado de orden {} cambiado a: {}", id, payload.estado)),
+        None,
+    ).await;
 
     Ok(Json(updated))
 }
@@ -586,7 +638,18 @@ pub async fn receive_order_items(
         order_active.estado_recepcion = Set(Some("PENDIENTE".to_string()));
     }
 
-    order_active.update(&txn).await?;
+    let updated_order = order_active.clone().update(&txn).await?;
+
+    audit::log_action(
+        &txn,
+        claims.user_id,
+        "RECEIVE_ORDER",
+        "orden_compra_repuesto",
+        Some(order_id),
+        Some(format!("Recepción de orden {}: {}", order_id, updated_order.estado_recepcion.clone().unwrap_or_default())),
+        None,
+    ).await;
+
     txn.commit().await?;
 
     Ok(StatusCode::OK)
@@ -660,6 +723,16 @@ pub async fn send_order_email(
         active.estado = Set(Some("ENVIADA".to_string()));
         active.update(&db).await?;
     }
+
+    audit::log_action(
+        &db,
+        claims.user_id,
+        "SEND_ORDER_EMAIL",
+        "orden_compra_repuesto",
+        Some(id),
+        Some(format!("Orden de compra {} enviada a: {}", id, final_to)),
+        None,
+    ).await;
 
     Ok(Json("Email sent successfully".to_string()))
 }

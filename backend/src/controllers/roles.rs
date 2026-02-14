@@ -1,7 +1,8 @@
-use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode};
+use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode, Extension};
 use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, LoaderTrait};
 use serde::{Deserialize, Serialize};
 use crate::entities::{roles, permisos, rol_permisos, usuario_roles};
+use crate::utils::{audit, jwt::Claims};
 
 #[derive(Serialize)]
 pub struct PermissionDto {
@@ -78,6 +79,7 @@ pub async fn get_roles(
 
 pub async fn create_role(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Json(payload): Json<CreateRoleRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     // 1. Create Role
@@ -107,11 +109,22 @@ pub async fn create_role(
     // Returning simple confirmation or ID is often enough, checking implementation plan... 
     // Plan doesn't specify return, but JSON is good.
     
+    audit::log_action(
+        &db,
+        claims.user_id,
+        "CREATE",
+        "roles",
+        Some(inserted_role.id_rol),
+        Some(format!("Rol creado: {}", inserted_role.nombre_rol)),
+        None,
+    ).await;
+
     Ok(Json(inserted_role.id_rol))
 }
 
 pub async fn update_role(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Path(id): Path<i32>,
     Json(payload): Json<CreateRoleRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
@@ -144,11 +157,22 @@ pub async fn update_role(
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     }
 
+    audit::log_action(
+        &db,
+        claims.user_id,
+        "UPDATE",
+        "roles",
+        Some(id),
+        Some(format!("Rol actualizado ID: {}", id)),
+        None,
+    ).await;
+
     Ok(Json("Role updated"))
 }
 
 pub async fn delete_role(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     // Check if roles has users assigned? DB constraints might handle this, but friendly error is better.
@@ -163,8 +187,15 @@ pub async fn delete_role(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     // Delete role
-    roles::Entity::delete_by_id(id).exec(&db).await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    audit::log_action(
+        &db,
+        claims.user_id,
+        "DELETE",
+        "roles",
+        Some(id),
+        Some(format!("Rol eliminado ID: {}", id)),
+        None,
+    ).await;
 
     Ok(Json("Role deleted"))
 }

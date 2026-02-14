@@ -1,8 +1,8 @@
-use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode};
+use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode, Extension};
 use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, LoaderTrait};
 use serde::{Deserialize, Serialize};
 use crate::entities::{usuarios, roles, usuario_roles};
-use crate::utils::hash;
+use crate::utils::{hash, audit, error::AppError, jwt::Claims};
 
 #[derive(Deserialize)]
 pub struct CreateUserRequest {
@@ -33,6 +33,7 @@ pub struct UserDto {
 
 pub async fn create_user(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Json(payload): Json<CreateUserRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let hashed_password = hash::hash_password(&payload.password)
@@ -93,15 +94,25 @@ pub async fn create_user(
         // Admin sees the password in the UI anyway.
     }
 
+    audit::log_action(
+        &db,
+        claims.user_id,
+        "CREATE",
+        "usuarios",
+        Some(user.id_usuario),
+        Some(format!("Usuario creado: {}", user.usuario)),
+        None,
+    ).await;
+
     Ok(Json(UserDto {
         id: user.id_usuario,
-        nombre: user.nombre,
-        apellido: user.apellido,
-        email: user.email,
-        usuario: user.usuario,
-        cargo: user.cargo,
-        estado: user.estado,
-        codigo: user.codigo_usuario,
+        nombre: user.nombre.clone(),
+        apellido: user.apellido.clone(),
+        email: user.email.clone(),
+        usuario: user.usuario.clone(),
+        cargo: user.cargo.clone(),
+        estado: user.estado.clone(),
+        codigo: user.codigo_usuario.clone(),
         rol_nombre,
         rol_id: rol_id_assinged,
     }))
@@ -141,6 +152,7 @@ pub async fn get_users(
 
 pub async fn update_user(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Path(id): Path<i32>,
     Json(payload): Json<CreateUserRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
@@ -202,6 +214,16 @@ pub async fn update_user(
         // But implementation plan says "Update role".
     }
     
+    audit::log_action(
+        &db,
+        claims.user_id,
+        "UPDATE",
+        "usuarios",
+        Some(updated.id_usuario),
+        Some(format!("Usuario actualizado: {}", updated.usuario.clone())),
+        None,
+    ).await;
+    
     // Check current role for response
     let roles = updated.find_related(roles::Entity).all(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -223,9 +245,10 @@ pub async fn update_user(
 
 pub async fn delete_user(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let user = usuarios::Entity::find_by_id(id)
+    let _user = usuarios::Entity::find_by_id(id)
         .one(&db)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
@@ -237,10 +260,15 @@ pub async fn delete_user(
         .exec(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    usuarios::Entity::delete_by_id(user.id_usuario)
-        .exec(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    audit::log_action(
+        &db,
+        claims.user_id,
+        "DELETE",
+        "usuarios",
+        Some(id),
+        Some(format!("Usuario eliminado ID: {}", id)),
+        None,
+    ).await;
 
     Ok(StatusCode::NO_CONTENT)
 }

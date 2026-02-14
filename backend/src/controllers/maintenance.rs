@@ -1,10 +1,10 @@
-use axum::{Json, extract::{State, Path}, response::IntoResponse};
+use axum::{Json, extract::{State, Path}, response::IntoResponse, Extension};
 use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QueryOrder, TransactionTrait};
 use serde::{Deserialize, Serialize};
 use crate::entities::{mantenimiento_calendario, mantenimiento_historial, mantenimiento_tipo, activos_equipos, orden_trabajo, mantenimiento_repuestos};
-
 use chrono::NaiveDate;
-use crate::utils::{code_generator::generate_next_code, error::AppError};
+use crate::utils::{code_generator::generate_next_code, error::AppError, audit};
+use crate::utils::jwt::Claims;
 use crate::controllers::inventory_transaction;
 
 #[derive(Deserialize)]
@@ -248,6 +248,7 @@ pub async fn delete_schedule(
 
 pub async fn execute_maintenance(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Path(id): Path<i32>,
     Json(payload): Json<ExecuteMaintenanceRequest>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -358,6 +359,15 @@ pub async fn execute_maintenance(
     } else {
         "Mantenimiento completado (No recurrente).".to_string()
     };
+    audit::log_action(
+        &txn,
+        claims.user_id,
+        "EXECUTE_MAINTENANCE",
+        "mantenimiento_calendario",
+        Some(id),
+        Some(format!("Mantenimiento ejecutado para equipo ID: {}", schedule.equipo_id)),
+        None,
+    ).await;
     
     txn.commit().await?;
 

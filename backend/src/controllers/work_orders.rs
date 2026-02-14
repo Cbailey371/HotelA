@@ -1,7 +1,8 @@
-use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode};
+use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCode, Extension};
 use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryOrder};
 use serde::{Deserialize, Serialize};
 use crate::entities::{orden_trabajo, activos_equipos, tecnicos, proveedores, mantenimiento_tipo, mantenimiento_calendario};
+use crate::utils::{audit, jwt::Claims};
 use std::str::FromStr;
 use base64::{Engine as _, engine::general_purpose};
 
@@ -73,6 +74,7 @@ pub struct MaintenanceSimpleDto {
 
 pub async fn create_work_order(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Json(payload): Json<CreateWorkOrderRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     // Generate sequential code
@@ -102,6 +104,16 @@ pub async fn create_work_order(
     // The code below was trying to set OT ID on MC, which is wrong (MC has many OTs, but via OT's FK).
     // Unless MC has a column I don't see. But entity says no.
     // So we skip updating MC.
+    
+    audit::log_action(
+        &db,
+        claims.user_id,
+        "CREATE",
+        "orden_trabajo",
+        Some(ot.id_ot),
+        Some(format!("Orden de trabajo creada: {}", ot.codigo_ot.clone().unwrap_or_default())),
+        None,
+    ).await;
     
     Ok(Json(ot.id_ot))
 }
@@ -202,6 +214,7 @@ pub struct UpdateOtStatusRequest {
 
 pub async fn update_work_order_status(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Path(id): Path<i32>,
     Json(payload): Json<UpdateOtStatusRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
@@ -212,16 +225,27 @@ pub async fn update_work_order_status(
         .ok_or((StatusCode::NOT_FOUND, "Work Order not found".to_string()))?;
 
     let mut ot_active: orden_trabajo::ActiveModel = ot.into();
-    ot_active.estado = Set(Some(payload.estado));
+    ot_active.estado = Set(Some(payload.estado.clone()));
     
     ot_active.update(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    audit::log_action(
+        &db,
+        claims.user_id,
+        "UPDATE_STATUS",
+        "orden_trabajo",
+        Some(id),
+        Some(format!("Estado de OT {} cambiado a: {}", id, payload.estado)),
+        None,
+    ).await;
 
     Ok(Json("Status updated"))
 }
 
 pub async fn update_work_order(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Path(id): Path<i32>,
     Json(payload): Json<UpdateWorkOrderRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
@@ -278,11 +302,22 @@ pub async fn update_work_order(
     ot_active.update(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+    audit::log_action(
+        &db,
+        claims.user_id,
+        "UPDATE",
+        "orden_trabajo",
+        Some(id),
+        Some(format!("Orden de trabajo actualizada ID: {}", id)),
+        None,
+    ).await;
+
     Ok(Json("Work Order updated"))
 }
 
 pub async fn delete_work_order(
     State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<Claims>,
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let ot = orden_trabajo::Entity::find_by_id(id)
@@ -295,6 +330,16 @@ pub async fn delete_work_order(
     ot_active.delete(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+
+    audit::log_action(
+        &db,
+        claims.user_id,
+        "DELETE",
+        "orden_trabajo",
+        Some(id),
+        Some(format!("Orden de trabajo eliminada ID: {}", id)),
+        None,
+    ).await;
 
     Ok(Json("Work Order deleted"))
 }

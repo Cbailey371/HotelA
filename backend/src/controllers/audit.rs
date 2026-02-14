@@ -1,6 +1,6 @@
-use axum::{Json, extract::State, response::IntoResponse, http::StatusCode};
+use axum::{Json, extract::{State, Query}, response::IntoResponse, http::StatusCode};
 use sea_orm::{DatabaseConnection, EntityTrait, QueryOrder};
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use crate::entities::{auditoria_acciones, usuarios};
 
 #[derive(Serialize)]
@@ -15,11 +15,54 @@ pub struct AuditLogDto {
     pub detalle: Option<String>,
 }
 
+#[derive(Deserialize)]
+pub struct AuditFilter {
+    pub usuario_id: Option<i32>,
+    pub accion: Option<String>,
+    pub desde: Option<String>,
+    pub hasta: Option<String>,
+}
+
 pub async fn get_audit_logs(
     State(db): State<DatabaseConnection>,
+    Query(filter): Query<AuditFilter>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let logs = auditoria_acciones::Entity::find()
-        .find_also_related(usuarios::Entity)
+    // 1. Ejecutar limpieza automática
+    let _ = crate::utils::audit::cleanup_old_logs(&db).await;
+
+    use sea_orm::{EntityTrait, QueryFilter, ColumnTrait};
+
+    let mut query = auditoria_acciones::Entity::find()
+        .find_also_related(usuarios::Entity);
+
+    // 2. Aplicarfiltros
+    if let Some(uid) = filter.usuario_id {
+        query = query.filter(auditoria_acciones::Column::UsuarioId.eq(uid));
+    }
+
+    if let Some(acc) = filter.accion {
+        if !acc.is_empty() {
+            query = query.filter(auditoria_acciones::Column::Accion.eq(acc));
+        }
+    }
+
+    if let Some(desde) = filter.desde {
+        if !desde.is_empty() {
+            if let Ok(d) = chrono::DateTime::parse_from_rfc3339(&format!("{}T00:00:00Z", desde)) {
+                query = query.filter(auditoria_acciones::Column::Fecha.gte(d));
+            }
+        }
+    }
+
+    if let Some(hasta) = filter.hasta {
+        if !hasta.is_empty() {
+            if let Ok(h) = chrono::DateTime::parse_from_rfc3339(&format!("{}T23:59:59Z", hasta)) {
+                query = query.filter(auditoria_acciones::Column::Fecha.lte(h));
+            }
+        }
+    }
+
+    let logs = query
         .order_by_desc(auditoria_acciones::Column::Fecha)
         .all(&db)
         .await
