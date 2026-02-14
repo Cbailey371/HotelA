@@ -15,7 +15,7 @@ pub struct CreateScheduleRequest {
     pub fecha_programada: Option<String>,
     pub responsable_id: Option<i32>,
     pub observaciones: Option<String>,
-    pub codigo_mantenimiento: Option<String>,
+    pub _codigo_mantenimiento: Option<String>,
     pub prioridad: Option<String>,
     pub costo_estimado: Option<f64>,
     pub dias_anticipacion: Option<i32>,
@@ -191,13 +191,22 @@ pub async fn update_schedule(
 
     if let Some(v) = payload.equipo_id { schedule_active.equipo_id = Set(v); }
     if let Some(v) = payload.tipo_mantenimiento_id { schedule_active.tipo_mantenimiento_id = Set(v); }
-    if let Some(v) = payload.frecuencia { 
-        println!("DEBUG: Updating frequency to: {}", v);
-        schedule_active.frecuencia = Set(Some(v)); 
+    if let Some(v) = payload.frecuencia { schedule_active.frecuencia = Set(Some(v)); }
+    if let Some(v) = payload.fecha_programada {
+        if let Ok(date) = NaiveDate::parse_from_str(&v, "%Y-%m-%d") {
+            schedule_active.fecha_programada = Set(Some(date));
+        }
     }
-    // ... all other fields ...
-
-    // ... logic continues ...
+    if let Some(v) = payload.responsable_id { schedule_active.responsable_id = Set(Some(v)); }
+    if let Some(v) = payload.observaciones { schedule_active.observaciones = Set(Some(v)); }
+    if let Some(v) = payload.prioridad { schedule_active.prioridad = Set(Some(v)); }
+    if let Some(v) = payload.costo_estimado { schedule_active.costo_estimado = Set(Some(sea_orm::prelude::Decimal::from_f64_retain(v).unwrap_or_default())); }
+    if let Some(v) = payload.dias_anticipacion { schedule_active.dias_anticipacion = Set(Some(v)); }
+    if let Some(v) = payload.proveedor_id { schedule_active.proveedor_id = Set(Some(v)); }
+    if let Some(v) = payload.tecnico_id { schedule_active.tecnico_id = Set(Some(v)); }
+    if let Some(v) = payload.tarea_tipo_id { schedule_active.tarea_tipo_id = Set(Some(v)); }
+    if let Some(v) = payload.recurrente { schedule_active.recurrente = Set(v); }
+    if let Some(v) = payload.responsable_interno_email { schedule_active.responsable_interno_email = Set(Some(v)); }
     if let Some(v) = payload.estado { schedule_active.estado = Set(Some(v)); }
 
     schedule_active.update(&db).await?;

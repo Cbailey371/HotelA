@@ -23,7 +23,7 @@ pub struct CreatePartRequest {
     pub unidad_medida: String,
     pub precio_unitario: f64,
     pub ubicacion_almacen: Option<String>,
-    pub codigo_repuesto: Option<String>,
+    pub _codigo_repuesto: Option<String>,
     pub proveedor_id: Option<i32>,
     pub ubicacion_detallada: Option<String>,
     pub fecha_vencimiento: Option<String>,

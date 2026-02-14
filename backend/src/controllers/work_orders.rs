@@ -9,7 +9,7 @@ use base64::{Engine as _, engine::general_purpose};
 #[derive(Deserialize)]
 pub struct CreateWorkOrderRequest {
     pub id_calendario: Option<i32>,
-    pub id_calendarios: Option<Vec<i32>>, // New field for multiple
+    pub _id_calendarios: Option<Vec<i32>>, // New field for multiple
     pub id_activo: i32,
     pub id_tipo_mantenimiento: i32,
     pub id_tecnico: Option<i32>,

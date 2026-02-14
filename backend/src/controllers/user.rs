@@ -2,7 +2,7 @@ use axum::{Json, extract::{State, Path}, response::IntoResponse, http::StatusCod
 use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, ModelTrait, LoaderTrait};
 use serde::{Deserialize, Serialize};
 use crate::entities::{usuarios, roles, usuario_roles};
-use crate::utils::{hash, audit, error::AppError, jwt::Claims};
+use crate::utils::{hash, audit, jwt::Claims};
 
 #[derive(Deserialize)]
 pub struct CreateUserRequest {

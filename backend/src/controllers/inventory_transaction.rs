@@ -119,6 +119,7 @@ pub async fn release_reservation(
 }
 
 // add_stock
+#[allow(dead_code)]
 pub async fn add_stock(
     txn: &DatabaseTransaction,
     repuesto_id: i32,

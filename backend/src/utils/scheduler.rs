@@ -3,8 +3,10 @@ use sea_orm::{EntityTrait, QueryFilter, ColumnTrait, ConnectionTrait};
 use crate::entities::{feriados_pa, excepciones_calendario};
 
 pub enum AjustePolitica {
+    #[allow(dead_code)]
     Anticipar, // Move to previous working day
     Postergar, // Move to next working day (Default)
+    #[allow(dead_code)]
     Mantener,  // Keep original date
 }
 

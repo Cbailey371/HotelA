@@ -15,6 +15,7 @@ pub fn hash_password(password: &str) -> Result<String, String> {
     Ok(password_hash)
 }
 
+#[allow(dead_code)]
 pub fn verify_password(password: &str, password_hash: &str) -> bool {
     let parsed_hash = match PasswordHash::new(password_hash) {
         Ok(hash) => hash,

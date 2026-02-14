@@ -57,7 +57,7 @@ pub struct UpdateAssetRequest {
     pub ubicacion_detallada: Option<String>,
     pub fecha_instalacion: Option<String>,
     pub fecha_adquisicion: Option<String>,
-    pub documentos: Option<Vec<AddDocumentRequest>>,
+    pub _documentos: Option<Vec<AddDocumentRequest>>,
 }
 
 #[derive(Serialize)]

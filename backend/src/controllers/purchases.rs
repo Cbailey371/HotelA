@@ -6,7 +6,6 @@ use axum::{
 };
 use sea_orm::{prelude::*, QueryOrder, TransactionTrait, Set};
 use serde::{Deserialize, Serialize};
-use chrono::prelude::*;
 use chrono::{Local, NaiveDate};
 use crate::entities::{inventario_movimientos, *};
 use crate::utils::{error::AppError, audit};
@@ -253,7 +252,7 @@ pub struct DirectOrderDetailDto {
     pub repuesto_id: i32,
     pub cantidad: i32,
     pub costo_unitario: Decimal,
-    pub impuesto: Option<Decimal>,
+    pub _impuesto: Option<Decimal>,
 }
 
 #[derive(Deserialize)]
