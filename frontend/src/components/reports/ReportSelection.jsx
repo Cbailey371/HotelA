@@ -24,6 +24,15 @@ const ReportSelection = ({ onSelect }) => {
             borderColor: 'hover:border-blue-500/50'
         },
         {
+            id: 'Activos',
+            title: 'Listado de Activos',
+            description: 'Inventario detallado de equipos y maquinaria.',
+            icon: Box, // Reusing Box for now as it fits "Assets"
+            color: 'text-indigo-500',
+            bg: 'bg-indigo-50 dark:bg-indigo-900/20',
+            borderColor: 'hover:border-indigo-500/50'
+        },
+        {
             id: 'Mantenimiento',
             title: 'Mantenimiento',
             description: 'Historial de mantenimientos y costos.',
@@ -51,6 +60,15 @@ const ReportSelection = ({ onSelect }) => {
             borderColor: 'hover:border-emerald-500/50'
         },
         {
+            id: 'SolicitudesCotizacion',
+            title: 'Solicitudes de Cotización',
+            description: 'Lista de solicitudes y estados.',
+            icon: FileText,
+            color: 'text-violet-500',
+            bg: 'bg-violet-50 dark:bg-violet-900/20',
+            borderColor: 'hover:border-violet-500/50'
+        },
+        {
             id: 'OrdenesCompra',
             title: 'Reporte de Compras',
             description: 'Órdenes de compra y recepciones.',
@@ -58,6 +76,15 @@ const ReportSelection = ({ onSelect }) => {
             color: 'text-purple-500',
             bg: 'bg-purple-50 dark:bg-purple-900/20',
             borderColor: 'hover:border-purple-500/50'
+        },
+        {
+            id: 'FacturasCompra',
+            title: 'Facturas de Compra',
+            description: 'Registro de facturas y pagos.',
+            icon: FileText,
+            color: 'text-rose-500',
+            bg: 'bg-rose-50 dark:bg-rose-900/20',
+            borderColor: 'hover:border-rose-500/50'
         },
         {
             id: 'Depreciación',
