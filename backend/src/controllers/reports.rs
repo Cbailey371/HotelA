@@ -345,6 +345,48 @@ async fn generate_report_data(
                 }));
             }
         },
+        "Activos" => {
+            let mut query = activos_equipos::Entity::find();
+            
+            for cond in conditions {
+                let field = cond.get("field").and_then(|v| v.as_str()).unwrap_or("");
+                let operator = cond.get("operator").and_then(|v| v.as_str()).unwrap_or("eq");
+                let value = cond.get("value").and_then(|v| v.as_str()).unwrap_or("");
+
+                if field.is_empty() || value.is_empty() { continue; }
+
+                let column = match field {
+                    "Código" => activos_equipos::Column::CodigoEquipo,
+                    "Nombre" => activos_equipos::Column::NombreEquipo,
+                    "Marca" => activos_equipos::Column::Marca,
+                    "Modelo" => activos_equipos::Column::Modelo,
+                    "Serie" => activos_equipos::Column::NumeroSerie,
+                    "Categoría" => activos_equipos::Column::Categoria,
+                    "Ubicación" => activos_equipos::Column::Ubicacion,
+                    "Estado" => activos_equipos::Column::Estado,
+                    "Fecha Compra" => activos_equipos::Column::FechaAdquisicion,
+                    _ => continue,
+                };
+
+                query = apply_filter(query, column, operator, value);
+            }
+
+            let assets = query.all(db).await?;
+            
+            for asset in assets {
+                results.push(serde_json::json!({
+                    "Código": asset.codigo_equipo,
+                    "Nombre": asset.nombre_equipo,
+                    "Marca": asset.marca,
+                    "Modelo": asset.modelo.unwrap_or_default(),
+                    "Serie": asset.numero_serie.unwrap_or_default(),
+                    "Categoría": asset.categoria.unwrap_or_default(),
+                    "Ubicación": asset.ubicacion.unwrap_or_default(),
+                    "Estado": asset.estado.unwrap_or_default(),
+                    "Fecha Compra": asset.fecha_adquisicion,
+                }));
+            }
+        },
         "Mantenimiento" => {
              let mut query = mantenimiento_historial::Entity::find()
                 .order_by_desc(mantenimiento_historial::Column::FechaEjecucion);
@@ -658,6 +700,78 @@ async fn generate_report_data(
                 }));
             }
         },
+        "SolicitudesCotizacion" => {
+            use crate::entities::compras_solicitudes;
+            let mut query = compras_solicitudes::Entity::find();
+
+            for cond in conditions {
+                let field = cond.get("field").and_then(|v| v.as_str()).unwrap_or("");
+                let operator = cond.get("operator").and_then(|v| v.as_str()).unwrap_or("eq");
+                let value = cond.get("value").and_then(|v| v.as_str()).unwrap_or("");
+
+                if field.is_empty() || value.is_empty() { continue; }
+
+                let column = match field {
+                    "ID" => compras_solicitudes::Column::Id,
+                    "Título" => compras_solicitudes::Column::Motivo,
+                    "Fecha Solicitud" => compras_solicitudes::Column::FechaSolicitud,
+                    "Estado" => compras_solicitudes::Column::Estado,
+                    "Prioridad" => compras_solicitudes::Column::Prioridad,
+                    _ => continue,
+                };
+                query = apply_filter(query, column, operator, value);
+            }
+
+            let requests = query.all(db).await?;
+            for req in requests {
+                results.push(serde_json::json!({
+                    "ID": req.id,
+                    "Título": req.motivo,
+                    "Fecha Solicitud": req.fecha_solicitud,
+                    "Estado": req.estado,
+                    "Prioridad": req.prioridad,
+                    "Solicitante": req.solicitante_id, // Placeholder until user relation is confirmed
+                    "Fecha Creación": req.created_at.map(|d| d.to_string()),
+                }));
+            }
+        },
+        "FacturasCompra" => {
+            use crate::entities::{facturas_compras, proveedores};
+            let mut query = facturas_compras::Entity::find();
+
+            for cond in conditions {
+                let field = cond.get("field").and_then(|v| v.as_str()).unwrap_or("");
+                let operator = cond.get("operator").and_then(|v| v.as_str()).unwrap_or("eq");
+                let value = cond.get("value").and_then(|v| v.as_str()).unwrap_or("");
+
+                if field.is_empty() || value.is_empty() { continue; }
+
+                let column = match field {
+                    "N° Factura" => facturas_compras::Column::NumeroFactura,
+                    "Fecha Emisión" => facturas_compras::Column::FechaEmision,
+                    "Fecha Vencimiento" => facturas_compras::Column::FechaRecepcion, // Mapping to available date
+                    "Estado Pago" => facturas_compras::Column::Estado,
+                    _ => continue,
+                };
+                query = apply_filter(query, column, operator, value);
+            }
+
+            let invoices = query.find_also_related(proveedores::Entity).all(db).await?;
+            
+            for (invoice, provider) in invoices {
+                let provider_name = provider.map(|p| p.nombre_proveedor).unwrap_or("Desconocido".to_string());
+                results.push(serde_json::json!({
+                    "N° Factura": invoice.numero_factura,
+                    "Proveedor": provider_name,
+                    "Fecha Emisión": invoice.fecha_emision,
+                    "Fecha Vencimiento": invoice.fecha_recepcion, // Placeholder
+                    "Monto Total": invoice.total.to_string(),
+                    "Estado Pago": invoice.estado,
+                    "Notas": invoice.notas.unwrap_or_default(),
+                    "Fecha Recepción": invoice.fecha_recepcion,
+                }));
+            }
+        },
         _ => return Err(AppError::BadRequest("Invalid report type".to_string())),
     }
 
@@ -744,8 +858,11 @@ pub async fn execute_scheduled_report(
             "Inventario" => "Fecha Última Compra",
             "OrdenesCompra" => "Fecha Solicitud",
             "Depreciación" => "Fecha Compra",
+            "Activos" => "Fecha Compra",
             "OrdenesTrabajo" => "Fecha Inicio Real",
             "SugeridoCompra" => "Fecha Última Compra",
+            "SolicitudesCotizacion" => "Fecha Solicitud",
+            "FacturasCompra" => "Fecha Emisión",
              _ => "Fecha Ejecución"
         };
         

@@ -17,10 +17,13 @@ const ReportBuilder = ({ reportType, onBack, categories }) => {
     // Report Config
     const REPORT_COLUMNS = {
         'Inventario': ['SKU', 'Nombre', 'Categoría', 'Stock Actual', 'Stock Mínimo', 'Costo Unitario', 'Ubicación', 'Fecha Última Compra', 'Fecha Vencimiento'],
+        'Activos': ['Código', 'Nombre', 'Marca', 'Modelo', 'Serie', 'Categoría', 'Ubicación', 'Estado', 'Fecha Compra'],
         'Mantenimiento': ['ID', 'Fecha Ejecución', 'Fecha Inicio', 'Fecha Fin', 'Técnico', 'Descripción', 'Resultado', 'Costo Total', 'Observaciones', 'Fecha Creación'],
         'PlanMantenimiento': ['ID', 'Activo', 'Fecha Programada', 'Próxima Fecha', 'Frecuencia', 'Estado', 'Prioridad', 'Costo Estimado', 'Observaciones'],
         'Depreciación': ['Activo', 'Modelo', 'Serie', 'Fecha Compra', 'Fin Vida Útil', 'Valor Compra', 'Valor Actual', 'Depreciación Acumulada'],
         'OrdenesCompra': ['Código', 'Estado', 'Fecha Solicitud', 'Fecha Entrega', 'Recepción', 'Total', 'Notas', 'Creado'],
+        'SolicitudesCotizacion': ['ID', 'Título', 'Fecha Solicitud', 'Estado', 'Prioridad', 'Solicitante', 'Fecha Creación'],
+        'FacturasCompra': ['N° Factura', 'Proveedor', 'Fecha Emisión', 'Fecha Vencimiento', 'Monto Total', 'Estado Pago', 'Notas', 'Fecha Recepción'],
         'OrdenesTrabajo': ['Código', 'Prioridad', 'Estado', 'Costo Estimado', 'Activo ID', 'Fecha Inicio Real', 'Creado', 'Observaciones'],
         'ProveedoresTecnicos': ['Tipo', 'Nombre', 'Identificador', 'Email', 'Teléfono', 'Estado', 'Creado'],
         'SugeridoCompra': ['SKU', 'Nombre', 'Categoría', 'Stock Actual', 'Stock Mínimo', 'Sugerido a Comprar', 'Costo Promedio']
@@ -46,6 +49,17 @@ const ReportBuilder = ({ reportType, onBack, categories }) => {
         switch (type) {
             case 'Inventario': return [
                 { value: 'fecha_ultima_compra', label: 'Fecha Última Compra' },
+                { value: 'fecha_vencimiento', label: 'Fecha Vencimiento' }
+            ];
+            case 'Activos': return [
+                { value: 'fecha_adquisicion', label: 'Fecha Compra' }
+            ];
+            case 'SolicitudesCotizacion': return [
+                { value: 'fecha_solicitud', label: 'Fecha Solicitud' },
+                { value: 'created_at', label: 'Fecha Creación' }
+            ];
+            case 'FacturasCompra': return [
+                { value: 'fecha_emision', label: 'Fecha Emisión' },
                 { value: 'fecha_vencimiento', label: 'Fecha Vencimiento' }
             ];
             case 'Mantenimiento': return [
