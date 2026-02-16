@@ -509,9 +509,9 @@ pub async fn import_assets_csv(
 
 pub async fn get_assets_template() -> impl IntoResponse {
     let csv_content = "\
-codigo_equipo,nombre_equipo,descripcion,categoria,marca,modelo,numero_serie,ubicacion,area_responsable,estado,imagen_url,tipo_activo,anio,color,numero_motor,numero_chasis,manual_pdf,cantidad,ubicacion_detallada,fecha_instalacion,fecha_adquisicion
-AIR-001,Aire Acondicionado Central,Unidad de 5 toneladas,Climatización,Carrier,XJ-100,SN12345678,Piso 1,Mantenimiento,activo,,Equipo,2023,Blanco,,,651,1,Sala de Máquinas,2023-01-15,2023-01-10
-GEN-001,Generador Eléctrico,Generador diesel 500kva,Energía,Cummins,C500,GEN987654,Sótano 2,Electricidad,activo,,Maquinaria,2022,Azul,,,321,1,Exterior B,2022-06-20,2022-06-05
+codigo_administrativo,codigo_equipo,nombre_equipo,descripcion,categoria,marca,modelo,numero_serie,ubicacion,area_responsable,estado,imagen_url,tipo_activo,anio,color,numero_motor,numero_chasis,manual_pdf,cantidad,ubicacion_detallada,fecha_instalacion,fecha_adquisicion
+FIN-1001,AIR-001,Aire Acondicionado Central,Unidad de 5 toneladas,Climatización,Carrier,XJ-100,SN12345678,Piso 1,Mantenimiento,activo,,Equipo,2023,Blanco,,,651,1,Sala de Máquinas,2023-01-15,2023-01-10
+FIN-1002,GEN-001,Generador Eléctrico,Generador diesel 500kva,Energía,Cummins,C500,GEN987654,Sótano 2,Electricidad,activo,,Maquinaria,2022,Azul,,,321,1,Exterior B,2022-06-20,2022-06-05
 ";
     (
         [(axum::http::header::CONTENT_TYPE, "text/csv"), (axum::http::header::CONTENT_DISPOSITION, "attachment; filename=\"plantilla_activos.csv\"")],

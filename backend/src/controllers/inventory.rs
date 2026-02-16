@@ -396,9 +396,9 @@ pub async fn upload_part_image(
 
 pub async fn get_inventory_template() -> impl IntoResponse {
     let csv_content = "\
-nombre_repuesto,descripcion,categoria,marca,modelo,stock_actual,stock_minimo,unidad_medida,precio_unitario,ubicacion_almacen
-Filtro de Aceite,Filtro para generador,Consumible,CAT,X100,10,2,unidades,45.50,A-01
-Correa de Transmisión,Correa en V,Mecánico,Gates,B-52,5,1,unidades,12.00,B-02
+sku,nombre_repuesto,descripcion,categoria,marca,modelo,stock_actual,stock_minimo,unidad_medida,precio_unitario,ubicacion_almacen,ubicacion_detallada,fecha_vencimiento,compatibilidad,estado
+FIL-001,Filtro de Aceite,Filtro para generador,Consumible,CAT,X100,10,2,unidades,45.50,A-01,Estante 3 Nivel 2,2025-12-31,Generadores CAT serie X,activo
+COR-002,Correa de Transmisión,Correa en V,Mecánico,Gates,B-52,5,1,unidades,12.00,B-02,Cajón 5,2026-06-30,Motores V8,activo
 ";
     (
         [(axum::http::header::CONTENT_TYPE, "text/csv"), (axum::http::header::CONTENT_DISPOSITION, "attachment; filename=\"plantilla_inventario.csv\"")],
@@ -423,6 +423,7 @@ pub async fn import_inventory_csv(
                 // Note: CSV headers must match struct field names exactly.
                 #[derive(Deserialize)]
                 struct CsvRow {
+                    sku: Option<String>,
                     nombre_repuesto: String,
                     descripcion: Option<String>,
                     categoria: Option<String>,
@@ -433,7 +434,10 @@ pub async fn import_inventory_csv(
                     unidad_medida: String,
                     precio_unitario: f64,
                     ubicacion_almacen: Option<String>,
-                    sku: Option<String>,
+                    ubicacion_detallada: Option<String>,
+                    fecha_vencimiento: Option<String>,
+                    compatibilidad: Option<String>,
+                    estado: Option<String>,
                 }
                 let record: CsvRow = result.map_err(|e| AppError::BadRequest(format!("CSV format error: {}", e)))?;
                 
@@ -450,6 +454,10 @@ pub async fn import_inventory_csv(
                     costo_unitario: Set(Some(Decimal::from_str(&record.precio_unitario.to_string()).unwrap_or_default())),
                     ubicacion_almacen: Set(record.ubicacion_almacen),
                     sku: Set(record.sku),
+                    ubicacion_fisica_exacta: Set(record.ubicacion_detallada),
+                    fecha_vencimiento: Set(record.fecha_vencimiento.and_then(|d| NaiveDate::parse_from_str(&d, "%Y-%m-%d").ok())),
+                    compatibilidad_modelos: Set(record.compatibilidad),
+                    estado: Set(record.estado.or(Some("activo".to_string()))),
                     ..Default::default()
                 };
 
