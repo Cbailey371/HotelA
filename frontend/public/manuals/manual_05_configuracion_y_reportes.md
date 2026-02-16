@@ -9,9 +9,12 @@ Visualice la salud operativa del hotel.
 
 ### 1.1. Tipos de Reportes
 -   **Resumen de Activos**: Valoración total, distribución por estado y categoría.
+-   **Listado de Activos**: Inventario detallado de todos los equipos y armamento, incluyendo modelo, serie, fecha de compra y estado.
 -   **Mantenimiento**: Cumplimiento del plan (Programado vs Realizado), costos por activo.
 -   **Inventario**: Valor del stock actual, rotación de ítems, históricos de consumo.
 -   **Sugerido de Compra**: Listado automático de repuestos cuyo stock actual es menor o igual al stock mínimo configurado. Ideal para planificación de compras.
+-   **Solicitudes de Cotización**: Control de solicitudes pendientes, enviadas y aprobadas, priorizadas para la gestión de compras.
+-   **Facturas de Compra**: Registro centralizado de facturas con detalles de proveedores, fechas de emisión/vencimiento y estados de pago.
 
 ### 1.2. Programación y Vista Previa
 Además de generar reportes al instante, puede programar envíos periódicos:
