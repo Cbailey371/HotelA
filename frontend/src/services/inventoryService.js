@@ -23,12 +23,22 @@ export const inventoryService = {
         const response = await api.delete(`/inventory/${id}`);
         return response.data;
     },
-    getTemplate: async () => {
-        const response = await api.get('/inventory/template', { responseType: 'blob' });
+    getTemplateCreate: async () => {
+        const response = await api.get('/inventory/template/create', { responseType: 'blob' });
         return response.data;
     },
-    importCsv: async (formData) => {
-        const response = await api.post('/inventory/import', formData, {
+    getTemplateUpdate: async () => {
+        const response = await api.get('/inventory/template/update', { responseType: 'blob' });
+        return response.data;
+    },
+    importCreate: async (formData) => {
+        const response = await api.post('/inventory/import/create', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
+    },
+    importUpdate: async (formData) => {
+        const response = await api.post('/inventory/import/update', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
         return response.data;

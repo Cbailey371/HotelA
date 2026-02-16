@@ -21,12 +21,22 @@ export const assetService = {
         const response = await api.delete(`/assets/${id}`);
         return response.data;
     },
-    getTemplate: async () => {
-        const response = await api.get('/assets/template', { responseType: 'blob' });
+    getTemplateCreate: async () => {
+        const response = await api.get('/assets/template/create', { responseType: 'blob' });
         return response.data;
     },
-    importCsv: async (formData) => {
-        const response = await api.post('/assets/import', formData, {
+    getTemplateUpdate: async () => {
+        const response = await api.get('/assets/template/update', { responseType: 'blob' });
+        return response.data;
+    },
+    importCreate: async (formData) => {
+        const response = await api.post('/assets/import/create', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
+    },
+    importUpdate: async (formData) => {
+        const response = await api.post('/assets/import/update', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
         return response.data;

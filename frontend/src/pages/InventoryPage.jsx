@@ -10,7 +10,7 @@ import MultiSelect from '../components/MultiSelect';
 import { providerService } from '../services/providerService';
 import { assetService } from '../services/assetService';
 
-import Modal from '../components/Modal';
+import BulkImportModal from '../components/BulkImportModal';
 import { useAuth } from '../context/AuthContext';
 
 const InventoryPage = () => {
@@ -21,6 +21,7 @@ const InventoryPage = () => {
     const [parts, setParts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
     const [editingPart, setEditingPart] = useState(null);
     const [history, setHistory] = useState([]);
@@ -93,13 +94,13 @@ const InventoryPage = () => {
         }
     };
 
-    const handleDownloadTemplate = async () => {
+    const handleDownloadTemplateCreate = async () => {
         try {
-            const blob = await inventoryService.getTemplate();
+            const blob = await inventoryService.getTemplateCreate();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'plantilla_inventario.csv';
+            a.download = 'plantilla_inventario_nuevos.csv';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -108,22 +109,29 @@ const InventoryPage = () => {
         }
     };
 
-    const handleCsvImport = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const uploadData = new FormData();
-        uploadData.append('file', file);
-        setLoading(true);
+    const handleDownloadTemplateUpdate = async () => {
         try {
-            await inventoryService.importCsv(uploadData);
-            alert("Inventario importado correctamente");
-            fetchParts();
+            const blob = await inventoryService.getTemplateUpdate();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'plantilla_inventario_actualizar.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
         } catch (error) {
-            alert("Error al importar CSV");
-        } finally {
-            setLoading(false);
         }
+    };
+
+    const handleImportCreate = async (formData) => {
+        await inventoryService.importCreate(formData);
+        fetchParts();
+    };
+
+    const handleImportUpdate = async (formData) => {
+        await inventoryService.importUpdate(formData);
+        fetchParts();
     };
 
     const handleInputChange = (e) => {
@@ -298,15 +306,14 @@ const InventoryPage = () => {
                     <p className="text-slate-500 dark:text-slate-400 text-sm">Control de stock y suministros técnicos</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button onClick={handleDownloadTemplate} className="flex items-center gap-2 text-slate-500 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors text-xs font-bold uppercase tracking-tight" title="Descargar Plantilla CSV">
-                        <Download className="w-4 h-4" />
-                        <span>Plantilla</span>
-                    </button>
-                    <label className="flex items-center gap-2 text-slate-500 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer text-xs font-bold uppercase tracking-tight" title="Importar CSV">
+                    <button
+                        onClick={() => setShowImportModal(true)}
+                        className="flex items-center gap-2 text-slate-500 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors text-xs font-bold uppercase tracking-tight"
+                        title="Importar CSV"
+                    >
                         <Upload className="w-4 h-4" />
-                        <span>Importar CSV</span>
-                        <input type="file" accept=".csv" onChange={handleCsvImport} className="hidden" />
-                    </label>
+                        <span>Importar</span>
+                    </button>
 
                     <button onClick={openCreateModal} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-lg shadow-blue-500/20">
                         <Plus className="w-4 h-4" /> Nuevo Repuesto
@@ -671,6 +678,18 @@ const InventoryPage = () => {
                     </div>
                 </form>
             </Modal>
+
+            {/* Bulk Import Modal */}
+            <BulkImportModal
+                isOpen={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                title="Importación Masiva de Inventario"
+                entityName="repuestos"
+                onDownloadTemplateCreate={handleDownloadTemplateCreate}
+                onDownloadTemplateUpdate={handleDownloadTemplateUpdate}
+                onImportCreate={handleImportCreate}
+                onImportUpdate={handleImportUpdate}
+            />
 
             {/* Modal Historial */}
             <Modal

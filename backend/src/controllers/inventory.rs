@@ -394,19 +394,31 @@ pub async fn upload_part_image(
     Err(AppError::BadRequest("No file provided".to_string()))
 }
 
-pub async fn get_inventory_template() -> impl IntoResponse {
+pub async fn get_inventory_template_create() -> impl IntoResponse {
     let csv_content = "\
 sku,nombre_repuesto,descripcion,categoria,marca,modelo,stock_actual,stock_minimo,unidad_medida,precio_unitario,ubicacion_almacen,ubicacion_detallada,fecha_vencimiento,compatibilidad,estado
 FIL-001,Filtro de Aceite,Filtro para generador,Consumible,CAT,X100,10,2,unidades,45.50,A-01,Estante 3 Nivel 2,2025-12-31,Generadores CAT serie X,activo
 COR-002,Correa de Transmisión,Correa en V,Mecánico,Gates,B-52,5,1,unidades,12.00,B-02,Cajón 5,2026-06-30,Motores V8,activo
 ";
     (
-        [(axum::http::header::CONTENT_TYPE, "text/csv"), (axum::http::header::CONTENT_DISPOSITION, "attachment; filename=\"plantilla_inventario.csv\"")],
+        [(axum::http::header::CONTENT_TYPE, "text/csv"), (axum::http::header::CONTENT_DISPOSITION, "attachment; filename=\"plantilla_inventario_nuevo.csv\"")],
         csv_content,
     )
 }
 
-pub async fn import_inventory_csv(
+pub async fn get_inventory_template_update() -> impl IntoResponse {
+    let csv_content = "\
+sku,nombre_repuesto,descripcion,categoria,marca,modelo,stock_actual,stock_minimo,unidad_medida,precio_unitario,ubicacion_almacen,ubicacion_detallada,fecha_vencimiento,compatibilidad,estado
+FIL-001,Filtro de Aceite,Filtro para generador,Consumible,CAT,X100,10,2,unidades,45.50,A-01,Estante 3 Nivel 2,2025-12-31,Generadores CAT serie X,activo
+COR-002,Correa de Transmisión,Correa en V,Mecánico,Gates,B-52,5,1,unidades,12.00,B-02,Cajón 5,2026-06-30,Motores V8,activo
+";
+    (
+        [(axum::http::header::CONTENT_TYPE, "text/csv"), (axum::http::header::CONTENT_DISPOSITION, "attachment; filename=\"plantilla_inventario_actualizar.csv\"")],
+        csv_content,
+    )
+}
+
+pub async fn import_inventory_create(
     State(db): State<DatabaseConnection>,
     Extension(claims): Extension<jwt::Claims>,
     mut multipart: Multipart,
@@ -419,8 +431,6 @@ pub async fn import_inventory_csv(
             let mut reader = csv::Reader::from_reader(&data[..]);
             
             for result in reader.deserialize() {
-                // Reuse CreatePartRequest for CSV rows, assuming columns match struct fields (mapped by serde)
-                // Note: CSV headers must match struct field names exactly.
                 #[derive(Deserialize)]
                 struct CsvRow {
                     sku: Option<String>,
@@ -442,7 +452,7 @@ pub async fn import_inventory_csv(
                 let record: CsvRow = result.map_err(|e| AppError::BadRequest(format!("CSV format error: {}", e)))?;
                 
                 let new_part = activos_repuestos::ActiveModel {
-                    codigo_repuesto: Set(format!("REP-{}", chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0) % 100000)), // Simple unique code gen
+                    codigo_repuesto: Set(format!("REP-{}", chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0) % 100000)), 
                     nombre_repuesto: Set(record.nombre_repuesto),
                     descripcion: Set(record.descripcion),
                     tipo_repuesto: Set(record.categoria),
@@ -470,14 +480,99 @@ pub async fn import_inventory_csv(
     audit::log_action(
         &db, 
         claims.user_id, 
-        "IMPORT", 
+        "IMPORT_CREATE", 
         "activos_repuestos", 
         None, 
-        Some(format!("Importados {} repuestos vía CSV", count)),
+        Some(format!("Importados {} nuevos repuestos vía CSV", count)),
         None
     ).await;
 
-    Ok(Json(format!("Successfully imported {} parts", count)))
+    Ok(Json(format!("Successfully created {} parts", count)))
+}
+
+pub async fn import_inventory_update(
+    State(db): State<DatabaseConnection>,
+    Extension(claims): Extension<jwt::Claims>,
+    mut multipart: Multipart,
+) -> Result<impl IntoResponse, AppError> {
+    let mut count = 0;
+    
+    while let Some(field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
+        if field.name() == Some("file") {
+            let data = field.bytes().await.map_err(|e| AppError::BadRequest(e.to_string()))?;
+            let mut reader = csv::Reader::from_reader(&data[..]);
+            
+            for result in reader.deserialize() {
+                #[derive(Deserialize)]
+                struct CsvRow {
+                    sku: Option<String>,
+                    nombre_repuesto: String,
+                    descripcion: Option<String>,
+                    categoria: Option<String>,
+                    marca: Option<String>,
+                    modelo: Option<String>,
+                    stock_actual: i32,
+                    stock_minimo: i32,
+                    unidad_medida: String,
+                    precio_unitario: f64,
+                    ubicacion_almacen: Option<String>,
+                    ubicacion_detallada: Option<String>,
+                    fecha_vencimiento: Option<String>,
+                    compatibilidad: Option<String>,
+                    estado: Option<String>,
+                }
+                let record: CsvRow = result.map_err(|e| AppError::BadRequest(format!("CSV format error: {}", e)))?;
+                
+               // UPDATE LOCIC: Match by SKU
+                 let sku = record.sku.clone();
+                 if sku.is_none() {
+                     continue; 
+                 }
+                 let sku_val = sku.unwrap();
+
+                 let existing = activos_repuestos::Entity::find()
+                    .filter(activos_repuestos::Column::Sku.eq(sku_val.clone()))
+                    .one(&db)
+                    .await?;
+                 
+                 if let Some(part) = existing {
+                     let mut active_model: activos_repuestos::ActiveModel = part.into();
+                     
+                     active_model.nombre_repuesto = Set(record.nombre_repuesto);
+                     active_model.descripcion = Set(record.descripcion);
+                     active_model.tipo_repuesto = Set(record.categoria);
+                     active_model.marca = Set(record.marca);
+                     active_model.modelo = Set(record.modelo);
+                     active_model.stock_actual = Set(Some(record.stock_actual));
+                     active_model.stock_minimo = Set(Some(record.stock_minimo));
+                     active_model.unidad_medida = Set(Some(record.unidad_medida));
+                     active_model.costo_unitario = Set(Some(Decimal::from_str(&record.precio_unitario.to_string()).unwrap_or_default()));
+                     active_model.ubicacion_almacen = Set(record.ubicacion_almacen);
+                     active_model.ubicacion_fisica_exacta = Set(record.ubicacion_detallada);
+                     active_model.fecha_vencimiento = Set(record.fecha_vencimiento.and_then(|d| NaiveDate::parse_from_str(&d, "%Y-%m-%d").ok()));
+                     active_model.compatibilidad_modelos = Set(record.compatibilidad);
+                     active_model.estado = Set(record.estado.or(Some("activo".to_string())));
+
+                     active_model.update(&db).await?;
+                     count += 1;
+                 } else {
+                     tracing::warn!("Part with SKU {} not found for update", sku_val);
+                 }
+            }
+        }
+    }
+
+    audit::log_action(
+        &db, 
+        claims.user_id, 
+        "IMPORT_UPDATE", 
+        "activos_repuestos", 
+        None, 
+        Some(format!("Actualizados {} repuestos vía CSV", count)),
+        None
+    ).await;
+
+    Ok(Json(format!("Successfully updated {} parts", count)))
 }
 #[derive(Serialize)]
 pub struct UsageHistoryDto {

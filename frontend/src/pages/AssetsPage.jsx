@@ -4,12 +4,14 @@ import axios from 'axios';
 import { Plus, Search, Edit2, Trash2, Box, MapPin, Filter, X, Download, ZoomIn, Upload } from 'lucide-react';
 import { assetService } from '../services/assetService';
 import AssetFormModal from '../components/AssetFormModal';
+import BulkImportModal from '../components/BulkImportModal';
 
 const AssetsPage = () => {
     const navigate = useNavigate();
     const [assets, setAssets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
     const [editingAsset, setEditingAsset] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [previewImage, setPreviewImage] = useState(null);
@@ -56,13 +58,13 @@ const AssetsPage = () => {
         }
     };
 
-    const handleDownloadTemplate = async () => {
+    const handleDownloadTemplateCreate = async () => {
         try {
-            const blob = await assetService.getTemplate();
+            const blob = await assetService.getTemplateCreate();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'plantilla_activos.csv';
+            a.download = 'plantilla_activos_nuevos.csv';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -72,24 +74,30 @@ const AssetsPage = () => {
         }
     };
 
-    const handleCsvImport = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const uploadData = new FormData();
-        uploadData.append('file', file);
-
-        setLoading(true);
+    const handleDownloadTemplateUpdate = async () => {
         try {
-            await assetService.importCsv(uploadData);
-            alert("Importación completada con éxito");
-            fetchAssets();
+            const blob = await assetService.getTemplateUpdate();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'plantilla_activos_actualizar.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => window.URL.revokeObjectURL(url), 100);
         } catch (error) {
-            console.error("Error importing CSV", error);
-            alert("Error al importar CSV. Verifique el formato.");
-        } finally {
-            setLoading(false);
+            console.error("Error downloading template", error);
         }
+    };
+
+    const handleImportCreate = async (formData) => {
+        await assetService.importCreate(formData);
+        fetchAssets();
+    };
+
+    const handleImportUpdate = async (formData) => {
+        await assetService.importUpdate(formData);
+        fetchAssets();
     };
 
     const openCreateModal = () => {
@@ -160,15 +168,14 @@ const AssetsPage = () => {
                         />
                     </div>
                     <div className="flex items-center gap-2">
-                        <button onClick={handleDownloadTemplate} className="flex items-center gap-2 text-slate-500 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors text-xs font-bold uppercase tracking-tight" title="Descargar Plantilla CSV">
-                            <Download className="w-4 h-4" />
-                            <span>Plantilla</span>
-                        </button>
-                        <label className="flex items-center gap-2 text-slate-500 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer text-xs font-bold uppercase tracking-tight" title="Importar CSV">
+                        <button
+                            onClick={() => setShowImportModal(true)}
+                            className="flex items-center gap-2 text-slate-500 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors text-xs font-bold uppercase tracking-tight"
+                            title="Importar CSV"
+                        >
                             <Upload className="w-4 h-4" />
-                            <span>Importar CSV</span>
-                            <input type="file" accept=".csv" onChange={handleCsvImport} className="hidden" />
-                        </label>
+                            <span>Importar</span>
+                        </button>
                         <button
                             onClick={openCreateModal}
                             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 shadow-lg shadow-blue-500/30"
@@ -344,6 +351,18 @@ const AssetsPage = () => {
                 onClose={() => setShowModal(false)}
                 onSaved={handleSaved}
                 assetId={editingAsset ? editingAsset.id : null}
+            />
+
+            {/* Bulk Import Modal */}
+            <BulkImportModal
+                isOpen={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                title="Importación Masiva de Activos"
+                entityName="activos"
+                onDownloadTemplateCreate={handleDownloadTemplateCreate}
+                onDownloadTemplateUpdate={handleDownloadTemplateUpdate}
+                onImportCreate={handleImportCreate}
+                onImportUpdate={handleImportUpdate}
             />
 
             {/* Image Preview Modal (Only for Table viewing) */}
