@@ -388,7 +388,17 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
                             </div>
                             <div className="col-span-1">
                                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Año</label>
-                                <input type="number" name="anio" value={formData.anio} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
+                                <select
+                                    name="anio"
+                                    value={formData.anio}
+                                    onChange={handleInputChange}
+                                    className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none"
+                                >
+                                    <option value="">Seleccionar...</option>
+                                    {Array.from({ length: new Date().getFullYear() - 1950 + 2 }, (_, i) => new Date().getFullYear() + 1 - i).map(year => (
+                                        <option key={year} value={year}>{year}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="col-span-1">
                                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Color</label>
@@ -468,14 +478,6 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-800 mt-4">
-                        <button type="button" onClick={onClose} className="px-5 py-2.5 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white text-sm font-medium transition-colors">Cancelar</button>
-                        <button type="submit" disabled={loading} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-lg shadow-blue-500/30 transition-all flex items-center gap-2">
-                            {loading ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> : null}
-                            Guardar Activo
-                        </button>
                     </div>
                 </form>
             </Modal>

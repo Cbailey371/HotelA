@@ -6,6 +6,7 @@ use crate::utils::{hash, jwt, error::AppError};
 
 #[derive(Deserialize)]
 pub struct LoginRequest {
+    #[serde(alias = "username")]
     pub usuario: String,
     pub password: String,
 }
