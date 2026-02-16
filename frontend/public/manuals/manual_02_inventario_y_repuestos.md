@@ -66,14 +66,26 @@ Existen dos formas de ingresar repuestos al sistema: manual o masiva.
 2.  Haga clic en **"+ Nuevo Ítem"**.
 3.  Llene la ficha técnica como se describe en la sección 1.2 y guarde.
 
-#### B. Importación Masiva (Excel/CSV)
+#### B. Importación y Actualización Masiva (Excel/CSV)
 
-> [!TIP]
-> **Recomendación de Inicio**: Para la puesta en marcha del sistema, se recomienda realizar una **carga inicial de inventario**. La opción de Importación Masiva es ideal para este proceso, permitiéndole subir cientos de repuestos y suministros de forma rápida y estructurada.
+El módulo de inventario permite la carga y actualización masiva de repuestos mediante archivos CSV, ideal para cargas iniciales o ajustes de stock y precios.
 
-Para cargas iniciales de cientos de repuestos:
-1.  En la pantalla de Inventario, haga clic en **"Plantilla"** para descargar el archivo base en formato CSV.
-2.  Una vez descargada la plantilla, llénela respetando las columnas (no cambie los encabezados).
-3.  Para subir el archivo completado, haga clic en **"Importar CSV"**.
-4.  Seleccione su archivo desde su PC.
-5.  El sistema validará y creará todos los repuestos automáticamente.
+##### 1. Importar Nuevos Repuestos (Alta)
+Para ingresar referencias que **no existen** en el catálogo:
+
+1.  Haga clic en el botón **"Importar"** en la cabecera.
+2.  Asegúrese de estar en la pestaña **"Importar Nuevos"**.
+3.  Descargue la plantilla **"Descargar CSV (Nuevos)"**.
+4.  Complete los datos requeridos (Nombre, Categoría, Stock Inicial, etc.).
+    *   El sistema generará automáticamente el código interno.
+5.  Suba el archivo en la zona de carga para registrar los ítems.
+
+##### 2. Actualizar Inventario (Modificación)
+Para cambios masivos en stock, precios, ubicaciones o detalles de ítems **existentes**:
+
+1.  Haga clic en **"Importar"** y seleccione la pestaña **"Actualizar Existentes"**.
+2.  Descargue la plantilla **"Descargar CSV (Actualización)"**.
+    *   Este archivo incluirá sus repuestos actuales con sus identificadores únicos (`sku` o `codigo_repuesto`).
+3.  Edite los valores que desea actualizar (ej. corregir precios, ajustar ubicaciones detalladas).
+    *   **Crucial**: Mantenga intacta la columna `sku` o identificador, ya que es el vínculo para la actualización.
+4.  Suba el archivo guardado. El sistema buscará cada ítem por su código y actualizará únicamente los campos modificados.

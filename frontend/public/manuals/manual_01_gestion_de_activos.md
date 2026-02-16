@@ -37,17 +37,33 @@ Existen dos formas de ingresar activos al sistema: manual o masiva.
 4.  **Imagen**: Puede subir una foto del equipo para fácil identificación.
 5.  Haga clic en **"Guardar"**.
 
-#### B. Importación Masiva (Excel/CSV)
+#### B. Importación y Actualización Masiva (Excel/CSV)
+
+El sistema ofrece dos modalidades de carga masiva para facilitar tanto el ingreso inicial como el mantenimiento de la base de datos de activos.
 
 > [!TIP]
-> **Recomendación de Inicio**: Para la puesta en marcha del sistema, se recomienda realizar una **carga inicial de activos**. La opción de Importación Masiva es ideal para este proceso, permitiéndole subir cientos de equipos de forma rápida y estructurada.
+> **Recomendación**: Utilice siempre las plantillas proporcionadas por el sistema para evitar errores de formato.
 
-Para cargas iniciales de cientos de equipos:
-1.  En la pantalla de Activos, haga clic en **"Plantilla"** para descargar el archivo base en formato CSV.
-2.  Una vez descargada la plantilla, llénela respetando las columnas (no cambie los encabezados).
-3.  Para subir el archivo completado, haga clic en **"Importar CSV"**.
-4.  Seleccione su archivo desde su PC.
-5.  El sistema validará y creará todos los activos automáticamente.
+##### 1. Importar Nuevos Activos (Creación)
+Utilice esta opción para registrar activos que **no existen** en el sistema.
+
+1.  En la pantalla de Activos, haga clic en el botón **"Importar"**.
+2.  Seleccione la pestaña **"Importar Nuevos"**.
+3.  Haga clic en **"Descargar CSV (Nuevos)"** para obtener la plantilla vacía.
+4.  Llene la plantilla con la información de sus nuevos equipos.
+    *   **Nota**: Deje columnas de ID vacías si la plantilla las incluye, el sistema generará los códigos automáticamente.
+5.  En la misma ventana, seleccione su archivo completado y el sistema procesará las altas.
+
+##### 2. Actualizar Existentes (Modificación Masiva)
+Utilice esta opción para modificar datos de activos **ya registrados** (ej. cambios masivos de ubicación o estado).
+
+1.  En la pantalla de Activos, haga clic en el botón **"Importar"**.
+2.  Seleccione la pestaña **"Actualizar Existentes"**.
+3.  Haga clic en **"Descargar CSV (Actualización)"**.
+    *   **Importante**: Esta plantilla descargará su inventario actual, incluyendo una columna crítica: `codigo_equipo` (o ID).
+4.  Realice los cambios necesarios sobre el archivo descargado (ej. cambiar "Estado" de múltiples equipos).
+    *   **Advertencia**: **NO modifique** la columna de `codigo_equipo` o ID, ya que es la llave que el sistema usa para identificar qué activo actualizar.
+5.  Suba el archivo modificado en la misma pestaña para aplicar los cambios.
 
 ### 1.2. Expediente Digital del Activo
 Al hacer clic en el ícono de **"Ojo" (Ver Detalle)** de un activo, accede a su expediente completo:
