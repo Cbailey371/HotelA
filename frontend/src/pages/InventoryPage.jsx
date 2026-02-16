@@ -11,6 +11,7 @@ import { providerService } from '../services/providerService';
 import { assetService } from '../services/assetService';
 
 import BulkImportModal from '../components/BulkImportModal';
+import Modal from '../components/Modal';
 import { useAuth } from '../context/AuthContext';
 
 const InventoryPage = () => {
