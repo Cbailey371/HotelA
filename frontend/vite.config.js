@@ -39,5 +39,8 @@ export default defineConfig({
         changeOrigin: true,
       }
     }
+  },
+  build: {
+    assetsDir: 'static',
   }
 })
