@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, X, Building2, User, Phone, Mail } from 'lucide-react';
-import providerService from '../services/providerService';
+import { providerService } from '../services/providerService';
 
 const ProviderSearchModal = ({ isOpen, onClose, onSelect }) => {
     const [providers, setProviders] = useState([]);
@@ -17,7 +17,7 @@ const ProviderSearchModal = ({ isOpen, onClose, onSelect }) => {
     const fetchProviders = async () => {
         try {
             setLoading(true);
-            const data = await providerService.getProviders();
+            const data = await providerService.getAll();
             setProviders(data);
         } catch (error) {
             console.error("Error fetching providers:", error);
