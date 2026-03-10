@@ -21,6 +21,7 @@ const WorkOrdersPage = () => {
     const [maintenanceTypes, setMaintenanceTypes] = useState([]);
     const [pendingSchedules, setPendingSchedules] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [showMaintenanceSelector, setShowMaintenanceSelector] = useState(false);
     const [selectedMaintenanceIds, setSelectedMaintenanceIds] = useState([]); // New state for multi-select
@@ -38,6 +39,13 @@ const WorkOrdersPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [filterPriority, setFilterPriority] = useState('all');
+
+    // Asset Search States
+    const [showAssetSearch, setShowAssetSearch] = useState(false);
+    const [assetSearchQuery, setAssetSearchQuery] = useState('');
+    const [assetCategoryFilter, setAssetCategoryFilter] = useState('');
+    const [assetLocationFilter, setAssetLocationFilter] = useState('');
+    const [showAdvancedAssetFilters, setShowAdvancedAssetFilters] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -58,9 +66,11 @@ const WorkOrdersPage = () => {
         fetchData();
     }, []);
 
-    const fetchData = async () => {
+    const fetchData = async (silent = false) => {
         try {
-            setLoading(true);
+            if (!silent) setLoading(true);
+            else setRefreshing(true);
+
             const [ordersData, assetsData, techsData, provsData, schedulesRes, mTypesRes, paymentTermsRes] = await Promise.all([
                 workOrderService.getAll(),
                 assetService.getAll(),
@@ -78,8 +88,10 @@ const WorkOrdersPage = () => {
             setMaintenanceTypes(mTypesRes.data);
             setPendingSchedules(schedulesRes.data.filter(s => s.estado === 'programado' && !s.tiene_ot));
         } catch (error) {
+            console.error("Error fetching data", error);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     };
 
@@ -162,7 +174,7 @@ const WorkOrdersPage = () => {
             setShowModal(false);
             setEditingOrder(null);
             setIsDirty(false);
-            fetchData();
+            fetchData(true); // Silent refresh
         } catch (error) {
         }
     };
@@ -573,13 +585,19 @@ const WorkOrdersPage = () => {
             >
                 <div>
                     <div className="flex justify-between items-center mb-6">
-                        {(!formData.id_calendario && (!formData.id_calendarios || formData.id_calendarios.length === 0)) && pendingSchedules.length > 0 && (
+                        {(!formData.id_calendario && (!formData.id_calendarios || formData.id_calendarios.length === 0)) && (
                             <button
                                 type="button"
+                                disabled={refreshing && pendingSchedules.length === 0}
                                 onClick={() => setShowMaintenanceSelector(true)}
-                                className="bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+                                className={`${(refreshing && pendingSchedules.length === 0) ? 'opacity-50 cursor-wait' : ''} bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2`}
                             >
-                                <ClipboardList className="w-4 h-4" /> Cargar Mantenimiento
+                                {refreshing ? (
+                                    <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                    <ClipboardList className="w-4 h-4" />
+                                )}
+                                {refreshing && pendingSchedules.length === 0 ? 'Sincronizando...' : 'Cargar Mantenimiento'}
                             </button>
                         )}
                         {(formData.id_calendario || (formData.id_calendarios && formData.id_calendarios.length > 0)) && (
@@ -595,20 +613,32 @@ const WorkOrdersPage = () => {
                         <div className="space-y-4">
                             <div>
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Activo / Equipo</label>
-                                <select
-                                    required
-                                    className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
-                                    value={formData.id_activo}
-                                    onChange={(e) => {
-                                        setFormData({ ...formData, id_activo: e.target.value });
-                                        setIsDirty(true);
-                                    }}
-                                >
-                                    <option value="">Seleccionar activo...</option>
-                                    {assets.map(a => (
-                                        <option key={a.id} value={a.id}>{a.nombre} ({a.codigo})</option>
-                                    ))}
-                                </select>
+                                <div className="relative group">
+                                    <input
+                                        readOnly
+                                        required
+                                        type="text"
+                                        placeholder="Haga clic para buscar equipo..."
+                                        value={formData.id_activo ? assets.find(a => a.id == formData.id_activo)?.nombre : ''}
+                                        onClick={() => {
+                                            if (formData.id_calendario || (formData.id_calendarios && formData.id_calendarios.length > 0)) {
+                                                alert("No puede cambiar el equipo de una Orden de Trabajo vinculada a un mantenimiento programado.");
+                                                return;
+                                            }
+                                            setAssetSearchQuery('');
+                                            setAssetCategoryFilter('');
+                                            setAssetLocationFilter('');
+                                            setShowAssetSearch(true);
+                                        }}
+                                        className="w-full bg-slate-50 dark:bg-[#0f172a] border-2 border-dashed border-slate-200 dark:border-slate-700/50 hover:border-indigo-400 dark:hover:border-indigo-500 rounded-xl p-3.5 pl-10 text-sm font-bold outline-none cursor-pointer transition-all text-slate-700 dark:text-slate-200 placeholder:text-slate-400 italic"
+                                    />
+                                    <Search className="w-4 h-4 text-slate-400 absolute left-4 top-4 group-hover:text-indigo-500 transition-colors pointer-events-none" />
+                                    {formData.id_activo && (
+                                        <div className="absolute right-4 top-4 text-[10px] font-black text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded uppercase tracking-widest">
+                                            ID: {assets.find(a => a.id == formData.id_activo)?.codigo}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div>
@@ -828,6 +858,134 @@ const WorkOrdersPage = () => {
                     </div>
                 </div>
             </Modal>
+
+            {/* Asset Search Modal */}
+            {showAssetSearch && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-[#0f172a] w-full max-w-lg rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col max-h-[70vh]">
+                        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50/50 dark:bg-slate-900/50">
+                            <Search className="w-5 h-5 text-indigo-500" />
+                            <input
+                                autoFocus
+                                type="text"
+                                placeholder="Buscar equipo por nombre o código..."
+                                value={assetSearchQuery}
+                                onChange={(e) => setAssetSearchQuery(e.target.value)}
+                                className="flex-1 bg-transparent text-base font-bold outline-none placeholder:text-slate-400 dark:text-white"
+                            />
+                            <button
+                                onClick={() => setShowAdvancedAssetFilters(!showAdvancedAssetFilters)}
+                                className={`p-2 rounded-lg transition-colors ${showAdvancedAssetFilters ? 'bg-indigo-100 text-indigo-600' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                title="Filtros avanzados"
+                            >
+                                <Filter className="w-5 h-5" />
+                            </button>
+                            <button onClick={() => setShowAssetSearch(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {showAdvancedAssetFilters && (
+                            <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in slide-in-from-top-2 duration-200">
+                                <div>
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Categoría</label>
+                                    <select
+                                        value={assetCategoryFilter}
+                                        onChange={(e) => setAssetCategoryFilter(e.target.value)}
+                                        className="w-full bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-xs font-bold outline-none"
+                                    >
+                                        <option value="">Todas las categorías</option>
+                                        {[...new Set(assets.map(a => a.categoria).filter(Boolean))].map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Ubicación</label>
+                                    <div className="flex gap-2">
+                                        <select
+                                            value={assetLocationFilter}
+                                            onChange={(e) => setAssetLocationFilter(e.target.value)}
+                                            className="flex-1 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-xs font-bold outline-none"
+                                        >
+                                            <option value="">Todas las ubicaciones</option>
+                                            {[...new Set(assets.map(a => a.ubicacion).filter(Boolean))].map(loc => (
+                                                <option key={loc} value={loc}>{loc}</option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setAssetCategoryFilter('');
+                                                setAssetLocationFilter('');
+                                            }}
+                                            className="p-1.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-300 transition-colors"
+                                            title="Limpiar filtros"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex-1 overflow-auto p-2 space-y-1">
+                            {assets.filter(a => {
+                                const matchesSearch = (a.nombre || '').toLowerCase().includes(assetSearchQuery.toLowerCase()) ||
+                                    (a.codigo || '').toLowerCase().includes(assetSearchQuery.toLowerCase());
+                                const matchesCategory = !assetCategoryFilter || a.categoria === assetCategoryFilter;
+                                const matchesLocation = !assetLocationFilter || a.ubicacion === assetLocationFilter;
+                                return matchesSearch && matchesCategory && matchesLocation;
+                            }).map(a => (
+                                <div
+                                    key={a.id}
+                                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 cursor-pointer group transition-all"
+                                    onClick={() => {
+                                        setFormData({ ...formData, id_activo: a.id });
+                                        setIsDirty(true);
+                                        setShowAssetSearch(false);
+                                    }}
+                                >
+                                    <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center flex-shrink-0 relative overflow-hidden border border-slate-200 dark:border-slate-700">
+                                        {a.imagen_url ? (
+                                            <img src={`${a.imagen_url}`} alt={a.nombre} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <Settings className="w-6 h-6 text-slate-400" />
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-bold text-slate-800 dark:text-slate-200 truncate">{a.nombre}</span>
+                                            <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors">
+                                                {a.codigo}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            {a.categoria && (
+                                                <span className="text-[9px] text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded uppercase">{a.categoria}</span>
+                                            )}
+                                            {a.ubicacion && (
+                                                <span className="text-[9px] text-amber-600 font-bold bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded uppercase">{a.ubicacion}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {assets.filter(a => {
+                                const matchesSearch = (a.nombre || '').toLowerCase().includes(assetSearchQuery.toLowerCase()) ||
+                                    (a.codigo || '').toLowerCase().includes(assetSearchQuery.toLowerCase());
+                                const matchesCategory = !assetCategoryFilter || a.categoria === assetCategoryFilter;
+                                const matchesLocation = !assetLocationFilter || a.ubicacion === assetLocationFilter;
+                                return matchesSearch && matchesCategory && matchesLocation;
+                            }).length === 0 && (
+                                    <div className="py-10 text-center text-slate-400">
+                                        <p className="font-bold">No se encontraron equipos</p>
+                                    </div>
+                                )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 };

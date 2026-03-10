@@ -247,6 +247,9 @@ const AssetsPage = () => {
                                 <th className="px-6 py-4">Cód. Interno</th>
                                 <th className="px-6 py-4">Detalles Técnicos</th>
                                 <th className="px-6 py-4">Ubicación</th>
+                                <th className="px-6 py-4">Proveedor / Valor</th>
+                                <th className="px-6 py-4">Tiempos</th>
+                                <th className="px-6 py-4">Observaciones</th>
                                 <th className="px-6 py-4">Estado</th>
                                 <th className="px-6 py-4 text-right">Acciones</th>
                             </tr>
@@ -309,6 +312,23 @@ const AssetsPage = () => {
                                         <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                                             <MapPin className="w-4 h-4 text-slate-400" />
                                             {asset.ubicacion || 'Sin asignar'}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="text-sm text-slate-600 dark:text-slate-300">
+                                            <span className="block font-medium truncate max-w-[150px]" title={asset.proveedor_nombre}>{asset.proveedor_nombre || '--'}</span>
+                                            {asset.valor_compra && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">${parseFloat(asset.valor_compra).toFixed(2)}</span>}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-xs">V.U: {asset.vida_util_meses ? (asset.vida_util_meses % 12 === 0 ? `${asset.vida_util_meses / 12} años` : `${asset.vida_util_meses} meses`) : '--'}</span>
+                                            <span className="text-xs text-slate-500">Gar: {asset.garantia_meses ? (asset.garantia_meses % 12 === 0 ? `${asset.garantia_meses / 12} años` : `${asset.garantia_meses} meses`) : '--'}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="text-xs text-slate-600 dark:text-slate-400 max-w-[150px] truncate" title={asset.observaciones}>
+                                            {asset.observaciones || '--'}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">

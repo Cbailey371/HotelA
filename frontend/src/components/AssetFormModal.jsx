@@ -4,6 +4,7 @@ import { ZoomIn, Image as ImageIcon, Upload, FileText, X } from 'lucide-react';
 import Modal from './Modal';
 import DatePicker from './DatePicker';
 import { useAuth } from '../context/AuthContext';
+import ProviderSearchModal from './ProviderSearchModal';
 
 const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
     const { user } = useAuth();
@@ -15,6 +16,7 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
     const [isDirty, setIsDirty] = useState(false);
     // Track the ID of the asset being edited
     const [editingId, setEditingId] = useState(null);
+    const [showProviderModal, setShowProviderModal] = useState(false);
 
     // Config Lists
     const [categoriesList, setCategoriesList] = useState([]);
@@ -43,7 +45,15 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
         cantidad: 1,
         ubicacion_detallada: '',
         fecha_instalacion: '',
-        fecha_adquisicion: ''
+        fecha_adquisicion: '',
+        proveedor_id: null,
+        proveedor_nombre: '',
+        valor_compra: '',
+        vida_util_valor: '',
+        vida_util_unidad: 'meses',
+        garantia_valor: '',
+        garantia_unidad: 'meses',
+        observaciones: ''
     };
     const [formData, setFormData] = useState(initialFormState);
 
@@ -97,6 +107,14 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
     const populateForm = (asset) => {
         if (asset.id) setEditingId(asset.id);
 
+        const parseUnits = (totalMeses) => {
+            if (!totalMeses) return { valor: '', unidad: 'meses' };
+            if (totalMeses % 12 === 0) return { valor: totalMeses / 12, unidad: 'años' };
+            return { valor: totalMeses, unidad: 'meses' };
+        };
+        const vidaUtil = parseUnits(asset.vida_util_meses);
+        const garantia = parseUnits(asset.garantia_meses);
+
         setFormData({
             ...initialFormState,
             codigo_equipo: asset.codigo,
@@ -119,6 +137,14 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
             ubicacion_detallada: asset.ubicacion_detallada || '',
             fecha_instalacion: asset.fecha_instalacion ? asset.fecha_instalacion.split('T')[0] : '',
             fecha_adquisicion: asset.fecha_adquisicion ? asset.fecha_adquisicion.split('T')[0] : '',
+            proveedor_id: asset.proveedor_id || null,
+            proveedor_nombre: asset.proveedor_nombre || '',
+            valor_compra: asset.valor_compra !== null ? asset.valor_compra : '',
+            vida_util_valor: vidaUtil.valor,
+            vida_util_unidad: vidaUtil.unidad,
+            garantia_valor: garantia.valor,
+            garantia_unidad: garantia.unidad,
+            observaciones: asset.observaciones || '',
             documentos: asset.documentos || []
         });
     };
@@ -229,6 +255,32 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
 
         if (sanitizedData.fecha_instalacion === '') sanitizedData.fecha_instalacion = null;
         if (sanitizedData.fecha_adquisicion === '') sanitizedData.fecha_adquisicion = null;
+        if (sanitizedData.observaciones === '') sanitizedData.observaciones = null;
+
+        if (sanitizedData.vida_util_valor) {
+            sanitizedData.vida_util_meses = sanitizedData.vida_util_unidad === 'años'
+                ? parseInt(sanitizedData.vida_util_valor) * 12
+                : parseInt(sanitizedData.vida_util_valor);
+        } else {
+            sanitizedData.vida_util_meses = null;
+        }
+
+        if (sanitizedData.garantia_valor) {
+            sanitizedData.garantia_meses = sanitizedData.garantia_unidad === 'años'
+                ? parseInt(sanitizedData.garantia_valor) * 12
+                : parseInt(sanitizedData.garantia_valor);
+        } else {
+            sanitizedData.garantia_meses = null;
+        }
+
+        if (sanitizedData.valor_compra === '') sanitizedData.valor_compra = null;
+        else if (sanitizedData.valor_compra !== null) sanitizedData.valor_compra = parseFloat(sanitizedData.valor_compra);
+
+        delete sanitizedData.vida_util_valor;
+        delete sanitizedData.vida_util_unidad;
+        delete sanitizedData.garantia_valor;
+        delete sanitizedData.garantia_unidad;
+        delete sanitizedData.proveedor_nombre;
 
         try {
             if (editingId) {
@@ -433,6 +485,95 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
                                 />
                             </div>
                             <div className="col-span-2">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Proveedor</label>
+                                <div className="flex gap-2 w-full">
+                                    <input
+                                        readOnly
+                                        value={formData.proveedor_nombre}
+                                        placeholder="Seleccionar proveedor..."
+                                        className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm outline-none cursor-default"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowProviderModal(true)}
+                                        className="px-4 py-2.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors font-medium text-sm whitespace-nowrap"
+                                    >
+                                        Buscar
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Valor del Activo</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        name="valor_compra"
+                                        value={formData.valor_compra}
+                                        onChange={handleInputChange}
+                                        placeholder="0.00"
+                                        className="w-full pl-8 pr-4 py-2.5 bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none"
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Vida Útil</label>
+                                <div className="flex bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden focus-within:border-blue-500">
+                                    <input
+                                        type="number"
+                                        name="vida_util_valor"
+                                        value={formData.vida_util_valor}
+                                        onChange={handleInputChange}
+                                        placeholder="0"
+                                        className="w-full p-2.5 bg-transparent text-slate-900 dark:text-white text-sm outline-none border-r border-slate-300 dark:border-slate-700"
+                                    />
+                                    <select
+                                        name="vida_util_unidad"
+                                        value={formData.vida_util_unidad}
+                                        onChange={handleInputChange}
+                                        className="px-3 bg-transparent text-slate-600 dark:text-slate-400 text-sm font-medium outline-none cursor-pointer"
+                                    >
+                                        <option value="meses">Meses</option>
+                                        <option value="años">Años</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Garantía</label>
+                                <div className="flex bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden focus-within:border-blue-500">
+                                    <input
+                                        type="number"
+                                        name="garantia_valor"
+                                        value={formData.garantia_valor}
+                                        onChange={handleInputChange}
+                                        placeholder="0"
+                                        className="w-full p-2.5 bg-transparent text-slate-900 dark:text-white text-sm outline-none border-r border-slate-300 dark:border-slate-700"
+                                    />
+                                    <select
+                                        name="garantia_unidad"
+                                        value={formData.garantia_unidad}
+                                        onChange={handleInputChange}
+                                        className="px-3 bg-transparent text-slate-600 dark:text-slate-400 text-sm font-medium outline-none cursor-pointer"
+                                    >
+                                        <option value="meses">Meses</option>
+                                        <option value="años">Años</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="col-span-1"></div>
+                            <div className="col-span-2">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Observaciones</label>
+                                <textarea
+                                    name="observaciones"
+                                    value={formData.observaciones}
+                                    onChange={handleInputChange}
+                                    rows="2"
+                                    placeholder="Detalles adicionales sobre el activo..."
+                                    className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none resize-none custom-scrollbar"
+                                />
+                            </div>
+                            <div className="col-span-2">
                                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Ubicación Detallada</label>
                                 <input name="ubicacion_detallada" value={formData.ubicacion_detallada} onChange={handleInputChange} placeholder="ej. Ala Norte, Pasillo 4, Rack B" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />
                             </div>
@@ -506,6 +647,20 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
                     </div>
                 </div>
             )}
+
+            <ProviderSearchModal
+                isOpen={showProviderModal}
+                onClose={() => setShowProviderModal(false)}
+                onSelect={(provider) => {
+                    setFormData(prev => ({
+                        ...prev,
+                        proveedor_id: provider.id_proveedor,
+                        proveedor_nombre: provider.nombre_proveedor
+                    }));
+                    setIsDirty(true);
+                    setShowProviderModal(false);
+                }}
+            />
         </>
     );
 };

@@ -55,6 +55,7 @@ mod m20260212_044302_create_purchase_quotes;
 mod m20260212_044420_seed_quotes_permissions;
 mod m20260212_200000_add_sku_and_part_assets;
 mod m20260213_000000_update_rbac_v2;
+mod m20260310_020021_add_garantia_to_activos;
 
 pub struct Migrator;
 
@@ -116,6 +117,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260212_044420_seed_quotes_permissions::Migration),
             Box::new(m20260212_200000_add_sku_and_part_assets::Migration),
             Box::new(m20260213_000000_update_rbac_v2::Migration),
+            Box::new(m20260310_020021_add_garantia_to_activos::Migration),
         ]
     }
 }

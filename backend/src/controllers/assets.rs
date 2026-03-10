@@ -31,6 +31,11 @@ pub struct CreateAssetRequest {
     pub ubicacion_detallada: Option<String>,
     pub fecha_instalacion: Option<String>,
     pub fecha_adquisicion: Option<String>,
+    pub proveedor_id: Option<i32>,
+    pub valor_compra: Option<f64>,
+    pub vida_util_meses: Option<i32>,
+    pub garantia_meses: Option<i32>,
+    pub observaciones: Option<String>,
     pub documentos: Option<Vec<AddDocumentRequest>>,
 }
 
@@ -57,6 +62,11 @@ pub struct UpdateAssetRequest {
     pub ubicacion_detallada: Option<String>,
     pub fecha_instalacion: Option<String>,
     pub fecha_adquisicion: Option<String>,
+    pub proveedor_id: Option<i32>,
+    pub valor_compra: Option<f64>,
+    pub vida_util_meses: Option<i32>,
+    pub garantia_meses: Option<i32>,
+    pub observaciones: Option<String>,
     pub _documentos: Option<Vec<AddDocumentRequest>>,
 }
 
@@ -84,6 +94,12 @@ pub struct AssetDto {
     pub ubicacion_detallada: Option<String>,
     pub fecha_instalacion: Option<String>,
     pub fecha_adquisicion: Option<String>,
+    pub proveedor_id: Option<i32>,
+    pub proveedor_nombre: Option<String>,
+    pub valor_compra: Option<f64>,
+    pub vida_util_meses: Option<i32>,
+    pub garantia_meses: Option<i32>,
+    pub observaciones: Option<String>,
     pub historial: Vec<MaintenanceHistoryItem>,
     pub repuestos: Vec<SparePartHistoryItem>,
     pub documentos: Vec<DocumentoDto>,
@@ -151,6 +167,11 @@ pub async fn create_asset(
         ubicacion_detallada: Set(payload.ubicacion_detallada),
         fecha_instalacion: Set(payload.fecha_instalacion.and_then(|d| chrono::NaiveDate::parse_from_str(&d, "%Y-%m-%d").ok())),
         fecha_adquisicion: Set(payload.fecha_adquisicion.and_then(|d| chrono::NaiveDate::parse_from_str(&d, "%Y-%m-%d").ok())),
+        proveedor_id: Set(payload.proveedor_id),
+        valor_compra: Set(payload.valor_compra.and_then(|v| rust_decimal::Decimal::from_f64_retain(v))),
+        vida_util_meses: Set(payload.vida_util_meses),
+        garantia_meses: Set(payload.garantia_meses),
+        observaciones: Set(payload.observaciones),
         ..Default::default()
     };
 
@@ -185,10 +206,19 @@ pub async fn create_asset(
         .all(&db)
         .await?;
 
-    Ok(Json(map_asset_to_dto_full(asset, vec![], vec![], documentos, None)))
+    let proveedor_nombre = if let Some(p_id) = asset.proveedor_id {
+        crate::entities::proveedores::Entity::find_by_id(p_id)
+            .one(&db)
+            .await?
+            .map(|p| p.nombre_proveedor)
+    } else {
+        None
+    };
+
+    Ok(Json(map_asset_to_dto_full(asset, vec![], vec![], documentos, None, proveedor_nombre)))
 }
 
-fn map_asset_to_dto(a: activos_equipos::Model, historial: Vec<MaintenanceHistoryItem>, repuestos: Vec<SparePartHistoryItem>) -> AssetDto {
+fn map_asset_to_dto(a: activos_equipos::Model, historial: Vec<MaintenanceHistoryItem>, repuestos: Vec<SparePartHistoryItem>, proveedor_nombre: Option<String>) -> AssetDto {
     AssetDto {
         id: a.id_equipo,
         codigo: a.codigo_equipo,
@@ -212,6 +242,12 @@ fn map_asset_to_dto(a: activos_equipos::Model, historial: Vec<MaintenanceHistory
         ubicacion_detallada: a.ubicacion_detallada,
         fecha_instalacion: a.fecha_instalacion.map(|d| d.to_string()),
         fecha_adquisicion: a.fecha_adquisicion.map(|d| d.to_string()),
+        proveedor_id: a.proveedor_id,
+        proveedor_nombre,
+        valor_compra: a.valor_compra.and_then(|v| rust_decimal::prelude::ToPrimitive::to_f64(&v)),
+        vida_util_meses: a.vida_util_meses,
+        garantia_meses: a.garantia_meses,
+        observaciones: a.observaciones,
         historial,
         repuestos,
         documentos: vec![],
@@ -224,7 +260,8 @@ fn map_asset_to_dto_full(
     historial: Vec<MaintenanceHistoryItem>, 
     repuestos: Vec<SparePartHistoryItem>,
     documentos: Vec<activos_documentos::Model>,
-    proximo_servicio: Option<String>
+    proximo_servicio: Option<String>,
+    proveedor_nombre: Option<String>
 ) -> AssetDto {
     AssetDto {
         id: a.id_equipo,
@@ -249,6 +286,12 @@ fn map_asset_to_dto_full(
         ubicacion_detallada: a.ubicacion_detallada,
         fecha_instalacion: a.fecha_instalacion.map(|d| d.to_string()),
         fecha_adquisicion: a.fecha_adquisicion.map(|d| d.to_string()),
+        proveedor_id: a.proveedor_id,
+        proveedor_nombre,
+        valor_compra: a.valor_compra.and_then(|v| rust_decimal::prelude::ToPrimitive::to_f64(&v)),
+        vida_util_meses: a.vida_util_meses,
+        garantia_meses: a.garantia_meses,
+        observaciones: a.observaciones,
         historial,
         repuestos,
         documentos: documentos.into_iter().map(|d| DocumentoDto {
@@ -267,10 +310,13 @@ pub async fn get_assets(
     let assets = activos_equipos::Entity::find()
         .filter(activos_equipos::Column::Estado.ne("baja"))
         .order_by_asc(activos_equipos::Column::IdEquipo)
+        .find_also_related(crate::entities::proveedores::Entity)
         .all(&db)
         .await?;
 
-    let dtos: Vec<AssetDto> = assets.into_iter().map(|a| map_asset_to_dto(a, vec![], vec![])).collect();
+    let dtos: Vec<AssetDto> = assets.into_iter().map(|(a, p)| {
+        map_asset_to_dto(a, vec![], vec![], p.map(|prov| prov.nombre_proveedor))
+    }).collect();
 
     Ok(Json(dtos))
 }
@@ -280,7 +326,8 @@ pub async fn get_asset_by_id(
     Path(id): Path<i32>,
 ) -> Result<impl IntoResponse, AppError> {
     tracing::info!("Fetching asset by id: {}", id);
-    let asset = activos_equipos::Entity::find_by_id(id)
+    let existing_asset = activos_equipos::Entity::find_by_id(id)
+        .find_also_related(crate::entities::proveedores::Entity)
         .one(&db)
         .await
         .map_err(|e| {
@@ -288,6 +335,9 @@ pub async fn get_asset_by_id(
             AppError::Internal(e.to_string())
         })?
         .ok_or_else(|| AppError::NotFound("Activo no encontrado".to_string()))?;
+
+    let asset = existing_asset.0;
+    let proveedor_nombre = existing_asset.1.map(|p| p.nombre_proveedor);
 
     tracing::info!("Asset found, fetching maintenance history");
 
@@ -342,7 +392,7 @@ pub async fn get_asset_by_id(
 
     tracing::info!("Documents fetched (count: {}), mapping to DTO", documentos.len());
 
-    Ok(Json(map_asset_to_dto_full(asset, historial, repuestos, documentos, proximo_servicio)))
+    Ok(Json(map_asset_to_dto_full(asset, historial, repuestos, documentos, proximo_servicio, proveedor_nombre)))
 }
 
 pub async fn update_asset(
@@ -390,15 +440,29 @@ pub async fn update_asset(
     if let Some(v) = payload.ubicacion_detallada { asset.ubicacion_detallada = Set(Some(v)); }
     if let Some(v) = payload.fecha_instalacion { asset.fecha_instalacion = Set(chrono::NaiveDate::parse_from_str(&v, "%Y-%m-%d").ok()); }
     if let Some(v) = payload.fecha_adquisicion { asset.fecha_adquisicion = Set(chrono::NaiveDate::parse_from_str(&v, "%Y-%m-%d").ok()); }
+    if let Some(v) = payload.proveedor_id { asset.proveedor_id = Set(Some(v)); }
+    if let Some(v) = payload.valor_compra { asset.valor_compra = Set(rust_decimal::Decimal::from_f64_retain(v)); }
+    if let Some(v) = payload.vida_util_meses { asset.vida_util_meses = Set(Some(v)); }
+    if let Some(v) = payload.garantia_meses { asset.garantia_meses = Set(Some(v)); }
+    if let Some(v) = payload.observaciones { asset.observaciones = Set(Some(v)); }
 
     let updated = asset.update(&db).await?;
+
+    let proveedor_nombre = if let Some(p_id) = updated.proveedor_id {
+        crate::entities::proveedores::Entity::find_by_id(p_id)
+            .one(&db)
+            .await?
+            .map(|p| p.nombre_proveedor)
+    } else {
+        None
+    };
 
     let documentos = activos_documentos::Entity::find()
         .filter(activos_documentos::Column::ActivoId.eq(id))
         .all(&db)
         .await?;
 
-    Ok(Json(map_asset_to_dto_full(updated, vec![], vec![], documentos, None)))
+    Ok(Json(map_asset_to_dto_full(updated, vec![], vec![], documentos, None, proveedor_nombre)))
 }
 
 pub async fn delete_asset(
