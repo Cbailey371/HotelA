@@ -547,6 +547,11 @@ pub async fn import_assets_create(
                 active_model.ubicacion_detallada = Set(record.ubicacion_detallada);
                 active_model.fecha_instalacion = Set(record.fecha_instalacion.as_deref().and_then(|d| chrono::NaiveDate::parse_from_str(d, "%Y-%m-%d").ok()));
                 active_model.fecha_adquisicion = Set(record.fecha_adquisicion.as_deref().and_then(|d| chrono::NaiveDate::parse_from_str(d, "%Y-%m-%d").ok()));
+                active_model.proveedor_id = Set(record.proveedor_id);
+                active_model.valor_compra = Set(record.valor_compra.and_then(|v| rust_decimal::Decimal::from_f64_retain(v)));
+                active_model.vida_util_meses = Set(record.vida_util_meses);
+                active_model.garantia_meses = Set(record.garantia_meses);
+                active_model.observaciones = Set(record.observaciones.clone());
 
                 active_model.insert(&db).await?;
                 count += 1;
@@ -619,6 +624,11 @@ pub async fn import_assets_update(
                     // Dates need parsing again
                      active_model.fecha_instalacion = Set(record.fecha_instalacion.as_deref().and_then(|d| chrono::NaiveDate::parse_from_str(d, "%Y-%m-%d").ok()));
                     active_model.fecha_adquisicion = Set(record.fecha_adquisicion.as_deref().and_then(|d| chrono::NaiveDate::parse_from_str(d, "%Y-%m-%d").ok()));
+                    active_model.proveedor_id = Set(record.proveedor_id);
+                    active_model.valor_compra = Set(record.valor_compra.and_then(|v| rust_decimal::Decimal::from_f64_retain(v)));
+                    active_model.vida_util_meses = Set(record.vida_util_meses);
+                    active_model.garantia_meses = Set(record.garantia_meses);
+                    active_model.observaciones = Set(record.observaciones.clone());
 
                     active_model.update(&db).await?;
                     count += 1;
@@ -648,9 +658,9 @@ pub async fn import_assets_update(
 pub async fn get_assets_template_create() -> impl IntoResponse {
     // No codigo_equipo in Create Template
     let csv_content = "\
-codigo_administrativo,nombre_equipo,descripcion,categoria,marca,modelo,numero_serie,ubicacion,area_responsable,estado,imagen_url,tipo_activo,anio,color,numero_motor,numero_chasis,manual_pdf,cantidad,ubicacion_detallada,fecha_instalacion,fecha_adquisicion
-FIN-1001,Aire Acondicionado Central,Unidad de 5 toneladas,Climatización,Carrier,XJ-100,SN12345678,Piso 1,Mantenimiento,activo,,Equipo,2023,Blanco,,,651,1,Sala de Máquinas,2023-01-15,2023-01-10
-FIN-1002,Generador Eléctrico,Generador diesel 500kva,Energía,Cummins,C500,GEN987654,Sótano 2,Electricidad,activo,,Maquinaria,2022,Azul,,,321,1,Exterior B,2022-06-20,2022-06-05
+codigo_administrativo,nombre_equipo,descripcion,categoria,marca,modelo,numero_serie,ubicacion,area_responsable,estado,imagen_url,tipo_activo,anio,color,numero_motor,numero_chasis,manual_pdf,cantidad,ubicacion_detallada,fecha_instalacion,fecha_adquisicion,proveedor_id,valor_compra,vida_util_meses,garantia_meses,observaciones
+FIN-1001,Aire Acondicionado Central,Unidad de 5 toneladas,Climatización,Carrier,XJ-100,SN12345678,Piso 1,Mantenimiento,activo,,Equipo,2023,Blanco,,,651,1,Sala de Máquinas,2023-01-15,2023-01-10,,4500.00,120,24,Equipo vital
+FIN-1002,Generador Eléctrico,Generador diesel 500kva,Energía,Cummins,C500,GEN987654,Sótano 2,Electricidad,activo,,Maquinaria,2022,Azul,,,321,1,Exterior B,2022-06-20,2022-06-05,,12000.00,240,36,Revisar semestralmente
 ";
     (
         [(axum::http::header::CONTENT_TYPE, "text/csv"), (axum::http::header::CONTENT_DISPOSITION, "attachment; filename=\"plantilla_activos_nuevo.csv\"")],
@@ -661,9 +671,9 @@ FIN-1002,Generador Eléctrico,Generador diesel 500kva,Energía,Cummins,C500,GEN9
 pub async fn get_assets_template_update() -> impl IntoResponse {
     // Includes codigo_equipo FIRST
     let csv_content = "\
-codigo_equipo,codigo_administrativo,nombre_equipo,descripcion,categoria,marca,modelo,numero_serie,ubicacion,area_responsable,estado,imagen_url,tipo_activo,anio,color,numero_motor,numero_chasis,manual_pdf,cantidad,ubicacion_detallada,fecha_instalacion,fecha_adquisicion
-AIR-001,FIN-1001,Aire Acondicionado Central,Unidad de 5 toneladas,Climatización,Carrier,XJ-100,SN12345678,Piso 1,Mantenimiento,activo,,Equipo,2023,Blanco,,,651,1,Sala de Máquinas,2023-01-15,2023-01-10
-GEN-001,FIN-1002,Generador Eléctrico,Generador diesel 500kva,Energía,Cummins,C500,GEN987654,Sótano 2,Electricidad,activo,,Maquinaria,2022,Azul,,,321,1,Exterior B,2022-06-20,2022-06-05
+codigo_equipo,codigo_administrativo,nombre_equipo,descripcion,categoria,marca,modelo,numero_serie,ubicacion,area_responsable,estado,imagen_url,tipo_activo,anio,color,numero_motor,numero_chasis,manual_pdf,cantidad,ubicacion_detallada,fecha_instalacion,fecha_adquisicion,proveedor_id,valor_compra,vida_util_meses,garantia_meses,observaciones
+AIR-001,FIN-1001,Aire Acondicionado Central,Unidad de 5 toneladas,Climatización,Carrier,XJ-100,SN12345678,Piso 1,Mantenimiento,activo,,Equipo,2023,Blanco,,,651,1,Sala de Máquinas,2023-01-15,2023-01-10,,4500.00,120,24,Equipo vital
+GEN-001,FIN-1002,Generador Eléctrico,Generador diesel 500kva,Energía,Cummins,C500,GEN987654,Sótano 2,Electricidad,activo,,Maquinaria,2022,Azul,,,321,1,Exterior B,2022-06-20,2022-06-05,,12000.00,240,36,Revisar semestralmente
 ";
     (
         [(axum::http::header::CONTENT_TYPE, "text/csv"), (axum::http::header::CONTENT_DISPOSITION, "attachment; filename=\"plantilla_activos_actualizar.csv\"")],
