@@ -186,6 +186,15 @@ pub async fn delete_role(
         .exec(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+    usuario_roles::Entity::delete_many()
+        .filter(usuario_roles::Column::RolId.eq(id))
+        .exec(&db).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    roles::Entity::delete_by_id(id)
+        .exec(&db).await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
     // Delete role
     audit::log_action(
         &db,

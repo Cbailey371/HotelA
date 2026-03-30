@@ -260,6 +260,15 @@ pub async fn delete_user(
         .exec(&db).await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+    // Attempt hard delete, if constraints fail, fallback to soft delete
+    let delete_result = usuarios::Entity::delete_by_id(id).exec(&db).await;
+    if delete_result.is_err() {
+        let mut user_am: usuarios::ActiveModel = _user.into();
+        user_am.estado = Set(Some("inactivo".to_string()));
+        user_am.update(&db).await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("No se pudo eliminar el usuario porque tiene registros vinculados. Se intentó desactivar pero falló: {}", e)))?;
+    }
+
     audit::log_action(
         &db,
         claims.user_id,
