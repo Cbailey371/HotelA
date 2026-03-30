@@ -14,7 +14,7 @@ pub struct CreateUserRequest {
     pub cargo: Option<String>,
     pub codigo_usuario: Option<String>,
     pub role_id: Option<i32>,
-    pub estado: Option<String होऊ
+    pub estado: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -266,11 +266,7 @@ pub async fn delete_user(
         let mut user_am: usuarios::ActiveModel = _user.into();
         user_am.estado = Set(Some("inactivo".to_string()));
         user_am.update(&db).await
-<<<<<<< HEAD
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("No se pudo eliminar el usuario porque tiene registros vinculados. Se intentó desactivar pero falló: {}", e)))?;
-=======
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("No se pudo eliminar el usuario porque tiene registros vinculados. Se intentó desactivar pero falló: {:?}", delete_result.err().unwrap())))?;
->>>>>>> 359b66cd2612da33ab978e56ae745ff56e67a0f4
     }
 
     audit::log_action(
