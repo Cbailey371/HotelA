@@ -58,6 +58,7 @@ export const NAV_GROUPS = [
             { icon: Box, label: 'Activos', path: '/assets', permiso: 'assets_view' },
             { icon: Box, label: 'Inventario', path: '/inventory', permiso: 'inventory_view' },
             { icon: Building2, label: 'Proveedores', path: '/providers', permiso: 'providers_view' },
+            { icon: Wrench, label: 'Técnicos', path: '/technicians', permiso: 'techs_view' },
         ]
     },
     {
@@ -79,7 +80,6 @@ export const NAV_GROUPS = [
             { icon: Shield, label: 'Roles y Permisos', path: '/roles', permiso: 'roles_view' },
             { icon: LayoutDashboard, label: 'Auditoría', path: '/audit', permiso: 'audit_view' },
             { icon: CalendarDays, label: 'Feriados', path: '/holidays', permiso: 'holidays_view' },
-            { icon: Wrench, label: 'Técnicos', path: '/technicians', permiso: 'techs_view' },
             { icon: FileText, label: 'Reportes', path: '/reports', permiso: 'reports_view' },
             { icon: Settings, label: 'Ajustes', path: '/settings', permiso: 'settings_view' },
         ]
