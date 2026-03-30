@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { Plus, Search, Edit2, Trash2, Shield, Mail, User } from 'lucide-react';
 import { generateCode } from '../utils/codeGenerator';
 import Modal from '../components/Modal';
@@ -37,7 +37,7 @@ const UsersPage = () => {
 
     const fetchRoles = async () => {
         try {
-            const res = await axios.get('/api/roles');
+            const res = await api.get('/roles');
             setRoles(res.data);
         } catch (error) {
         }
@@ -47,7 +47,7 @@ const UsersPage = () => {
         setLoading(true);
         setError(null);
         try {
-            const res = await axios.get('/api/users');
+            const res = await api.get('/users');
             setUsers(res.data);
         } catch (error) {
             setError(error.response?.status === 403 ? "No tienes permisos para ver esta lista" : "Error al cargar usuarios");

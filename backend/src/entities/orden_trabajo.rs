@@ -9,7 +9,7 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id_ot: i32,
     pub id_calendario: Option<i32>,
-    pub id_activo: i32,
+    pub id_activo: Option<i32>,
     pub id_tipo_mantenimiento: Option<i32>,
     pub id_tecnico: Option<i32>,
     pub id_proveedor: Option<i32>,
@@ -24,6 +24,14 @@ pub struct Model {
     pub codigo_ot: Option<String>,
     pub costo_estimado: Option<Decimal>,
     pub terminos_pago: Option<String>,
+    pub tipo_ot: String,
+    pub id_ubicacion: Option<i32>,
+    pub asunto: Option<String>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub comentario_final: Option<String>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub foto_dano: Option<String>,
+    pub id_usuario: Option<i32>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -36,6 +44,16 @@ pub enum Relation {
         on_delete = "SetNull"
     )]
     MantenimientoCalendario,
+    #[sea_orm(has_many = "super::orden_trabajo_comentarios::Entity")]
+    OrdenTrabajoComentarios,
+    #[sea_orm(
+        belongs_to = "super::ubicaciones::Entity",
+        from = "Column::IdUbicacion",
+        to = "super::ubicaciones::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    Ubicaciones,
     #[sea_orm(
         belongs_to = "super::activos_equipos::Entity",
         from = "Column::IdActivo",
@@ -46,15 +64,27 @@ pub enum Relation {
     ActivosEquipos,
 }
 
+impl Related<super::activos_equipos::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ActivosEquipos.def()
+    }
+}
+
 impl Related<super::mantenimiento_calendario::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::MantenimientoCalendario.def()
     }
 }
 
-impl Related<super::activos_equipos::Entity> for Entity {
+impl Related<super::orden_trabajo_comentarios::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ActivosEquipos.def()
+        Relation::OrdenTrabajoComentarios.def()
+    }
+}
+
+impl Related<super::ubicaciones::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Ubicaciones.def()
     }
 }
 

@@ -24,6 +24,7 @@ pub struct CreateScheduleRequest {
     pub tarea_tipo_id: Option<i32>,
     pub recurrente: Option<bool>,
     pub responsable_interno_email: Option<String>,
+    pub crear_ot: Option<bool>,
 }
 
 #[derive(Serialize)]
@@ -152,7 +153,43 @@ pub async fn create_schedule(
 
     let s = new_schedule.insert(&db).await?;
 
+    if payload.crear_ot.unwrap_or(false) {
+        // Encontrar el modelo insertado para tener sus campos
+        let mnt = mantenimiento_calendario::Entity::find_by_id(s.id_mantenimiento_calendario)
+            .one(&db)
+            .await?
+            .ok_or_else(|| AppError::Internal("Error al recuperar el mantenimiento recién creado".to_string()))?;
+
+        // Llamar a una utilidad para crear la OT (similar a la del cron)
+        if let Err(e) = create_ot_from_maintenance_manual(&db, &mnt).await {
+             eprintln!("Error al crear OT manual desde mantenimiento: {:?}", e);
+        }
+    }
+
     Ok(Json(s.id_mantenimiento_calendario))
+}
+
+async fn create_ot_from_maintenance_manual(db: &DatabaseConnection, mnt: &mantenimiento_calendario::Model) -> Result<(), AppError> {
+    let next_code = crate::utils::code_generator::generate_next_code(db, "orden_trabajo", "codigo_ot", "OT-").await
+        .map_err(|e| AppError::Internal(e.to_string()))?;
+
+    let new_ot = orden_trabajo::ActiveModel {
+        id_calendario: Set(Some(mnt.id_mantenimiento_calendario)),
+        id_activo: Set(Some(mnt.equipo_id)),
+        id_tipo_mantenimiento: Set(Some(mnt.tipo_mantenimiento_id)),
+        id_tecnico: Set(mnt.tecnico_id),
+        id_proveedor: Set(mnt.proveedor_id),
+        prioridad: Set(mnt.prioridad.clone()),
+        observaciones: Set(mnt.observaciones.clone()),
+        codigo_ot: Set(Some(next_code)),
+        estado: Set(Some("abierta".to_string())),
+        costo_estimado: Set(mnt.costo_estimado),
+        tipo_ot: Set("Preventiva".to_string()),
+        ..Default::default()
+    };
+
+    new_ot.insert(db).await.map_err(|e| AppError::Internal(e.to_string()))?;
+    Ok(())
 }
 
 #[derive(Deserialize)]
@@ -532,6 +569,55 @@ pub async fn get_public_schedules(
     let schedules = mantenimiento_calendario::Entity::find()
         .find_also_related(activos_equipos::Entity)
         .filter(mantenimiento_calendario::Column::Estado.ne("cancelado"))
+        .order_by_asc(mantenimiento_calendario::Column::FechaProgramada)
+        .all(&db)
+        .await?;
+
+    let m_types = mantenimiento_tipo::Entity::find()
+        .all(&db)
+        .await?;
+
+    let dtos: Vec<ScheduleDto> = schedules.into_iter().map(|(s, e)| {
+        let tipo_nombre = m_types.iter()
+            .find(|t| t.id_tipo_mantenimiento == s.tipo_mantenimiento_id)
+            .map(|t| t.nombre_tipo.clone())
+            .unwrap_or_else(|| "Preventivo".to_string());
+
+        ScheduleDto {
+            id: s.id_mantenimiento_calendario,
+            equipo: e.map(|v| v.nombre_equipo).unwrap_or("N/A".to_string()),
+            tipo: tipo_nombre,
+            fecha: s.fecha_programada.map(|d| d.to_string()),
+            estado: s.estado.unwrap_or("programado".to_string()),
+            responsable: s.responsable_interno_email.clone().or_else(|| Some("Asignado".to_string())).take().unwrap_or_default(),
+            codigo: s.codigo_mantenimiento,
+            prioridad: s.prioridad.unwrap_or("media".to_string()),
+            orden_trabajo_id: None,
+            tiene_ot: false,
+            equipo_id: s.equipo_id,
+            tipo_mantenimiento_id: s.tipo_mantenimiento_id,
+            tecnico_id: s.tecnico_id,
+            proveedor_id: s.proveedor_id,
+            costo_estimado: s.costo_estimado.map(|c| c.to_string().parse().unwrap_or(0.0)),
+            dias_anticipacion: s.dias_anticipacion,
+            tarea_tipo_id: s.tarea_tipo_id,
+            recurrente: s.recurrente,
+            frecuencia: s.frecuencia,
+            observaciones: s.observaciones,
+            responsable_id: s.responsable_id,
+        }
+    }).collect();
+
+    Ok(Json(dtos))
+}
+
+pub async fn get_pending_schedules(
+    State(db): State<DatabaseConnection>,
+) -> Result<impl IntoResponse, AppError> {
+    let schedules = mantenimiento_calendario::Entity::find()
+        .find_also_related(activos_equipos::Entity)
+        .filter(mantenimiento_calendario::Column::OrdenTrabajoId.is_null())
+        .filter(mantenimiento_calendario::Column::Estado.eq("programado"))
         .order_by_asc(mantenimiento_calendario::Column::FechaProgramada)
         .all(&db)
         .await?;

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import {
     ArrowLeft, Settings, Wrench, Package, Calendar, MapPin,
     ShieldCheck, Activity, Hash, Clock, AlertTriangle, FileText,
-    ChevronRight, ExternalLink, Upload, Download, Edit2, Info, QrCode
+    ChevronRight, ExternalLink, Upload, Download, Edit2, Info, QrCode, Lock
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -16,6 +16,7 @@ const AssetDetailPage = () => {
     const navigate = useNavigate();
     const [asset, setAsset] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isUnauthorized, setIsUnauthorized] = useState(false);
     const [activeTab, setActiveTab] = useState('info');
     const [uploading, setUploading] = useState(false);
 
@@ -44,10 +45,13 @@ const AssetDetailPage = () => {
 
     const fetchAssetDetail = async () => {
         try {
-            const res = await axios.get(`/api/assets/${id}`);
+            const res = await api.get(`/assets/${id}`);
             setAsset(res.data);
         } catch (error) {
             console.error("Error fetching asset details", error);
+            if (error.response?.status === 403) {
+                setIsUnauthorized(true);
+            }
         } finally {
             setLoading(false);
         }
@@ -215,7 +219,43 @@ const AssetDetailPage = () => {
         </div>
     );
 
-    if (!asset) return <div className="p-8 text-center text-slate-500">Activo no encontrado.</div>;
+    if (isUnauthorized) {
+        return (
+            <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+                <div className="inline-flex p-6 rounded-3xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 mb-8 animate-in zoom-in-95 duration-500">
+                    <Lock className="w-16 h-16 text-amber-500" />
+                </div>
+                <h1 className="text-4xl font-black text-slate-800 dark:text-white mb-4 tracking-tight">Acceso Restringido</h1>
+                <p className="text-xl text-slate-500 dark:text-slate-400 mb-10 max-w-lg mx-auto leading-relaxed">
+                    No tiene permisos para ver los detalles técnicos de este activo. Si considera que esto es un error, contacte con el administrador.
+                </p>
+                <button 
+                    onClick={() => navigate(-1)}
+                    className="inline-flex items-center gap-2 px-8 py-4 bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-800 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-slate-500/20"
+                >
+                    <ArrowLeft className="w-4 h-4" /> Volver atrás
+                </button>
+            </div>
+        );
+    }
+
+    if (!asset) return (
+        <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+            <div className="inline-flex p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 mb-8">
+                <AlertTriangle className="w-16 h-16 text-slate-300" />
+            </div>
+            <h1 className="text-4xl font-black text-slate-800 dark:text-white mb-4 tracking-tight">Activo no encontrado</h1>
+            <p className="text-xl text-slate-500 dark:text-slate-400 mb-10 max-w-lg mx-auto leading-relaxed">
+                El equipo que está intentando consultar no existe en nuestro inventario actual o ha sido dado de baja.
+            </p>
+            <button 
+                onClick={() => navigate(-1)}
+                className="inline-flex items-center gap-2 px-8 py-4 bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-800 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-slate-500/20"
+            >
+                <ArrowLeft className="w-4 h-4" /> Volver al Inventario
+            </button>
+        </div>
+    );
 
     const StatusBadge = ({ status }) => {
         const config = {

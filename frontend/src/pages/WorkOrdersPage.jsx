@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { workOrderService } from '../services/workOrderService';
 import { assetService } from '../services/assetService';
 import { technicianService } from '../services/technicianService';
@@ -6,13 +8,18 @@ import { providerService } from '../services/providerService';
 import {
     Plus, Filter, Clock, CheckCircle, AlertTriangle, User, Calendar,
     Settings, Printer, Search, MoreVertical, FileText, Briefcase,
-    Building, ClipboardList, Info, Trash2, Edit, Link2Off, X, Mail
+    Building, ClipboardList, Info, Trash2, Edit, Link2Off, X, Mail,
+    Upload, Loader2
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import { locationService } from '../services/locationService';
 import { pdfGenerator } from '../utils/pdfGenerator';
 import api from '../services/api';
+import MaintenanceSelectorModal from '../components/MaintenanceSelectorModal';
 
 const WorkOrdersPage = () => {
+    const { user } = useAuth();
+    const navigate = useNavigate();
     // Data State
     const [orders, setOrders] = useState([]);
     const [assets, setAssets] = useState([]);
@@ -26,6 +33,7 @@ const WorkOrdersPage = () => {
     const [showMaintenanceSelector, setShowMaintenanceSelector] = useState(false);
     const [selectedMaintenanceIds, setSelectedMaintenanceIds] = useState([]); // New state for multi-select
     const [editingOrder, setEditingOrder] = useState(null);
+    const [locations, setLocations] = useState([]);
     const [paymentTerms, setPaymentTerms] = useState([]);
     const [isDirty, setIsDirty] = useState(false);
 
@@ -34,6 +42,10 @@ const WorkOrdersPage = () => {
     const [selectedOrderForEmail, setSelectedOrderForEmail] = useState(null);
     const [targetEmail, setTargetEmail] = useState('');
     const [sendingEmail, setSendingEmail] = useState(null);
+    const [showCloseModal, setShowCloseModal] = useState(false);
+    const [finalComment, setFinalComment] = useState('');
+    const [selectedOrderIdForComments, setSelectedOrderIdForComments] = useState(null);
+    const [pendingStatus, setPendingStatus] = useState('');
 
     // Filter & Search State
     const [searchTerm, setSearchTerm] = useState('');
@@ -46,6 +58,8 @@ const WorkOrdersPage = () => {
     const [assetCategoryFilter, setAssetCategoryFilter] = useState('');
     const [assetLocationFilter, setAssetLocationFilter] = useState('');
     const [showAdvancedAssetFilters, setShowAdvancedAssetFilters] = useState(false);
+    const [locationSearchQuery, setLocationSearchQuery] = useState('');
+    const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -57,10 +71,15 @@ const WorkOrdersPage = () => {
         id_tecnico: '',
         id_proveedor: '',
         prioridad: 'media',
+        tipo_ot: 'preventiva', // Default
+        id_ubicacion: '',
+        asunto: '',
         observaciones: '',
         costo_estimado: '',
-        terminos_pago: ''
+        terminos_pago: '',
+        foto_dano: null,
     });
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -71,14 +90,15 @@ const WorkOrdersPage = () => {
             if (!silent) setLoading(true);
             else setRefreshing(true);
 
-            const [ordersData, assetsData, techsData, provsData, schedulesRes, mTypesRes, paymentTermsRes] = await Promise.all([
+            const [ordersData, assetsData, techsData, provsData, schedulesRes, mTypesRes, paymentTermsRes, locationsData] = await Promise.all([
                 workOrderService.getAll(),
                 assetService.getAll(),
                 technicianService.getAll(),
                 providerService.getAll(),
-                api.get('/maintenance/schedule'),
+                api.get('/maintenance/pending-schedules'),
                 api.get('/maintenance/types'),
-                api.get('/settings/payment-terms')
+                api.get('/settings/payment-terms'),
+                locationService.getAll()
             ]);
 
             setOrders(ordersData.sort((a, b) => a.id_ot - b.id_ot));
@@ -86,7 +106,9 @@ const WorkOrdersPage = () => {
             setTechnicians(techsData);
             setProviders(provsData);
             setMaintenanceTypes(mTypesRes.data);
-            setPendingSchedules(schedulesRes.data.filter(s => s.estado === 'programado' && !s.tiene_ot));
+            setPendingSchedules(schedulesRes.data);
+            setLocations(locationsData);
+            setPaymentTerms(paymentTermsRes.data);
         } catch (error) {
             console.error("Error fetching data", error);
         } finally {
@@ -147,6 +169,39 @@ const WorkOrdersPage = () => {
         }
     };
 
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('Solo se permiten imágenes');
+            return;
+        }
+
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', file);
+
+        try {
+            setUploading(true);
+            const response = await fetch('/api/upload/image', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: formDataUpload
+            });
+
+            if (!response.ok) throw new Error('Error al subir imagen');
+            const data = await response.json();
+            setFormData(prev => ({ ...prev, foto_dano: data.url }));
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Error al subir la imagen');
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const handleCreate = async (e) => {
         if (e) e.preventDefault();
         try {
@@ -157,18 +212,25 @@ const WorkOrdersPage = () => {
                     id_tipo_mantenimiento: parseInt(formData.id_tipo_mantenimiento),
                     id_tecnico: formData.id_tecnico ? parseInt(formData.id_tecnico) : null,
                     id_proveedor: formData.id_proveedor ? parseInt(formData.id_proveedor) : null,
-                    costo_estimado: formData.costo_estimado !== '' ? parseFloat(formData.costo_estimado) : null
+                    costo_estimado: formData.costo_estimado !== '' ? parseFloat(formData.costo_estimado) : null,
+                    foto_dano: formData.foto_dano
                 });
             } else {
                 await workOrderService.create({
                     ...formData,
-                    id_activo: parseInt(formData.id_activo),
+                    id_activo: formData.tipo_ot === 'activo' ? parseInt(formData.id_activo) : null,
+                    id_ubicacion: formData.tipo_ot === 'general' ? parseInt(formData.id_ubicacion) : null,
                     id_tipo_mantenimiento: parseInt(formData.id_tipo_mantenimiento),
                     id_tecnico: formData.id_tecnico ? parseInt(formData.id_tecnico) : null,
                     id_proveedor: formData.id_proveedor ? parseInt(formData.id_proveedor) : null,
-                    id_calendario: formData.id_calendario, // Can be null if using id_calendarios
-                    id_calendarios: formData.id_calendarios, // Include multiple
-                    costo_estimado: formData.costo_estimado !== '' ? parseFloat(formData.costo_estimado) : null
+                    id_calendario: formData.id_calendario,
+                    id_calendarios: formData.id_calendarios,
+                    prioridad: formData.prioridad,
+                    observaciones: formData.observaciones,
+                    asunto: formData.asunto,
+                    tipo_ot: formData.tipo_ot,
+                    costo_estimado: formData.costo_estimado !== '' ? parseFloat(formData.costo_estimado) : null,
+                    foto_dano: formData.foto_dano
                 });
             }
             setShowModal(false);
@@ -214,9 +276,13 @@ const WorkOrdersPage = () => {
             id_tecnico: order.id_tecnico || '',
             id_proveedor: order.id_proveedor || '',
             prioridad: order.prioridad || 'media',
+            tipo_ot: order.tipo_ot || 'preventiva',
+            id_ubicacion: order.id_ubicacion || '',
+            asunto: order.asunto || '',
             observaciones: order.observaciones || '',
             costo_estimado: (order.costo_estimado !== null && order.costo_estimado !== undefined) ? order.costo_estimado.toString() : '',
-            terminos_pago: order.terminos_pago || ''
+            terminos_pago: order.terminos_pago || '',
+            foto_dano: order.foto_dano
         });
         setShowModal(true);
         setIsDirty(false);
@@ -234,12 +300,38 @@ const WorkOrdersPage = () => {
     };
 
     const handleStatusChange = async (id, newStatus) => {
+        if (newStatus === 'cerrada' || newStatus === 'cancelada') {
+            setSelectedOrderIdForComments(id);
+            setPendingStatus(newStatus);
+            setFinalComment('');
+            setShowCloseModal(true);
+            return;
+        }
         try {
             await workOrderService.updateStatus(id, newStatus);
-            fetchData();
+            fetchData(true);
         } catch (error) {
+            console.error("Error updating status", error);
         }
     };
+
+    const handleSaveCloseComment = async () => {
+        if (!finalComment.trim()) {
+            alert("Por favor ingrese un motivo.");
+            return;
+        }
+        try {
+            await workOrderService.closeOrder(selectedOrderIdForComments, finalComment, pendingStatus);
+            setShowCloseModal(false);
+            setFinalComment('');
+            fetchData(true);
+            alert(`Orden ${pendingStatus === 'cerrada' ? 'finalizada' : 'cancelada'} exitosamente`);
+        } catch (error) {
+            console.error("Error updating order status", error);
+            alert("Error al actualizar el estado de la orden");
+        }
+    };
+
 
     const handleSendEmailClick = (order) => {
         setSelectedOrderForEmail(order);
@@ -341,6 +433,11 @@ const WorkOrdersPage = () => {
             (order.activo?.nombre_equipo?.toLowerCase().includes(searchTerm.toLowerCase())) ||
             (order.observaciones?.toLowerCase().includes(searchTerm.toLowerCase()));
 
+        // Skip closed/cancelled orders in the main view
+        if (order.estado === 'cerrada' || order.estado === 'cancelada') {
+            return false;
+        }
+
         const matchesStatus = filterStatus === 'all' || order.estado === filterStatus;
         const matchesPriority = filterPriority === 'all' || order.prioridad === filterPriority;
 
@@ -363,7 +460,7 @@ const WorkOrdersPage = () => {
                 <button
                     onClick={() => {
                         setEditingOrder(null);
-                        setFormData({ codigo_ot: '', id_activo: '', id_tipo_mantenimiento: '', id_calendario: null, id_tecnico: '', id_proveedor: '', prioridad: 'media', observaciones: '', costo_estimado: '', terminos_pago: '' });
+                        setFormData({ codigo_ot: '', id_activo: '', id_tipo_mantenimiento: '', id_calendario: null, id_calendarios: [], id_tecnico: '', id_proveedor: '', prioridad: 'media', tipo_ot: 'preventiva', id_ubicacion: '', asunto: '', observaciones: '', costo_estimado: '', terminos_pago: '' });
                         setShowModal(true);
                         setIsDirty(false);
                     }}
@@ -424,6 +521,7 @@ const WorkOrdersPage = () => {
                                 <th className="px-6 py-4">Código</th>
                                 <th className="px-6 py-4">Activo / Equipo</th>
                                 <th className="px-6 py-4">Mantenimiento Org.</th>
+                                <th className="px-6 py-4">Asunto</th>
                                 <th className="px-6 py-4">Prioridad</th>
                                 <th className="px-6 py-4">Estado</th>
                                 <th className="px-6 py-4">Fecha Creación</th>
@@ -443,7 +541,11 @@ const WorkOrdersPage = () => {
                                     </td>
                                 </tr>
                             ) : filteredOrders.map((order) => (
-                                <tr key={order.id_ot} className="group hover:bg-slate-50 dark:hover:bg-[#0f172a]/30 transition-all">
+                                <tr 
+                                    key={order.id_ot} 
+                                    onClick={() => navigate(`/work-orders/${order.id_ot}`)}
+                                    className="group hover:bg-slate-50 dark:hover:bg-[#0f172a]/30 transition-all cursor-pointer"
+                                >
                                     <td className="px-6 py-4">
                                         <span className="font-mono font-bold text-slate-700 dark:text-slate-300 text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
                                             {order.codigo_ot || 'N/A'}
@@ -451,16 +553,27 @@ const WorkOrdersPage = () => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div>
-                                            <div className="font-bold text-slate-800 dark:text-white text-sm">{order.activo?.nombre_equipo || 'Activo Desconocido'}</div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{order.activo?.codigo_administrativo || order.activo?.codigo_equipo || 'S/N'}</span>
-                                                {order.nombre_tipo_mantenimiento && (
-                                                    <>
-                                                        <span className="text-slate-300 dark:text-slate-700 mx-1">•</span>
-                                                        <span className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">{order.nombre_tipo_mantenimiento}</span>
-                                                    </>
-                                                )}
-                                            </div>
+                                            {order.tipo_ot === 'general' ? (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/20 rounded-lg flex items-center justify-center text-amber-600">
+                                                        <Building className="w-4 h-4" />
+                                                    </div>
+                                                    <div className="font-bold text-slate-800 dark:text-white text-sm">{order.nombre_ubicacion || 'Ubicación General'}</div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="font-bold text-slate-800 dark:text-white text-sm">{order.activo?.nombre_equipo || 'Activo Desconocido'}</div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{order.activo?.codigo_administrativo || order.activo?.codigo_equipo || 'S/N'}</span>
+                                                        {order.nombre_tipo_mantenimiento && (
+                                                            <>
+                                                                <span className="text-slate-300 dark:text-slate-700 mx-1">•</span>
+                                                                <span className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">{order.nombre_tipo_mantenimiento}</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
@@ -496,6 +609,16 @@ const WorkOrdersPage = () => {
                                         ) : (
                                             <span className="text-[10px] font-bold text-slate-300 uppercase italic">Correctivo</span>
                                         )}
+                                    </td>
+                                    <td className="px-6 py-4 text-xs font-bold text-slate-600 dark:text-slate-400 max-w-[150px] truncate" title={order.asunto}>
+                                        <div className="flex items-center gap-2">
+                                            {order.foto_dano && (
+                                                <div className="flex-shrink-0 w-6 h-6 bg-indigo-50 dark:bg-indigo-900/30 rounded flex items-center justify-center text-indigo-500" title="Ver evidencia">
+                                                    <Upload className="w-3.5 h-3.5" />
+                                                </div>
+                                            )}
+                                            <span className="truncate">{order.asunto || <span className="text-slate-300 italic">Sin asunto</span>}</span>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         {getPriorityBadge(order.prioridad)}
@@ -539,14 +662,14 @@ const WorkOrdersPage = () => {
                                                 </button>
                                             )}
                                             <button
-                                                onClick={() => pdfGenerator.generateWorkOrderPDF(order)}
+                                                onClick={(e) => { e.stopPropagation(); pdfGenerator.generateWorkOrderPDF(order); }}
                                                 className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-100 rounded-lg transition-colors"
                                                 title="Imprimir PDF"
                                             >
                                                 <Printer className="w-4 h-4" />
                                             </button>
                                             <button
-                                                onClick={() => handleSendEmailClick(order)}
+                                                onClick={(e) => { e.stopPropagation(); handleSendEmailClick(order); }}
                                                 className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-slate-100 rounded-lg transition-colors"
                                                 title="Enviar por Correo"
                                                 disabled={sendingEmail === order.id_ot}
@@ -558,7 +681,17 @@ const WorkOrdersPage = () => {
                                                 )}
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(order.id_ot)}
+                                                onClick={(e) => { 
+                                                    e.stopPropagation(); 
+                                                    navigate(`/work-orders/${order.id_ot}`);
+                                                }}
+                                                className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                                                title="Ver Detalles"
+                                            >
+                                                <Info className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleDelete(order.id_ot); }}
                                                 className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                 title="Eliminar Orden"
                                             >
@@ -585,7 +718,7 @@ const WorkOrdersPage = () => {
             >
                 <div>
                     <div className="flex justify-between items-center mb-6">
-                        {(!formData.id_calendario && (!formData.id_calendarios || formData.id_calendarios.length === 0)) && (
+                        {user?.permisos?.includes('work_orders_link_maintenance') && (
                             <button
                                 type="button"
                                 disabled={refreshing && pendingSchedules.length === 0}
@@ -597,7 +730,7 @@ const WorkOrdersPage = () => {
                                 ) : (
                                     <ClipboardList className="w-4 h-4" />
                                 )}
-                                {refreshing && pendingSchedules.length === 0 ? 'Sincronizando...' : 'Cargar Mantenimiento'}
+                                {formData.id_calendarios && formData.id_calendarios.length > 0 ? "Añadir más Planes" : "Cargar Mantenimiento"}
                             </button>
                         )}
                         {(formData.id_calendario || (formData.id_calendarios && formData.id_calendarios.length > 0)) && (
@@ -612,30 +745,149 @@ const WorkOrdersPage = () => {
                     <form onSubmit={handleCreate} className="space-y-6">
                         <div className="space-y-4">
                             <div>
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Activo / Equipo</label>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Tipo de Orden de Trabajo</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setFormData({ ...formData, tipo_ot: 'activo' });
+                                            setIsDirty(true);
+                                        }}
+                                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${formData.tipo_ot !== 'general' ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}
+                                    >
+                                        Mantenimiento de Activo
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setFormData({ ...formData, tipo_ot: 'general', id_activo: null });
+                                            setIsDirty(true);
+                                        }}
+                                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${formData.tipo_ot === 'general' ? 'bg-amber-600 border-amber-600 text-white shadow-lg shadow-amber-500/20' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}
+                                    >
+                                        Mantenimiento General
+                                    </button>
+                                </div>
+                            </div>
+                            {formData.tipo_ot === 'general' && (
+                                <div className="space-y-4 mb-4">
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Ubicación / Área</label>
+                                        <div className="relative">
+                                            <div className="relative group">
+                                                <Search className="w-4 h-4 text-slate-400 absolute left-4 top-4 group-hover:text-indigo-500 transition-colors pointer-events-none" />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Escriba para buscar ubicación..."
+                                                    className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 pl-11 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer"
+                                                    value={showLocationDropdown ? locationSearchQuery : (locations.find(l => l.id == formData.id_ubicacion)?.nombre || '')}
+                                                    onChange={(e) => {
+                                                        setLocationSearchQuery(e.target.value);
+                                                        setShowLocationDropdown(true);
+                                                    }}
+                                                    onFocus={() => {
+                                                        setShowLocationDropdown(true);
+                                                        setLocationSearchQuery('');
+                                                    }}
+                                                    required
+                                                />
+                                                {formData.id_ubicacion && !showLocationDropdown && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setFormData({ ...formData, id_ubicacion: '' });
+                                                            setLocationSearchQuery('');
+                                                        }}
+                                                        className="absolute right-4 top-4 text-slate-400 hover:text-red-500 transition-colors"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            {showLocationDropdown && (
+                                                <>
+                                                    <div
+                                                        className="fixed inset-0 z-10"
+                                                        onClick={() => setShowLocationDropdown(false)}
+                                                    ></div>
+                                                    <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl z-20 max-h-60 overflow-y-auto animate-in slide-in-from-top-2 duration-200 custom-scrollbar">
+                                                        {locations
+                                                            .filter(loc => loc.nombre.toLowerCase().includes(locationSearchQuery.toLowerCase()))
+                                                            .length === 0 ? (
+                                                            <div className="p-4 text-center text-slate-400 text-xs font-bold">
+                                                                No se encontraron ubicaciones
+                                                            </div>
+                                                        ) : (
+                                                            locations
+                                                                .filter(loc => loc.nombre.toLowerCase().includes(locationSearchQuery.toLowerCase()))
+                                                                .map(loc => (
+                                                                    <div
+                                                                        key={loc.id}
+                                                                        className="px-4 py-3 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 cursor-pointer flex items-center justify-between border-b border-slate-50 dark:border-slate-800 last:border-0 group"
+                                                                        onClick={() => {
+                                                                            setFormData({ ...formData, id_ubicacion: loc.id });
+                                                                            setIsDirty(true);
+                                                                            setShowLocationDropdown(false);
+                                                                            setLocationSearchQuery('');
+                                                                        }}
+                                                                    >
+                                                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 transition-colors">
+                                                                            {loc.nombre}
+                                                                        </span>
+                                                                        {formData.id_ubicacion == loc.id && (
+                                                                            <CheckCircle className="w-4 h-4 text-indigo-500" />
+                                                                        )}
+                                                                    </div>
+                                                                ))
+                                                        )}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">
+                                    Activo / Equipo {formData.tipo_ot === 'general' && <span className="text-slate-400 lowercase italic font-normal">(opcional)</span>}
+                                </label>
                                 <div className="relative group">
                                     <input
                                         readOnly
-                                        required
+                                        required={formData.tipo_ot !== 'general'}
                                         type="text"
                                         placeholder="Haga clic para buscar equipo..."
-                                        value={formData.id_activo ? assets.find(a => a.id == formData.id_activo)?.nombre : ''}
+                                        value={formData.id_activo ? assets.find(a => a.id == formData.id_activo)?.nombre_equipo : ''}
                                         onClick={() => {
                                             if (formData.id_calendario || (formData.id_calendarios && formData.id_calendarios.length > 0)) {
                                                 alert("No puede cambiar el equipo de una Orden de Trabajo vinculada a un mantenimiento programado.");
                                                 return;
                                             }
                                             setAssetSearchQuery('');
-                                            setAssetCategoryFilter('');
-                                            setAssetLocationFilter('');
                                             setShowAssetSearch(true);
                                         }}
                                         className="w-full bg-slate-50 dark:bg-[#0f172a] border-2 border-dashed border-slate-200 dark:border-slate-700/50 hover:border-indigo-400 dark:hover:border-indigo-500 rounded-xl p-3.5 pl-10 text-sm font-bold outline-none cursor-pointer transition-all text-slate-700 dark:text-slate-200 placeholder:text-slate-400 italic"
                                     />
                                     <Search className="w-4 h-4 text-slate-400 absolute left-4 top-4 group-hover:text-indigo-500 transition-colors pointer-events-none" />
                                     {formData.id_activo && (
-                                        <div className="absolute right-4 top-4 text-[10px] font-black text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded uppercase tracking-widest">
-                                            ID: {assets.find(a => a.id == formData.id_activo)?.codigo}
+                                        <div className="absolute right-4 top-4 flex items-center gap-2">
+                                            <div className="text-[10px] font-black text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded uppercase tracking-widest">
+                                                ID: {assets.find(a => a.id == formData.id_activo)?.codigo_equipo || assets.find(a => a.id == formData.id_activo)?.codigo}
+                                            </div>
+                                            {formData.tipo_ot === 'general' && (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setFormData({ ...formData, id_activo: '' });
+                                                    }}
+                                                    className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
+                                                >
+                                                    <X className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -711,6 +963,19 @@ const WorkOrdersPage = () => {
                                 </select>
                             </div>
                             <div>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Asunto</label>
+                                <input
+                                    type="text"
+                                    className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
+                                    value={formData.asunto}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, asunto: e.target.value });
+                                        setIsDirty(true);
+                                    }}
+                                    placeholder="Resumen corto del incidente..."
+                                />
+                            </div>
+                            <div>
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Observaciones / Detalles</label>
                                 <textarea
                                     className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none min-h-[100px]"
@@ -721,6 +986,63 @@ const WorkOrdersPage = () => {
                                     }}
                                     placeholder="Describa el trabajo a realizar..."
                                 />
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Fotos del Daño / Evidencia</label>
+                                
+                                {!formData.foto_dano ? (
+                                    <div className="relative">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleFileUpload}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                            disabled={uploading}
+                                        />
+                                        <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-8 flex flex-col items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group">
+                                            <div className={`p-4 rounded-full ${uploading ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-500'} transition-all mb-4`}>
+                                                {uploading ? (
+                                                    <Loader2 className="w-8 h-8 animate-spin" />
+                                                ) : (
+                                                    <Upload className="w-8 h-8" />
+                                                )}
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                                                    {uploading ? 'Subiendo imagen...' : 'Cargar foto del daño'}
+                                                </p>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
+                                                    Click para seleccionar o arrastra aquí
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="relative group rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 aspect-video bg-slate-100 dark:bg-slate-800 max-w-md mx-auto">
+                                        <img 
+                                            src={formData.foto_dano} 
+                                            alt="Evidencia del daño" 
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setFormData({ ...formData, foto_dano: null });
+                                                    setIsDirty(true);
+                                                }}
+                                                className="p-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors shadow-lg"
+                                                title="Eliminar foto"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                            <div className="p-2.5 bg-white text-slate-900 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg">
+                                                Foto cargada
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
@@ -761,82 +1083,18 @@ const WorkOrdersPage = () => {
             </Modal>
 
             {/* Maintenance Selector Modal */}
-            < Modal
+            <MaintenanceSelectorModal
                 isOpen={showMaintenanceSelector}
                 onClose={() => setShowMaintenanceSelector(false)}
-                title="Mantenimientos Programados"
-                zIndex={60}
-            >
-                <div className="flex flex-col h-[600px]">
-                    <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-                        <span className="text-sm font-bold text-slate-500">
-                            {selectedMaintenanceIds.length === 0
-                                ? "Seleccione uno o más mantenimientos"
-                                : `${selectedMaintenanceIds.length} seleccionados`}
-                        </span>
-                        {selectedMaintenanceIds.length > 0 && (
-                            <button
-                                onClick={handleConfirmMaintenanceSelection}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2"
-                            >
-                                <CheckCircle className="w-4 h-4" /> Cargar Selección
-                            </button>
-                        )}
-                    </div>
-                    <div className="p-4 overflow-y-auto flex-1">
-                        {pendingSchedules.length === 0 ? (
-                            <div className="text-center py-12 opacity-50">
-                                <Info className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                                <p className="font-bold text-slate-500">No hay mantenimientos pendientes de OT</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {pendingSchedules.map(s => {
-                                    const isSelected = selectedMaintenanceIds.includes(s.id);
-                                    return (
-                                        <div
-                                            key={s.id}
-                                            onClick={() => toggleMaintenanceSelection(s.id)}
-                                            className={`w-full text-left p-4 rounded-2xl border cursor-pointer group transition-all relative
-                                                ${isSelected
-                                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-500'
-                                                    : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:border-indigo-300 hover:bg-white dark:hover:bg-slate-800'
-                                                }`}
-                                        >
-                                            <div className="absolute top-4 right-4">
-                                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${isSelected ? 'bg-indigo-500 border-indigo-500' : 'border-slate-300 bg-white dark:bg-slate-800'}`}>
-                                                    {isSelected && <CheckCircle className="w-3.5 h-3.5 text-white" />}
-                                                </div>
-                                            </div>
-                                            <div className="flex justify-between items-start mb-2 pr-8">
-                                                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{s.codigo || `MANT-${s.id}`}</span>
-                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.fecha}</span>
-                                            </div>
-                                            <h4 className="font-bold text-slate-800 dark:text-white mb-1">{s.equipo}</h4>
-                                            <p className="text-xs text-slate-500 font-medium mb-3">{s.tipo}</p>
-                                            <div className="flex gap-4">
-                                                {s.tecnico_id && (
-                                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase">
-                                                        <User className="w-3.5 h-3.5" /> Técnico Asignado
-                                                    </div>
-                                                )}
-                                                {s.proveedor_id && (
-                                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase">
-                                                        <Building className="w-3.5 h-3.5" /> Proveedor Asignado
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </Modal >
+                pendingSchedules={pendingSchedules}
+                selectedIds={selectedMaintenanceIds}
+                onToggle={toggleMaintenanceSelection}
+                onConfirm={handleConfirmMaintenanceSelection}
+                refreshing={refreshing}
+            />
 
             {/* Email Confirmation Modal */}
-            < Modal
+            <Modal
                 isOpen={showEmailModal}
                 onClose={() => setShowEmailModal(false)}
                 onSave={handleConfirmSendEmail}
@@ -855,6 +1113,44 @@ const WorkOrdersPage = () => {
                         <p className="text-xs text-slate-500 mt-1">
                             Separe múltiples correos con comas. Ej: <em>ventas@proveedor.com, gerente@proveedor.com</em>
                         </p>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Modal de Motivo de Cierre/Cancelación */}
+            <Modal
+                isOpen={showCloseModal}
+                onClose={() => setShowCloseModal(false)}
+                onSave={handleSaveCloseComment}
+                title={pendingStatus === 'cancelada' ? "Cancelar Orden" : "Finalizar Orden"}
+                saveText={pendingStatus === 'cancelada' ? "Confirmar Cancelación" : "Confirmar Cierre"}
+            >
+                <div className="space-y-4 p-4">
+                    <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-200 dark:border-amber-900/30 flex gap-3">
+                        <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+                        <div>
+                            <p className="text-sm font-bold text-amber-900 dark:text-amber-200">
+                                {pendingStatus === 'cancelada' ? "Atención: Cancelación de Orden" : "Atención: Cierre de Orden"}
+                            </p>
+                            <p className="text-xs text-amber-700 dark:text-amber-400">
+                                {pendingStatus === 'cancelada' 
+                                    ? "Para cancelar esta orden, debe ingresar un motivo obligatorio explicando el porqué de la anulación."
+                                    : "Para proceder al cierre, debe ingresar el comentario final o resolución de los trabajos técnicos."}
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">
+                            {pendingStatus === 'cancelada' ? "Motivo de Cancelación" : "Comentario Final"}
+                        </label>
+                        <textarea
+                            autoFocus
+                            required
+                            className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm font-bold outline-none min-h-[100px]"
+                            value={finalComment}
+                            onChange={(e) => setFinalComment(e.target.value)}
+                            placeholder={pendingStatus === 'cancelada' ? "Ingresa el motivo de la cancelación..." : "Describe la solución o trabajos realizados..."}
+                        />
                     </div>
                 </div>
             </Modal>
@@ -986,7 +1282,7 @@ const WorkOrdersPage = () => {
                     </div>
                 </div>
             )}
-        </div >
+        </div>
     );
 };
 

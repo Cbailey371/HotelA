@@ -5,3 +5,4 @@ pub mod code_generator;
 pub mod error;
 pub mod scheduler;
 pub mod audit;
+pub mod cron;

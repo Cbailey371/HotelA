@@ -56,6 +56,18 @@ mod m20260212_044420_seed_quotes_permissions;
 mod m20260212_200000_add_sku_and_part_assets;
 mod m20260213_000000_update_rbac_v2;
 mod m20260310_020021_add_garantia_to_activos;
+mod m20260324_000013_update_work_orders;
+mod m20260324_000014_create_work_order_comments;
+mod m20260325_103600_add_asunto_to_work_orders;
+mod m20260325_110000_add_foto_dano_to_work_orders;
+mod m20260325_120000_seed_portal_roles;
+mod m20260325_130000_add_id_usuario_to_work_orders;
+mod m20260325_133000_add_portal_access_permission;
+mod m20260325_143000_add_work_orders_history_permission;
+mod m20260326_163000_add_homologacion_permissions;
+mod m20260330_110000_add_dashboard_permission;
+mod m20260330_120000_cleanup_recepcion_permissions;
+mod m20260330_130000_fix_roles_and_user_assignments;
 
 pub struct Migrator;
 
@@ -118,6 +130,18 @@ impl MigratorTrait for Migrator {
             Box::new(m20260212_200000_add_sku_and_part_assets::Migration),
             Box::new(m20260213_000000_update_rbac_v2::Migration),
             Box::new(m20260310_020021_add_garantia_to_activos::Migration),
+            Box::new(m20260324_000013_update_work_orders::Migration),
+            Box::new(m20260324_000014_create_work_order_comments::Migration),
+            Box::new(m20260325_103600_add_asunto_to_work_orders::Migration),
+            Box::new(m20260325_110000_add_foto_dano_to_work_orders::Migration),
+            Box::new(m20260325_120000_seed_portal_roles::Migration),
+            Box::new(m20260325_130000_add_id_usuario_to_work_orders::Migration),
+            Box::new(m20260325_133000_add_portal_access_permission::Migration),
+            Box::new(m20260325_143000_add_work_orders_history_permission::Migration),
+            Box::new(m20260326_163000_add_homologacion_permissions::Migration),
+            Box::new(m20260330_110000_add_dashboard_permission::Migration),
+            Box::new(m20260330_120000_cleanup_recepcion_permissions::Migration),
+            Box::new(m20260330_130000_fix_roles_and_user_assignments::Migration),
         ]
     }
 }

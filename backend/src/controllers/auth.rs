@@ -61,12 +61,35 @@ pub async fn login(
                 break;
             } else if role.nombre_rol == "ADMIN" && role_name != "SUPER-ADMIN" {
                 role_name = "ADMIN".to_string();
+            } else if role_name == "USUARIO" {
+                role_name = role.nombre_rol.clone();
             }
         }
     }
 
-    // 4. Generate Token
-    let token = jwt::generate_jwt(user.id_usuario, user.usuario.clone(), role_name.clone());
+    // 4. Get permissions for the token
+    let role_ids: Vec<i32> = user_roles.iter()
+        .filter_map(|(_, r)| r.as_ref())
+        .map(|r| r.id_rol)
+        .collect();
+    
+    let user_permissions: Vec<String> = if role_ids.is_empty() {
+        Vec::new()
+    } else {
+        permisos::Entity::find()
+            .join(JoinType::InnerJoin, permisos::Relation::RolPermisos.def())
+            .filter(rol_permisos::Column::RolId.is_in(role_ids))
+            .all(&db).await
+            .unwrap_or_default()
+            .into_iter()
+            .map(|p| p.codigo_permiso)
+            .collect::<std::collections::HashSet<String>>()
+            .into_iter()
+            .collect()
+    };
+
+    // 5. Generate Token with Permissions
+    let token = jwt::generate_jwt(user.id_usuario, user.usuario.clone(), role_name.clone(), user_permissions.clone());
 
     // LOG AUDITORIA
     crate::utils::audit::log_action(
@@ -88,27 +111,7 @@ pub async fn login(
             apellido: Some(user.apellido.clone()),
             cargo: user.cargo,
             role: role_name,
-            permisos: {
-                let role_ids: Vec<i32> = user_roles.into_iter()
-                    .filter_map(|(_, r)| r)
-                    .map(|r| r.id_rol)
-                    .collect();
-                
-                if role_ids.is_empty() {
-                    Vec::new()
-                } else {
-                    permisos::Entity::find()
-                        .join(JoinType::InnerJoin, permisos::Relation::RolPermisos.def())
-                        .filter(rol_permisos::Column::RolId.is_in(role_ids))
-                        .all(&db).await
-                        .unwrap_or_default()
-                        .into_iter()
-                        .map(|p| p.codigo_permiso)
-                        .collect::<std::collections::HashSet<String>>()
-                        .into_iter()
-                        .collect()
-                }
-            },
+            permisos: user_permissions,
         }
     }))
 }

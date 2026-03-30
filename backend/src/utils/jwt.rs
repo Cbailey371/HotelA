@@ -8,9 +8,10 @@ pub struct Claims {
     pub exp: usize,
     pub user_id: i32,
     pub role: String,
+    pub permisos: Vec<String>,
 }
 
-pub fn generate_jwt(user_id: i32, username: String, role: String) -> String {
+pub fn generate_jwt(user_id: i32, username: String, role: String, permisos: Vec<String>) -> String {
     let expiration = Utc::now()
         .checked_add_signed(Duration::hours(24))
         .expect("valid timestamp")
@@ -21,6 +22,7 @@ pub fn generate_jwt(user_id: i32, username: String, role: String) -> String {
         exp: expiration as usize,
         user_id,
         role,
+        permisos,
     };
 
     let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");

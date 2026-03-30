@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { Plus, Search, Edit2, Trash2, Box, MapPin, Filter, X, Download, ZoomIn, Upload } from 'lucide-react';
+import api from '../services/api';
 import { assetService } from '../services/assetService';
 import AssetFormModal from '../components/AssetFormModal';
 import BulkImportModal from '../components/BulkImportModal';
@@ -34,7 +34,7 @@ const AssetsPage = () => {
 
     const fetchAssets = async () => {
         try {
-            const res = await axios.get('/api/assets');
+            const res = await api.get('/assets');
             setAssets(res.data);
         } catch (error) {
             console.error("Error fetching assets", error);
@@ -46,9 +46,9 @@ const AssetsPage = () => {
     const fetchConfig = async () => {
         try {
             const [catsRes, typesRes, locsRes] = await Promise.all([
-                axios.get('/api/asset-config/categories', { withCredentials: true }),
-                axios.get('/api/asset-config/types', { withCredentials: true }),
-                axios.get('/api/asset-config/locations', { withCredentials: true })
+                api.get('/asset-config/categories'),
+                api.get('/asset-config/types'),
+                api.get('/asset-config/locations')
             ]);
             setCategoriesList(catsRes.data);
             setTypesList(typesRes.data);

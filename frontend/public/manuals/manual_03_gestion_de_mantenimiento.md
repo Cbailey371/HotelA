@@ -63,17 +63,26 @@ El técnico realiza el trabajo y debe reportarlo en el sistema.
 3.  **Consumo de Repuestos** (Crucial):
     -   En la sección "Repuestos", busque y agregue los ítems usados del inventario.
     -   El sistema **descontará automáticamente** estas cantidades del stock de Inventario.
-4.  **Cierre**:
-    -   Cambie el estado a **"Completada"**.
-    -   Si el trabajo no se pudo terminar, márquela como "Pendiente" o "Cancelada" y agregue la justificación.
+4.  **Cierre y Finalización**:
+    -   Al cambiar el estado a **"Cerrada"** o **"Cancelada"**, el sistema solicitará obligatoriamente un **Motivo de Cierre**.
+    -   Este comentario quedará registrado para auditoría y historial.
+    -   Una vez cerrada, la OT desaparece del listado activo y se mueve al **Historial**.
 
-### 2.3. OT Correctivas (No Programadas)
-Si se rompe algo inesperadamente:
-1.  Vaya a **Órdenes de Trabajo**.
-2.  Clic en **"+ Nueva OT Correctiva"**.
-3.  Seleccione el Activo, describa la falla y asigne al técnico de urgencia.
+### 2.3. OT Correctivas y Portal de Solicitudes
+Si se rompe algo inesperadamente, existen dos caminos:
+1.  **Desde Gestión (Admin/Supervisor)**: Vaya a **Mantenimiento > Órdenes de Trabajo** y clic en **"+ Nueva OT Correctiva"**.
+2.  **Desde el Portal de Solicitudes (Recepción/Limpieza)**: 
+    -   Módulo diseñado para reportes rápidos sin necesidad de conocer la estructura técnica.
+    -   Permite adjuntar una **Foto del Daño** directamente desde el dispositivo.
+    -   Requiere seleccionar una **Ubicación** y describir el **Asunto**.
 
-### 2.4. Envío de OT por Correo Electrónico
+### 2.4. Historial de Órdenes de Trabajo
+Para consultar trabajos finalizados:
+1.  Vaya a **Mantenimiento > Historial de OTs**.
+2.  Utilice los filtros para buscar por fecha, activo o técnico.
+3.  Puede reimprimir el PDF de una OT cerrada en cualquier momento.
+
+### 2.5. Envío de OT por Correo Electrónico
 Puede notificar formalmente a los técnicos o proveedores externos:
 1.  En el listado o detalle de la OT, haga clic en el icono de **"Enviar por Correo" (Carta)**.
 2.  Se abrirá un modal donde podrá:

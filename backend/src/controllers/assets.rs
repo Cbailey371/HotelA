@@ -73,9 +73,11 @@ pub struct UpdateAssetRequest {
 #[derive(Serialize)]
 pub struct AssetDto {
     pub id: i32,
-    pub codigo: String,
-    pub codigo_administrativo: Option<String>,
     pub nombre: String,
+    pub nombre_equipo: String, // Alias para frontend
+    pub codigo: String,
+    pub codigo_equipo: String, // Alias para frontend
+    pub codigo_administrativo: Option<String>,
     pub descripcion: Option<String>,
     pub categoria: Option<String>,
     pub marca: Option<String>,
@@ -221,9 +223,11 @@ pub async fn create_asset(
 fn map_asset_to_dto(a: activos_equipos::Model, historial: Vec<MaintenanceHistoryItem>, repuestos: Vec<SparePartHistoryItem>, proveedor_nombre: Option<String>) -> AssetDto {
     AssetDto {
         id: a.id_equipo,
-        codigo: a.codigo_equipo,
+        codigo: a.codigo_equipo.clone(),
+        codigo_equipo: a.codigo_equipo.clone(),
         codigo_administrativo: a.codigo_administrativo,
-        nombre: a.nombre_equipo,
+        nombre: a.nombre_equipo.clone(),
+        nombre_equipo: a.nombre_equipo,
         descripcion: a.descripcion,
         categoria: a.categoria,
         marca: a.marca,
@@ -265,9 +269,11 @@ fn map_asset_to_dto_full(
 ) -> AssetDto {
     AssetDto {
         id: a.id_equipo,
-        codigo: a.codigo_equipo,
+        codigo: a.codigo_equipo.clone(),
+        codigo_equipo: a.codigo_equipo,
         codigo_administrativo: a.codigo_administrativo,
-        nombre: a.nombre_equipo,
+        nombre: a.nombre_equipo.clone(),
+        nombre_equipo: a.nombre_equipo,
         descripcion: a.descripcion,
         categoria: a.categoria,
         marca: a.marca,

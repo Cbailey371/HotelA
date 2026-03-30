@@ -106,7 +106,7 @@ pub async fn get_orders(
         .all(&db)
         .await?;
     
-    let dtos: Vec<PurchaseOrderDto> = orders.into_iter().map(|(o, p)| PurchaseOrderDto {
+    let dtos: Vec<PurchaseOrderDto> = orders.into_iter().map(|(o, p): (orden_compra_repuesto::Model, Option<proveedores::Model>)| PurchaseOrderDto {
         id_orden_compra: o.id_orden_compra,
         id_proveedor: o.id_proveedor,
         nombre_proveedor: p.map(|x| x.nombre_proveedor),
@@ -397,7 +397,7 @@ pub async fn get_order_by_id(
 
     let items: Vec<OrderDetailWithPartDto> = details
         .into_iter()
-        .map(|(d, p)| OrderDetailWithPartDto {
+        .map(|(d, p): (orden_compra_detalle::Model, Option<activos_repuestos::Model>)| OrderDetailWithPartDto {
             id_detalle: d.id_detalle,
             id_orden_compra: d.id_orden_compra,
             id_repuesto: d.id_repuesto,

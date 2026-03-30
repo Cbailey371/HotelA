@@ -1,0 +1,476 @@
+Connecting to Postgres ...
+Discovering schema ...
+... discovered.
+Generating activos_documentos.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `activo_id`: i32, not_null
+    > Column `nombre_archivo`: String, not_null
+    > Column `url_archivo`: String, not_null
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+Generating activos_equipos.rs
+    > Column `id_equipo`: i32, auto_increment, not_null
+    > Column `codigo_equipo`: String, not_null
+    > Column `nombre_equipo`: String, not_null
+    > Column `descripcion`: Option<String>
+    > Column `categoria`: Option<String>
+    > Column `marca`: Option<String>
+    > Column `modelo`: Option<String>
+    > Column `numero_serie`: Option<String>
+    > Column `ubicacion`: Option<String>
+    > Column `area_responsable`: Option<String>
+    > Column `estado`: Option<String>
+    > Column `fecha_adquisicion`: Option<Date>
+    > Column `vida_util_meses`: Option<i32>
+    > Column `fecha_fin_vida_util`: Option<Date>
+    > Column `valor_compra`: Option<Decimal>
+    > Column `proveedor_id`: Option<i32>
+    > Column `responsable_id`: Option<i32>
+    > Column `observaciones`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+    > Column `imagen_url`: Option<String>
+    > Column `tipo_activo`: Option<String>
+    > Column `anio`: Option<i32>
+    > Column `color`: Option<String>
+    > Column `numero_motor`: Option<String>
+    > Column `numero_chasis`: Option<String>
+    > Column `manual_pdf`: Option<String>
+    > Column `cantidad`: Option<i32>
+    > Column `ubicacion_detallada`: Option<String>
+    > Column `fecha_instalacion`: Option<Date>
+    > Column `fecha_baja`: Option<Date>
+    > Column `codigo_administrativo`: Option<String>
+    > Column `garantia_meses`: Option<i32>
+Generating activos_repuestos.rs
+    > Column `id_repuesto`: i32, auto_increment, not_null
+    > Column `codigo_repuesto`: String, not_null
+    > Column `nombre_repuesto`: String, not_null
+    > Column `descripcion`: Option<String>
+    > Column `marca`: Option<String>
+    > Column `modelo`: Option<String>
+    > Column `tipo_repuesto`: Option<String>
+    > Column `stock_actual`: Option<i32>
+    > Column `stock_minimo`: Option<i32>
+    > Column `unidad_medida`: Option<String>
+    > Column `costo_unitario`: Option<Decimal>
+    > Column `ubicacion_almacen`: Option<String>
+    > Column `proveedor_id`: Option<i32>
+    > Column `estado`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+    > Column `imagen`: Option<String>
+    > Column `ubicacion_fisica_exacta`: Option<String>
+    > Column `fecha_ultima_compra`: Option<Date>
+    > Column `fecha_instalacion`: Option<Date>
+    > Column `fecha_vencimiento`: Option<Date>
+    > Column `compatibilidad_modelos`: Option<String>
+    > Column `vida_util_estimada`: Option<String>
+    > Column `stock_reservado`: i32, not_null
+    > Column `bodega_id`: Option<i32>
+    > Column `ubicacion_bodega_id`: Option<i32>
+    > Column `sku`: Option<String>
+Generating auditoria_acciones.rs
+    > Column `id_auditoria`: i32, auto_increment, not_null
+    > Column `usuario_id`: Option<i32>
+    > Column `accion`: Option<String>
+    > Column `tabla_afectada`: Option<String>
+    > Column `registro_id`: Option<i32>
+    > Column `fecha`: Option<DateTimeWithTimeZone>
+    > Column `ip_origen`: Option<String>
+    > Column `detalle`: Option<String>
+Generating bodega_ubicaciones.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `bodega_id`: i32, not_null
+    > Column `nombre`: String, not_null
+    > Column `descripcion`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+Generating bodegas.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `nombre`: String, not_null, unique
+    > Column `ubicacion`: Option<String>
+    > Column `descripcion`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+Generating categorias_activos.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `nombre`: String, not_null, unique
+    > Column `descripcion`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+Generating compras_cotizacion_detalle.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `cotizacion_id`: i32, not_null
+    > Column `repuesto_id`: i32, not_null
+    > Column `cantidad`: i32, not_null
+Generating compras_cotizaciones.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `proveedor_id`: i32, not_null
+    > Column `fecha_solicitud`: Date, not_null
+    > Column `codigo`: String, not_null
+    > Column `estado`: String, not_null
+    > Column `observaciones`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+Generating compras_solicitud_detalle.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `solicitud_id`: i32, not_null
+    > Column `repuesto_id`: Option<i32>
+    > Column `descripcion_item`: Option<String>
+    > Column `cantidad`: i32, not_null
+Generating compras_solicitudes.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `solicitante_id`: i32, not_null
+    > Column `fecha_solicitud`: Date, not_null
+    > Column `motivo`: String, not_null
+    > Column `estado`: String, not_null
+    > Column `prioridad`: String, not_null
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+Generating config_empresa.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `logo`: Option<String>
+    > Column `nombre_comercial`: String, not_null
+    > Column `razon_social`: String, not_null
+    > Column `ruc`: String, not_null
+    > Column `dv`: String, not_null
+    > Column `telefono`: String, not_null
+    > Column `correo`: String, not_null
+    > Column `direccion`: String, not_null
+    > Column `ciudad`: String, not_null
+Generating configuracion_calendario.rs
+    > Column `clave`: String, not_null
+    > Column `valor`: Json, not_null
+Generating configuraciones.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `clave`: String, not_null, unique
+    > Column `valor`: String, not_null
+    > Column `descripcion`: Option<String>
+Generating empresas.rs
+    > Column `id_empresa`: i32, auto_increment, not_null
+    > Column `nombre_empresa`: String, not_null
+    > Column `ruc`: Option<String>
+    > Column `direccion`: Option<String>
+    > Column `telefono`: Option<String>
+    > Column `email`: Option<String>
+    > Column `estado`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+Generating excepciones_calendario.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `fecha`: Date, not_null
+    > Column `tipo`: String, not_null
+    > Column `motivo`: Option<String>
+Generating facturas_compras.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `id_orden_compra`: Option<i32>
+    > Column `id_proveedor`: i32, not_null
+    > Column `numero_factura`: String, not_null
+    > Column `fecha_emision`: Date, not_null
+    > Column `fecha_recepcion`: Option<Date>
+    > Column `subtotal`: Decimal, not_null
+    > Column `impuestos`: Decimal, not_null
+    > Column `total`: Decimal, not_null
+    > Column `estado`: String, not_null
+    > Column `notas`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+Generating facturas_compras_detalle.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `id_factura`: i32, not_null
+    > Column `id_repuesto`: i32, not_null
+    > Column `id_detalle_oc`: Option<i32>
+    > Column `cantidad`: i32, not_null
+    > Column `costo_unitario`: Decimal, not_null
+Generating feriados_pa.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `fecha`: Date, not_null
+    > Column `descripcion`: String, not_null
+    > Column `es_fijo`: bool, not_null
+    > Column `estado`: String, not_null
+Generating historial_repuestos.rs
+    > Column `id_historial_repuesto`: i32, auto_increment, not_null
+    > Column `repuesto_id`: i32, not_null
+    > Column `equipo_id`: Option<i32>
+    > Column `mantenimiento_id`: Option<i32>
+    > Column `cantidad_utilizada`: Option<i32>
+    > Column `fecha_uso`: Option<Date>
+    > Column `tecnico_responsable`: Option<String>
+    > Column `motivo`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+    > Column `orden_trabajo_id`: Option<i32>
+Generating inventario_movimientos.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `repuesto_id`: i32, not_null
+    > Column `tipo`: String, not_null
+    > Column `cantidad`: i32, not_null
+    > Column `referencia_id`: Option<i32>
+    > Column `fecha`: Option<DateTimeWithTimeZone>
+    > Column `usuario_id`: i32, not_null
+Generating mantenimiento_calendario.rs
+    > Column `id_mantenimiento_calendario`: i32, auto_increment, not_null
+    > Column `equipo_id`: i32, not_null
+    > Column `tipo_mantenimiento_id`: i32, not_null
+    > Column `frecuencia`: Option<String>
+    > Column `intervalo_valor`: Option<i32>
+    > Column `fecha_programada`: Option<Date>
+    > Column `fecha_ultima_ejecucion`: Option<Date>
+    > Column `proxima_fecha`: Option<Date>
+    > Column `responsable_id`: Option<i32>
+    > Column `estado`: Option<String>
+    > Column `observaciones`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+    > Column `codigo_mantenimiento`: Option<String>, unique
+    > Column `prioridad`: Option<String>
+    > Column `costo_estimado`: Option<Decimal>
+    > Column `dias_anticipacion`: Option<i32>
+    > Column `proveedor_id`: Option<i32>
+    > Column `tecnico_id`: Option<i32>
+    > Column `tarea_tipo_id`: Option<i32>
+    > Column `recurrente`: bool, not_null
+    > Column `responsable_interno_email`: Option<String>
+    > Column `orden_trabajo_id`: Option<i32>
+Generating mantenimiento_historial.rs
+    > Column `id_mantenimiento`: i32, auto_increment, not_null
+    > Column `equipo_id`: i32, not_null
+    > Column `tipo_mantenimiento_id`: i32, not_null
+    > Column `fecha_inicio`: Option<DateTimeWithTimeZone>
+    > Column `fecha_fin`: Option<DateTimeWithTimeZone>
+    > Column `tecnico_responsable`: Option<String>
+    > Column `descripcion_trabajo`: Option<String>
+    > Column `resultado`: Option<String>
+    > Column `horas_trabajo`: Option<Decimal>
+    > Column `costo_mano_obra`: Option<Decimal>
+    > Column `costo_total`: Option<Decimal>
+    > Column `observaciones`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+    > Column `tecnico_id`: Option<i32>
+    > Column `calendario_id`: Option<i32>
+    > Column `fecha_ejecucion`: Option<Date>
+    > Column `tarea_tipo_id`: Option<i32>
+    > Column `responsable_interno_email`: Option<String>
+Generating mantenimiento_repuestos.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `mantenimiento_id`: i32, not_null
+    > Column `repuesto_id`: i32, not_null
+    > Column `cantidad_estimada`: Decimal, not_null
+    > Column `costo_estimado`: Decimal, not_null
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+Generating mantenimiento_tareas.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `nombre`: String, not_null
+    > Column `descripcion`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+Generating mantenimiento_tipo.rs
+    > Column `id_tipo_mantenimiento`: i32, auto_increment, not_null
+    > Column `nombre_tipo`: String, not_null
+    > Column `descripcion`: Option<String>
+    > Column `es_preventivo`: Option<bool>
+    > Column `es_correctivo`: Option<bool>
+    > Column `requiere_paro`: Option<bool>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+Generating marcas.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `nombre`: String, not_null, unique
+    > Column `descripcion`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+Generating orden_compra_detalle.rs
+    > Column `id_detalle`: i32, auto_increment, not_null
+    > Column `id_orden_compra`: i32, not_null
+    > Column `id_repuesto`: i32, not_null
+    > Column `cantidad`: i32, not_null
+    > Column `costo_unitario`: Option<Decimal>
+    > Column `cantidad_recibida`: i32, not_null
+Generating orden_compra_repuesto.rs
+    > Column `id_orden_compra`: i32, auto_increment, not_null
+    > Column `id_ot`: Option<i32>
+    > Column `id_proveedor`: Option<i32>
+    > Column `fecha_solicitud`: Option<Date>
+    > Column `estado`: Option<String>
+    > Column `total_estimado`: Option<Decimal>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `codigo_compra`: Option<String>
+    > Column `solicitud_id`: Option<i32>
+    > Column `estado_recepcion`: Option<String>
+    > Column `fecha_entrega`: Option<Date>
+    > Column `terminos_pago`: Option<String>
+    > Column `notas`: Option<String>
+    > Column `impuestos`: Option<Decimal>
+    > Column `subtotal`: Option<Decimal>
+    > Column `total`: Option<Decimal>
+Generating orden_trabajo.rs
+    > Column `id_ot`: i32, auto_increment, not_null
+    > Column `id_calendario`: Option<i32>
+    > Column `id_activo`: Option<i32>
+    > Column `id_tipo_mantenimiento`: Option<i32>
+    > Column `id_tecnico`: Option<i32>
+    > Column `id_proveedor`: Option<i32>
+    > Column `fecha_inicio_real`: Option<DateTime>
+    > Column `fecha_fin_real`: Option<DateTime>
+    > Column `estado`: Option<String>
+    > Column `prioridad`: Option<String>
+    > Column `observaciones`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+    > Column `codigo_ot`: Option<String>
+    > Column `costo_estimado`: Option<Decimal>
+    > Column `terminos_pago`: Option<String>
+    > Column `tipo_ot`: String, not_null
+    > Column `id_ubicacion`: Option<i32>
+    > Column `comentario_final`: Option<String>
+Generating orden_trabajo_comentarios.rs
+    > Column `id_comentario`: i32, auto_increment, not_null
+    > Column `ot_id`: i32, not_null
+    > Column `usuario_id`: i32, not_null
+    > Column `comentario`: String, not_null
+    > Column `fecha_hora`: DateTimeWithTimeZone, not_null
+Generating permisos.rs
+    > Column `id_permiso`: i32, auto_increment, not_null
+    > Column `codigo_permiso`: String, not_null
+    > Column `descripcion`: Option<String>
+    > Column `modulo`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+Generating proveedores.rs
+    > Column `id_proveedor`: i32, auto_increment, not_null
+    > Column `nombre_proveedor`: String, not_null
+    > Column `tipo_proveedor`: Option<String>
+    > Column `contacto_nombre`: Option<String>
+    > Column `telefono`: Option<String>
+    > Column `email`: Option<String>
+    > Column `direccion`: Option<String>
+    > Column `pais`: Option<String>
+    > Column `estado`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+    > Column `codigo_proveedor`: Option<String>
+    > Column `rut_o_ruc`: Option<String>
+    > Column `ciudad`: Option<String>
+    > Column `sitio_web`: Option<String>
+    > Column `metodos_pago_aceptados`: Option<String>
+    > Column `observaciones`: Option<String>
+    > Column `dv`: Option<String>
+Generating reportes_programados.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `nombre`: String, not_null
+    > Column `tipo_reporte`: String, not_null
+    > Column `frecuencia`: String, not_null
+    > Column `filtros`: Option<Json>
+    > Column `ultimo_envio`: Option<DateTimeWithTimeZone>
+    > Column `proximo_envio`: Option<DateTimeWithTimeZone>
+    > Column `destinatarios`: Option<String>
+    > Column `activo`: Option<bool>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+    > Column `fecha_inicio`: Date, not_null
+    > Column `fecha_fin`: Option<Date>
+    > Column `hora_ejecucion`: Time, not_null
+Generating repuestos_equipos.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `repuesto_id`: i32, not_null
+    > Column `equipo_id`: i32, not_null
+Generating rol_permisos.rs
+    > Column `id_rol_permiso`: i32, auto_increment, not_null
+    > Column `rol_id`: i32, not_null
+    > Column `permiso_id`: i32, not_null
+Generating roles.rs
+    > Column `id_rol`: i32, auto_increment, not_null
+    > Column `nombre_rol`: String, not_null
+    > Column `descripcion`: Option<String>
+    > Column `nivel`: Option<i32>
+    > Column `estado`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+Generating tecnicos.rs
+    > Column `id_tecnico`: i32, auto_increment, not_null
+    > Column `nombre`: String, not_null
+    > Column `apellido`: String, not_null
+    > Column `telefono`: Option<String>
+    > Column `email`: Option<String>
+    > Column `especialidad`: Option<String>
+    > Column `proveedor_id`: Option<i32>
+    > Column `es_independiente`: bool, not_null
+    > Column `costo_hora`: Option<Decimal>
+    > Column `estado`: String, not_null
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+    > Column `codigo_tecnico`: Option<String>
+Generating terminos_pago.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `nombre`: String, not_null
+    > Column `dias`: i32, not_null
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+Generating tipos_activos.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `nombre`: String, not_null, unique
+    > Column `descripcion`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+Generating ubicaciones.rs
+    > Column `id`: i32, auto_increment, not_null
+    > Column `nombre`: String, not_null, unique
+    > Column `descripcion`: Option<String>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+Generating usuario_roles.rs
+    > Column `id_usuario_rol`: i32, auto_increment, not_null
+    > Column `usuario_id`: i32, not_null
+    > Column `rol_id`: i32, not_null
+Generating usuarios.rs
+    > Column `id_usuario`: i32, auto_increment, not_null
+    > Column `nombre`: String, not_null
+    > Column `apellido`: String, not_null
+    > Column `email`: String, not_null
+    > Column `usuario`: String, not_null
+    > Column `password_hash`: String, not_null
+    > Column `telefono`: Option<String>
+    > Column `cargo`: Option<String>
+    > Column `empresa_id`: Option<i32>
+    > Column `estado`: Option<String>
+    > Column `ultimo_login`: Option<DateTimeWithTimeZone>
+    > Column `created_at`: Option<DateTimeWithTimeZone>
+    > Column `updated_at`: Option<DateTimeWithTimeZone>
+    > Column `codigo_usuario`: Option<String>
+Writing src/entities/activos_documentos.rs
+Writing src/entities/activos_equipos.rs
+Writing src/entities/activos_repuestos.rs
+Writing src/entities/auditoria_acciones.rs
+Writing src/entities/bodega_ubicaciones.rs
+Writing src/entities/bodegas.rs
+Writing src/entities/categorias_activos.rs
+Writing src/entities/compras_cotizacion_detalle.rs
+Writing src/entities/compras_cotizaciones.rs
+Writing src/entities/compras_solicitud_detalle.rs
+Writing src/entities/compras_solicitudes.rs
+Writing src/entities/config_empresa.rs
+Writing src/entities/configuracion_calendario.rs
+Writing src/entities/configuraciones.rs
+Writing src/entities/empresas.rs
+Writing src/entities/excepciones_calendario.rs
+Writing src/entities/facturas_compras.rs
+Writing src/entities/facturas_compras_detalle.rs
+Writing src/entities/feriados_pa.rs
+Writing src/entities/historial_repuestos.rs
+Writing src/entities/inventario_movimientos.rs
+Writing src/entities/mantenimiento_calendario.rs
+Writing src/entities/mantenimiento_historial.rs
+Writing src/entities/mantenimiento_repuestos.rs
+Writing src/entities/mantenimiento_tareas.rs
+Writing src/entities/mantenimiento_tipo.rs
+Writing src/entities/marcas.rs
+Writing src/entities/orden_compra_detalle.rs
+Writing src/entities/orden_compra_repuesto.rs
+Writing src/entities/orden_trabajo.rs
+Writing src/entities/orden_trabajo_comentarios.rs
+Writing src/entities/permisos.rs
+Writing src/entities/proveedores.rs
+Writing src/entities/reportes_programados.rs
+Writing src/entities/repuestos_equipos.rs
+Writing src/entities/rol_permisos.rs
+Writing src/entities/roles.rs
+Writing src/entities/tecnicos.rs
+Writing src/entities/terminos_pago.rs
+Writing src/entities/tipos_activos.rs
+Writing src/entities/ubicaciones.rs
+Writing src/entities/usuario_roles.rs
+Writing src/entities/usuarios.rs
+Writing src/entities/mod.rs
+Writing src/entities/prelude.rs
+... Done.

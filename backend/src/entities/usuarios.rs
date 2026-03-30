@@ -39,6 +39,8 @@ pub enum Relation {
     Empresas,
     #[sea_orm(has_many = "super::mantenimiento_calendario::Entity")]
     MantenimientoCalendario,
+    #[sea_orm(has_many = "super::orden_trabajo_comentarios::Entity")]
+    OrdenTrabajoComentarios,
     #[sea_orm(has_many = "super::usuario_roles::Entity")]
     UsuarioRoles,
 }
@@ -64,6 +66,12 @@ impl Related<super::empresas::Entity> for Entity {
 impl Related<super::mantenimiento_calendario::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::MantenimientoCalendario.def()
+    }
+}
+
+impl Related<super::orden_trabajo_comentarios::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::OrdenTrabajoComentarios.def()
     }
 }
 

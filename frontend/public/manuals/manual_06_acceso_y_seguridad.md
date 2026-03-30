@@ -18,12 +18,18 @@ Para acceder al sistema HotelA, todo usuario debe autenticar su identidad.
 
 ### 1.2. Interfaz Principal
 Una vez dentro, encontrará:
--   **Barra Lateral (Menú)**: Acceso a todos los módulos (Activos, Mantenimiento, Inventario, etc.) según sus permisos.
+-   **Barra Lateral (Menú Acordeón)**: Los módulos están agrupados por categorías (Mantenimiento, Logística, Compras, Configuración). Haga clic en el encabezado de un grupo para expandir sus opciones.
+-   **Auto-expansión**: El menú detecta automáticamente en qué módulo se encuentra y expande el grupo correspondiente.
 -   **Área de Trabajo**: Donde se realizan las tareas.
 -   **Barra Superior**: Información del usuario actual, botón de logout y cambio de tema (Claro/Oscuro).
--   **Centro de Notificaciones (Campana)**: Localizada en la barra lateral (escritorio) o superior (móvil). Proporciona alertas críticas en tiempo real.
+-   **Centro de Notificaciones (Campana)**: Localizada en la barra lateral o superior. Proporciona alertas críticas en tiempo real.
 
-### 1.3. Centro de Notificaciones
+### 1.3. Redirección Inteligente y Dashboard
+El acceso al sistema es dinámico según sus permisos:
+*   **Permiso `acceso_dashboard`**: Solo los usuarios con este permiso verán el panel de indicadores al entrar.
+*   **Redirección Automática**: Si no tiene acceso al Dashboard, el sistema lo llevará automáticamente al **primer módulo** al que tenga permiso (ej. Recepción irá directo al Portal de Solicitudes).
+
+### 1.4. Centro de Notificaciones
 El sistema monitorea constantemente el estado de la operación y genera alertas preventivas:
 
 *   **Stock Crítico**: Notifica cuando un repuesto alcanza el stock mínimo definido por el usuario.

@@ -6,6 +6,7 @@ use axum::{
 use serde_json::json;
 use std::fmt;
 
+#[derive(Debug)]
 pub enum AppError {
     Internal(String),
     NotFound(String),

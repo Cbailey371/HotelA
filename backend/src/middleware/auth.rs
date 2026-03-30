@@ -54,24 +54,39 @@ pub async fn check_permission(
 
 pub async fn require_permission(
     State(db): State<DatabaseConnection>,
-    mut req: Request<Body>,
+    mut request: Request<Body>,
     next: Next,
-    permission: &'static str,
+    permission_code: &'static str,
 ) -> Result<Response, StatusCode> {
-    let auth_header = req.headers()
-        .get(header::AUTHORIZATION)
-        .and_then(|h| h.to_str().ok());
-
-    let token = auth_header
-        .and_then(|h| if h.starts_with("Bearer ") { Some(&h[7..]) } else { None })
+    let claims = request.extensions().get::<jwt::Claims>()
         .ok_or(StatusCode::UNAUTHORIZED)?;
-
-    let claims = jwt::decode_jwt(token).map_err(|_| StatusCode::UNAUTHORIZED)?;
     
-    if check_permission(&db, claims.user_id, permission).await {
-        req.extensions_mut().insert(claims);
-        Ok(next.run(req).await)
+    tracing::info!("Verificando permiso '{}' para usuario {} en ruta {}", permission_code, claims.user_id, request.uri());
+    
+    if check_permission(&db, claims.user_id, permission_code).await {
+        Ok(next.run(request).await)
     } else {
+        tracing::warn!("Permiso denegado: '{}' para usuario {}", permission_code, claims.user_id);
         Err(StatusCode::FORBIDDEN)
     }
+}
+
+pub async fn require_any_permission<const N: usize>(
+    State(db): State<DatabaseConnection>,
+    request: Request<Body>,
+    next: Next,
+    permission_codes: [&'static str; N],
+) -> Result<Response, StatusCode> {
+    let claims = request.extensions().get::<jwt::Claims>()
+        .ok_or(StatusCode::UNAUTHORIZED)?;
+    
+    for code in permission_codes {
+        if check_permission(&db, claims.user_id, code).await {
+            tracing::info!("Permiso CONCEDIDO: '{}' para usuario {} en ruta {}", code, claims.user_id, request.uri());
+            return Ok(next.run(request).await);
+        }
+    }
+
+    tracing::warn!("Permiso DENEGADO: ninguno de {:?} para usuario {} en ruta {}", permission_codes, claims.user_id, request.uri());
+    Err(StatusCode::FORBIDDEN)
 }

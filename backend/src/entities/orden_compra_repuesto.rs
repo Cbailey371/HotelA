@@ -34,21 +34,21 @@ pub enum Relation {
         belongs_to = "super::proveedores::Entity",
         from = "Column::IdProveedor",
         to = "super::proveedores::Column::IdProveedor",
-        on_update = "NoAction",
-        on_delete = "NoAction"
+        on_update = "Cascade",
+        on_delete = "SetNull"
     )]
     Proveedores,
-}
-
-impl Related<super::facturas_compras::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::FacturasCompras.def()
-    }
 }
 
 impl Related<super::proveedores::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Proveedores.def()
+    }
+}
+
+impl Related<super::facturas_compras::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::FacturasCompras.def()
     }
 }
 

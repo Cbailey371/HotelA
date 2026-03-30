@@ -114,4 +114,13 @@ impl Related<super::usuarios::Entity> for Entity {
     }
 }
 
+impl Related<super::activos_repuestos::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::repuestos_equipos::Relation::ActivosRepuestos.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::repuestos_equipos::Relation::ActivosEquipos.def().rev())
+    }
+}
+
 impl ActiveModelBehavior for ActiveModel {}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { Plus, Edit2, Trash2, Shield, Loader2, Check, Search } from 'lucide-react';
 import Modal from '../components/Modal';
 
@@ -25,8 +25,8 @@ const RolesPage = () => {
         setLoading(true);
         try {
             const [rolesRes, permsRes] = await Promise.all([
-                axios.get('/api/roles'),
-                axios.get('/api/permissions')
+                api.get('/roles'),
+                api.get('/permissions')
             ]);
             setRoles(rolesRes.data);
             setPermissions(permsRes.data);
@@ -60,7 +60,7 @@ const RolesPage = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("¿Eliminar este rol? Los usuarios asignados podrían perder acceso.")) return;
         try {
-            await axios.delete(`/api/roles/${id}`);
+            await api.delete(`/roles/${id}`);
             fetchData();
         } catch (error) {
             console.error(error);
@@ -72,9 +72,9 @@ const RolesPage = () => {
         if (e) e.preventDefault();
         try {
             if (editingRole) {
-                await axios.put(`/api/roles/${editingRole.id}`, formData);
+                await api.put(`/roles/${editingRole.id}`, formData);
             } else {
-                await axios.post('/api/roles', formData);
+                await api.post('/roles', formData);
             }
             setShowModal(false);
             setIsDirty(false);

@@ -33,6 +33,11 @@ pub async fn upload_image(mut multipart: Multipart) -> Result<impl IntoResponse,
             let new_filename = format!("{}.{}", Uuid::new_v4(), safe_ext);
             let upload_path = format!("uploads/{}", new_filename);
 
+            // Ensure uploads directory exists
+            if let Err(e) = fs::create_dir_all("uploads").await {
+                return Err(AppError::Internal(format!("Failed to create uploads directory: {}", e)));
+            }
+
             fs::write(&upload_path, data).await
                 .map_err(|e| AppError::Internal(format!("Failed to save file: {}", e)))?;
 
@@ -64,6 +69,11 @@ pub async fn upload_manual(mut multipart: Multipart) -> Result<impl IntoResponse
 
             let new_filename = format!("manual_{}.{}", Uuid::new_v4(), safe_ext);
             let upload_path = format!("uploads/{}", new_filename);
+
+            // Ensure uploads directory exists
+            if let Err(e) = fs::create_dir_all("uploads").await {
+                return Err(AppError::Internal(format!("Failed to create uploads directory: {}", e)));
+            }
 
             fs::write(&upload_path, data).await
                 .map_err(|e| AppError::Internal(format!("Failed to save manual: {}", e)))?;

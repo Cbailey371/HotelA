@@ -519,6 +519,9 @@ const MaintenancePage = () => {
                             {loading ? (
                                 <tr><td colSpan="6" className="text-center py-20 animate-pulse font-bold text-slate-400">Consultando base de mantenimiento...</td></tr>
                             ) : schedules.filter(s => {
+                                // Exclude completed and cancelled from active maintenance
+                                if (s.estado === 'completado' || s.estado === 'cancelado') return false;
+
                                 const matchesSearch = (s.equipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
                                     (s.tipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
                                     (s.codigo || '').toLowerCase().includes(scheduleSearch.toLowerCase());
@@ -528,6 +531,9 @@ const MaintenancePage = () => {
                             }).length === 0 ? (
                                 <tr><td colSpan="6" className="text-center py-20 text-slate-400 font-bold">No se encontraron servicios que coincidan con los filtros.</td></tr>
                             ) : schedules.filter(s => {
+                                // Exclude completed and cancelled from active maintenance
+                                if (s.estado === 'completado' || s.estado === 'cancelado') return false;
+
                                 const matchesSearch = (s.equipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
                                     (s.tipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
                                     (s.codigo || '').toLowerCase().includes(scheduleSearch.toLowerCase());

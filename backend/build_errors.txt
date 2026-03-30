@@ -1,0 +1,1421 @@
+warning: unused imports: `Permisos`, `RolPermisos`, `Roles`, `UsuarioRoles`, and `Usuarios`
+ --> migration/src/m20260127_000008_fix_admin_permissions.rs:2:44
+  |
+2 | ...::{Usuarios, Roles, Permisos, RolPermisos, UsuarioRoles};
+  |       ^^^^^^^^  ^^^^^  ^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `RolPermisos`, `Roles`, `UsuarioRoles`, and `Usuarios`
+ --> migration/src/m20260127_000009_create_super_admin.rs:2:44
+  |
+2 | ...e::{Usuarios, Roles, RolPermisos, UsuarioRoles};
+  |        ^^^^^^^^  ^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `Permisos`, `RolPermisos`, `Roles`, `UsuarioRoles`, and `Usuarios`
+ --> migration/src/m20260127_000010_setup_super_admin.rs:2:44
+  |
+2 | ...::{Usuarios, Roles, Permisos, RolPermisos, UsuarioRoles};
+  |       ^^^^^^^^  ^^^^^  ^^^^^^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused import: `sea_orm_migration::sea_query::*`
+ --> migration/src/m20260128_002201_seed_super_admin_and_more_permissions.rs:2:5
+  |
+2 | use sea_orm_migration::sea_query::*;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `schema::*`
+ --> migration/src/m20260128_003307_assign_super_admin_to_user_1.rs:1:37
+  |
+1 | use sea_orm_migration::{prelude::*, schema::*};
+  |                                     ^^^^^^^^^
+
+warning: unused import: `schema::*`
+ --> migration/src/m20260128_010641_create_settings_table.rs:1:37
+  |
+1 | use sea_orm_migration::{prelude::*, schema::*};
+  |                                     ^^^^^^^^^
+
+warning: unused import: `schema::*`
+ --> migration/src/m20260128_155231_create_company_config.rs:1:37
+  |
+1 | use sea_orm_migration::{prelude::*, schema::*};
+  |                                     ^^^^^^^^^
+
+warning: unused import: `schema::*`
+ --> migration/src/m20260310_020021_add_garantia_to_activos.rs:1:37
+  |
+1 | use sea_orm_migration::{prelude::*, schema::*};
+  |                                     ^^^^^^^^^
+
+warning: unused variable: `db`
+ --> migration/src/m20260126_000004_seed_roles_permissions.rs:9:13
+  |
+9 |         let db = manager.get_connection();
+  |             ^^ help: if this is intentional, prefix it with an underscore: `_db`
+  |
+  = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `manager`
+  --> migration/src/m20260126_000004_seed_roles_permissions.rs:54:26
+   |
+54 | ...c fn down(&self, manager: &SchemaManager) -> Resul...
+   |                     ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+
+warning: unused variable: `manager`
+  --> migration/src/m20260127_000008_fix_admin_permissions.rs:57:26
+   |
+57 | ...c fn down(&self, manager: &SchemaManager) -> Resul...
+   |                     ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+
+warning: unused variable: `manager`
+  --> migration/src/m20260127_000009_create_super_admin.rs:14:26
+   |
+14 | ...c fn down(&self, manager: &SchemaManager) -> Resul...
+   |                     ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+
+warning: unused variable: `manager`
+  --> migration/src/m20260127_000010_setup_super_admin.rs:48:26
+   |
+48 | ...c fn down(&self, manager: &SchemaManager) -> Resul...
+   |                     ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_manager`
+
+warning: enum `Roles` is never used
+  --> migration/src/m20260128_002201_seed_super_admin_and_more_permissions.rs:62:6
+   |
+62 | enum Roles {
+   |      ^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: enum `Permisos` is never used
+  --> migration/src/m20260128_002201_seed_super_admin_and_more_permissions.rs:70:6
+   |
+70 | enum Permisos {
+   |      ^^^^^^^^
+
+warning: enum `RolPermisos` is never used
+  --> migration/src/m20260128_002201_seed_super_admin_and_more_permissions.rs:79:6
+   |
+79 | enum RolPermisos {
+   |      ^^^^^^^^^^^
+
+warning: enum `Post` is never used
+  --> migration/src/m20260128_003307_assign_super_admin_to_user_1.rs:35:6
+   |
+35 | enum Post {
+   |      ^^^^
+
+warning: enum `Post` is never used
+  --> migration/src/m20260128_004143_repair_rbac_data.rs:87:6
+   |
+87 | enum Post {
+   |      ^^^^
+
+warning: `migration` (lib) generated 18 warnings (run `cargo fix --lib -p migration` to apply 13 suggestions)
+warning: unused import: `super::activos_documentos::Entity as ActivosDocumentos`
+ --> src/bin/../entities/prelude.rs:3:9
+  |
+3 | ...se super::activos_documentos::Entity as ActivosDocumentos;
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `super::activos_equipos::Entity as ActivosEquipos`
+ --> src/bin/../entities/prelude.rs:4:9
+  |
+4 | pub use super::activos_equipos::Entity as ActivosEquipos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::activos_repuestos::Entity as ActivosRepuestos`
+ --> src/bin/../entities/prelude.rs:5:9
+  |
+5 | ...se super::activos_repuestos::Entity as ActivosRepuestos;
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::auditoria_acciones::Entity as AuditoriaAcciones`
+ --> src/bin/../entities/prelude.rs:6:9
+  |
+6 | ...se super::auditoria_acciones::Entity as AuditoriaAcciones;
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::bodega_ubicaciones::Entity as BodegaUbicaciones`
+ --> src/bin/../entities/prelude.rs:7:9
+  |
+7 | ...se super::bodega_ubicaciones::Entity as BodegaUbicaciones;
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::bodegas::Entity as Bodegas`
+ --> src/bin/../entities/prelude.rs:8:9
+  |
+8 | pub use super::bodegas::Entity as Bodegas;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::categorias_activos::Entity as CategoriasActivos`
+ --> src/bin/../entities/prelude.rs:9:9
+  |
+9 | ...se super::categorias_activos::Entity as CategoriasActivos;
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compras_cotizacion_detalle::Entity as ComprasCotizacionDetalle`
+  --> src/bin/../entities/prelude.rs:10:9
+   |
+10 | ...se super::compras_cotizacion_detalle::Entity as ComprasCotizacionDetalle;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compras_cotizaciones::Entity as ComprasCotizaciones`
+  --> src/bin/../entities/prelude.rs:11:9
+   |
+11 | ...se super::compras_cotizaciones::Entity as ComprasCotizaciones;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compras_solicitud_detalle::Entity as ComprasSolicitudDetalle`
+  --> src/bin/../entities/prelude.rs:12:9
+   |
+12 | ...se super::compras_solicitud_detalle::Entity as ComprasSolicitudDetalle;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compras_solicitudes::Entity as ComprasSolicitudes`
+  --> src/bin/../entities/prelude.rs:13:9
+   |
+13 | ...se super::compras_solicitudes::Entity as ComprasSolicitudes;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::config_empresa::Entity as ConfigEmpresa`
+  --> src/bin/../entities/prelude.rs:14:9
+   |
+14 | pub use super::config_empresa::Entity as ConfigEmpresa;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::configuracion_calendario::Entity as ConfiguracionCalendario`
+  --> src/bin/../entities/prelude.rs:15:9
+   |
+15 | ...se super::configuracion_calendario::Entity as ConfiguracionCalendario;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::configuraciones::Entity as Configuraciones`
+  --> src/bin/../entities/prelude.rs:16:9
+   |
+16 | ...se super::configuraciones::Entity as Configuraciones;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::empresas::Entity as Empresas`
+  --> src/bin/../entities/prelude.rs:17:9
+   |
+17 | pub use super::empresas::Entity as Empresas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::excepciones_calendario::Entity as ExcepcionesCalendario`
+  --> src/bin/../entities/prelude.rs:18:9
+   |
+18 | ...se super::excepciones_calendario::Entity as ExcepcionesCalendario;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::facturas_compras::Entity as FacturasCompras`
+  --> src/bin/../entities/prelude.rs:19:9
+   |
+19 | ...se super::facturas_compras::Entity as FacturasCompras;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::facturas_compras_detalle::Entity as FacturasComprasDetalle`
+  --> src/bin/../entities/prelude.rs:20:9
+   |
+20 | ...se super::facturas_compras_detalle::Entity as FacturasComprasDetalle;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::feriados_pa::Entity as FeriadosPa`
+  --> src/bin/../entities/prelude.rs:21:9
+   |
+21 | pub use super::feriados_pa::Entity as FeriadosPa;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::historial_repuestos::Entity as HistorialRepuestos`
+  --> src/bin/../entities/prelude.rs:22:9
+   |
+22 | ...se super::historial_repuestos::Entity as HistorialRepuestos;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::inventario_movimientos::Entity as InventarioMovimientos`
+  --> src/bin/../entities/prelude.rs:23:9
+   |
+23 | ...se super::inventario_movimientos::Entity as InventarioMovimientos;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_calendario::Entity as MantenimientoCalendario`
+  --> src/bin/../entities/prelude.rs:24:9
+   |
+24 | ...se super::mantenimiento_calendario::Entity as MantenimientoCalendario;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_historial::Entity as MantenimientoHistorial`
+  --> src/bin/../entities/prelude.rs:25:9
+   |
+25 | ...se super::mantenimiento_historial::Entity as MantenimientoHistorial;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_repuestos::Entity as MantenimientoRepuestos`
+  --> src/bin/../entities/prelude.rs:26:9
+   |
+26 | ...se super::mantenimiento_repuestos::Entity as MantenimientoRepuestos;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_tareas::Entity as MantenimientoTareas`
+  --> src/bin/../entities/prelude.rs:27:9
+   |
+27 | ...se super::mantenimiento_tareas::Entity as MantenimientoTareas;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_tipo::Entity as MantenimientoTipo`
+  --> src/bin/../entities/prelude.rs:28:9
+   |
+28 | ...se super::mantenimiento_tipo::Entity as MantenimientoTipo;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::marcas::Entity as Marcas`
+  --> src/bin/../entities/prelude.rs:29:9
+   |
+29 | pub use super::marcas::Entity as Marcas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::orden_compra_detalle::Entity as OrdenCompraDetalle`
+  --> src/bin/../entities/prelude.rs:30:9
+   |
+30 | ...se super::orden_compra_detalle::Entity as OrdenCompraDetalle;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::orden_compra_repuesto::Entity as OrdenCompraRepuesto`
+  --> src/bin/../entities/prelude.rs:31:9
+   |
+31 | ...se super::orden_compra_repuesto::Entity as OrdenCompraRepuesto;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::orden_trabajo::Entity as OrdenTrabajo`
+  --> src/bin/../entities/prelude.rs:32:9
+   |
+32 | pub use super::orden_trabajo::Entity as OrdenTrabajo;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::orden_trabajo_comentarios::Entity as OrdenTrabajoComentarios`
+  --> src/bin/../entities/prelude.rs:33:9
+   |
+33 | ...se super::orden_trabajo_comentarios::Entity as OrdenTrabajoComentarios;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::permisos::Entity as Permisos`
+  --> src/bin/../entities/prelude.rs:34:9
+   |
+34 | pub use super::permisos::Entity as Permisos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::proveedores::Entity as Proveedores`
+  --> src/bin/../entities/prelude.rs:35:9
+   |
+35 | pub use super::proveedores::Entity as Proveedores;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::reportes_programados::Entity as ReportesProgramados`
+  --> src/bin/../entities/prelude.rs:36:9
+   |
+36 | ...se super::reportes_programados::Entity as ReportesProgramados;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::repuestos_equipos::Entity as RepuestosEquipos`
+  --> src/bin/../entities/prelude.rs:37:9
+   |
+37 | ...se super::repuestos_equipos::Entity as RepuestosEquipos;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::rol_permisos::Entity as RolPermisos`
+  --> src/bin/../entities/prelude.rs:38:9
+   |
+38 | pub use super::rol_permisos::Entity as RolPermisos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::roles::Entity as Roles`
+  --> src/bin/../entities/prelude.rs:39:9
+   |
+39 | pub use super::roles::Entity as Roles;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::tecnicos::Entity as Tecnicos`
+  --> src/bin/../entities/prelude.rs:40:9
+   |
+40 | pub use super::tecnicos::Entity as Tecnicos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::terminos_pago::Entity as TerminosPago`
+  --> src/bin/../entities/prelude.rs:41:9
+   |
+41 | pub use super::terminos_pago::Entity as TerminosPago;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::tipos_activos::Entity as TiposActivos`
+  --> src/bin/../entities/prelude.rs:42:9
+   |
+42 | pub use super::tipos_activos::Entity as TiposActivos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::ubicaciones::Entity as Ubicaciones`
+  --> src/bin/../entities/prelude.rs:43:9
+   |
+43 | pub use super::ubicaciones::Entity as Ubicaciones;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::usuario_roles::Entity as UsuarioRoles`
+  --> src/bin/../entities/prelude.rs:44:9
+   |
+44 | pub use super::usuario_roles::Entity as UsuarioRoles;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::usuarios::Entity as Usuarios`
+  --> src/bin/../entities/prelude.rs:45:9
+   |
+45 | pub use super::usuarios::Entity as Usuarios;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/categorias_activos.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/categorias_activos.rs:18:10
+   |
+18 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/compras_solicitud_detalle.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/compras_solicitud_detalle.rs:18:10
+   |
+18 | pub enum Relation {
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/compras_solicitudes.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/compras_solicitudes.rs:22:10
+   |
+22 | pub enum Relation {
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/config_empresa.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/config_empresa.rs:25:10
+   |
+25 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/configuracion_calendario.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/configuracion_calendario.rs:16:10
+   |
+16 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/configuraciones.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/configuraciones.rs:19:10
+   |
+19 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/excepciones_calendario.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/excepciones_calendario.rs:17:10
+   |
+17 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/feriados_pa.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/feriados_pa.rs:18:10
+   |
+18 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/inventario_movimientos.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/inventario_movimientos.rs:20:10
+   |
+20 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/marcas.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/marcas.rs:18:10
+   |
+18 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/reportes_programados.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/reportes_programados.rs:28:10
+   |
+28 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/terminos_pago.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/terminos_pago.rs:17:10
+   |
+17 | pub enum Relation {}
+   |          ^^^^^^^^
+
+warning: struct `Model` is never constructed
+ --> src/bin/../entities/tipos_activos.rs:8:12
+  |
+8 | pub struct Model {
+  |            ^^^^^
+
+warning: enum `Relation` is never used
+  --> src/bin/../entities/tipos_activos.rs:18:10
+   |
+18 | pub enum Relation {}
+   |          ^^^^^^^^
+
+    Checking backend v0.1.0 (/Users/cbailey/Documents/Proyectos/HotelA/backend)
+warning: `backend` (bin "reset_password") generated 69 warnings (run `cargo fix --bin "reset_password" -p backend` to apply 43 suggestions)
+warning: unused import: `super::activos_documentos::Entity as ActivosDocumentos`
+ --> src/entities/prelude.rs:3:9
+  |
+3 | pub use super::activos_documentos::Entity as ActivosDocumentos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `super::activos_equipos::Entity as ActivosEquipos`
+ --> src/entities/prelude.rs:4:9
+  |
+4 | pub use super::activos_equipos::Entity as ActivosEquipos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::activos_repuestos::Entity as ActivosRepuestos`
+ --> src/entities/prelude.rs:5:9
+  |
+5 | pub use super::activos_repuestos::Entity as ActivosRepuestos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::auditoria_acciones::Entity as AuditoriaAcciones`
+ --> src/entities/prelude.rs:6:9
+  |
+6 | pub use super::auditoria_acciones::Entity as AuditoriaAcciones;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::bodega_ubicaciones::Entity as BodegaUbicaciones`
+ --> src/entities/prelude.rs:7:9
+  |
+7 | pub use super::bodega_ubicaciones::Entity as BodegaUbicaciones;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::bodegas::Entity as Bodegas`
+ --> src/entities/prelude.rs:8:9
+  |
+8 | pub use super::bodegas::Entity as Bodegas;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::categorias_activos::Entity as CategoriasActivos`
+ --> src/entities/prelude.rs:9:9
+  |
+9 | pub use super::categorias_activos::Entity as CategoriasActivos;
+  |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compras_cotizacion_detalle::Entity as ComprasCotizacionDetalle`
+  --> src/entities/prelude.rs:10:9
+   |
+10 | pub use super::compras_cotizacion_detalle::Entity as ComprasCotizacionDetalle;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compras_cotizaciones::Entity as ComprasCotizaciones`
+  --> src/entities/prelude.rs:11:9
+   |
+11 | pub use super::compras_cotizaciones::Entity as ComprasCotizaciones;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compras_solicitud_detalle::Entity as ComprasSolicitudDetalle`
+  --> src/entities/prelude.rs:12:9
+   |
+12 | pub use super::compras_solicitud_detalle::Entity as ComprasSolicitudDetalle;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::compras_solicitudes::Entity as ComprasSolicitudes`
+  --> src/entities/prelude.rs:13:9
+   |
+13 | pub use super::compras_solicitudes::Entity as ComprasSolicitudes;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::config_empresa::Entity as ConfigEmpresa`
+  --> src/entities/prelude.rs:14:9
+   |
+14 | pub use super::config_empresa::Entity as ConfigEmpresa;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::configuracion_calendario::Entity as ConfiguracionCalendario`
+  --> src/entities/prelude.rs:15:9
+   |
+15 | pub use super::configuracion_calendario::Entity as ConfiguracionCalendario;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::configuraciones::Entity as Configuraciones`
+  --> src/entities/prelude.rs:16:9
+   |
+16 | pub use super::configuraciones::Entity as Configuraciones;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::empresas::Entity as Empresas`
+  --> src/entities/prelude.rs:17:9
+   |
+17 | pub use super::empresas::Entity as Empresas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::excepciones_calendario::Entity as ExcepcionesCalendario`
+  --> src/entities/prelude.rs:18:9
+   |
+18 | pub use super::excepciones_calendario::Entity as ExcepcionesCalendario;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::facturas_compras::Entity as FacturasCompras`
+  --> src/entities/prelude.rs:19:9
+   |
+19 | pub use super::facturas_compras::Entity as FacturasCompras;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::facturas_compras_detalle::Entity as FacturasComprasDetalle`
+  --> src/entities/prelude.rs:20:9
+   |
+20 | pub use super::facturas_compras_detalle::Entity as FacturasComprasDetalle;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::feriados_pa::Entity as FeriadosPa`
+  --> src/entities/prelude.rs:21:9
+   |
+21 | pub use super::feriados_pa::Entity as FeriadosPa;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::historial_repuestos::Entity as HistorialRepuestos`
+  --> src/entities/prelude.rs:22:9
+   |
+22 | pub use super::historial_repuestos::Entity as HistorialRepuestos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::inventario_movimientos::Entity as InventarioMovimientos`
+  --> src/entities/prelude.rs:23:9
+   |
+23 | pub use super::inventario_movimientos::Entity as InventarioMovimientos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_calendario::Entity as MantenimientoCalendario`
+  --> src/entities/prelude.rs:24:9
+   |
+24 | pub use super::mantenimiento_calendario::Entity as MantenimientoCalendario;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_historial::Entity as MantenimientoHistorial`
+  --> src/entities/prelude.rs:25:9
+   |
+25 | pub use super::mantenimiento_historial::Entity as MantenimientoHistorial;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_repuestos::Entity as MantenimientoRepuestos`
+  --> src/entities/prelude.rs:26:9
+   |
+26 | pub use super::mantenimiento_repuestos::Entity as MantenimientoRepuestos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_tareas::Entity as MantenimientoTareas`
+  --> src/entities/prelude.rs:27:9
+   |
+27 | pub use super::mantenimiento_tareas::Entity as MantenimientoTareas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::mantenimiento_tipo::Entity as MantenimientoTipo`
+  --> src/entities/prelude.rs:28:9
+   |
+28 | pub use super::mantenimiento_tipo::Entity as MantenimientoTipo;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::marcas::Entity as Marcas`
+  --> src/entities/prelude.rs:29:9
+   |
+29 | pub use super::marcas::Entity as Marcas;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::orden_compra_detalle::Entity as OrdenCompraDetalle`
+  --> src/entities/prelude.rs:30:9
+   |
+30 | pub use super::orden_compra_detalle::Entity as OrdenCompraDetalle;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::orden_compra_repuesto::Entity as OrdenCompraRepuesto`
+  --> src/entities/prelude.rs:31:9
+   |
+31 | pub use super::orden_compra_repuesto::Entity as OrdenCompraRepuesto;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::orden_trabajo::Entity as OrdenTrabajo`
+  --> src/entities/prelude.rs:32:9
+   |
+32 | pub use super::orden_trabajo::Entity as OrdenTrabajo;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::orden_trabajo_comentarios::Entity as OrdenTrabajoComentarios`
+  --> src/entities/prelude.rs:33:9
+   |
+33 | pub use super::orden_trabajo_comentarios::Entity as OrdenTrabajoComentarios;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::permisos::Entity as Permisos`
+  --> src/entities/prelude.rs:34:9
+   |
+34 | pub use super::permisos::Entity as Permisos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::proveedores::Entity as Proveedores`
+  --> src/entities/prelude.rs:35:9
+   |
+35 | pub use super::proveedores::Entity as Proveedores;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::reportes_programados::Entity as ReportesProgramados`
+  --> src/entities/prelude.rs:36:9
+   |
+36 | pub use super::reportes_programados::Entity as ReportesProgramados;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::repuestos_equipos::Entity as RepuestosEquipos`
+  --> src/entities/prelude.rs:37:9
+   |
+37 | pub use super::repuestos_equipos::Entity as RepuestosEquipos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::rol_permisos::Entity as RolPermisos`
+  --> src/entities/prelude.rs:38:9
+   |
+38 | pub use super::rol_permisos::Entity as RolPermisos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::roles::Entity as Roles`
+  --> src/entities/prelude.rs:39:9
+   |
+39 | pub use super::roles::Entity as Roles;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::tecnicos::Entity as Tecnicos`
+  --> src/entities/prelude.rs:40:9
+   |
+40 | pub use super::tecnicos::Entity as Tecnicos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::terminos_pago::Entity as TerminosPago`
+  --> src/entities/prelude.rs:41:9
+   |
+41 | pub use super::terminos_pago::Entity as TerminosPago;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::tipos_activos::Entity as TiposActivos`
+  --> src/entities/prelude.rs:42:9
+   |
+42 | pub use super::tipos_activos::Entity as TiposActivos;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::ubicaciones::Entity as Ubicaciones`
+  --> src/entities/prelude.rs:43:9
+   |
+43 | pub use super::ubicaciones::Entity as Ubicaciones;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::usuario_roles::Entity as UsuarioRoles`
+  --> src/entities/prelude.rs:44:9
+   |
+44 | pub use super::usuario_roles::Entity as UsuarioRoles;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::usuarios::Entity as Usuarios`
+  --> src/entities/prelude.rs:45:9
+   |
+45 | pub use super::usuarios::Entity as Usuarios;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `NaiveDate`
+ --> src/utils/cron.rs:4:31
+  |
+4 | use chrono::{Local, Duration, NaiveDate};
+  |                               ^^^^^^^^^
+
+warning: unused import: `std::time::Duration as StdDuration`
+ --> src/utils/cron.rs:5:5
+  |
+5 | use std::time::Duration as StdDuration;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `JoinType`, `QuerySelect`, `Related`, and `RelationTrait`
+ --> src/controllers/work_orders.rs:2:83
+  |
+2 | use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryOrder, Related, RelationTrait, JoinType, QuerySelect};
+  |                                                                                   ^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^  ^^^^^^^^^^^
+
+error[E0308]: mismatched types
+  --> src/utils/cron.rs:70:24
+   |
+70 |         id_activo: Set(mnt.equipo_id),
+   |                    --- ^^^^^^^^^^^^^ expected `Option<i32>`, found `i32`
+   |                    |
+   |                    arguments to this enum variant are incorrect
+   |
+   = note: expected enum `std::option::Option<i32>`
+              found type `i32`
+help: the type constructed contains `i32` due to the type of the argument passed
+  --> src/utils/cron.rs:70:20
+   |
+70 |         id_activo: Set(mnt.equipo_id),
+   |                    ^^^^-------------^
+   |                        |
+   |                        this argument influences the type of `Set`
+note: tuple variant defined here
+  --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/entity/active_model.rs:45:5
+   |
+45 |     Set(V),
+   |     ^^^
+help: try wrapping the expression in `Some`
+   |
+70 |         id_activo: Set(Some(mnt.equipo_id)),
+   |                        +++++             +
+
+error[E0277]: the trait bound `usuarios::Entity: sea_orm::Related<entities::roles::Entity>` is not satisfied
+   --> src/controllers/user.rs:129:28
+    |
+129 |     let roles_list = users.load_many_to_many(roles::Entity, usuario_roles::Entity, &db).await
+    |                            ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |
+help: the trait `sea_orm::Related<entities::roles::Entity>` is not implemented for `usuarios::Entity`
+   --> src/entities/usuarios.rs:6:35
+    |
+  6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+    |                                   ^^^^^^^^^^^^^^^^^
+    = help: the following other types implement trait `sea_orm::Related<R>`:
+              `usuarios::Entity` implements `sea_orm::Related<auditoria_acciones::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<empresas::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<entities::activos_equipos::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<entities::mantenimiento_calendario::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<orden_trabajo_comentarios::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<usuario_roles::Entity>`
+note: required by a bound in `load_many_to_many`
+   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/loader.rs:56:63
+    |
+ 43 |     async fn load_many_to_many<R, S, V, C>(
+    |              ----------------- required by a bound in this associated function
+...
+ 56 |         <<Self as LoaderTrait>::Model as ModelTrait>::Entity: Related<R>;
+    |                                                               ^^^^^^^^^^ required by this bound in `LoaderTrait::load_many_to_many`
+    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `usuarios::Entity: sea_orm::Related<entities::roles::Entity>` is not satisfied
+   --> src/controllers/user.rs:228:38
+    |
+228 |     let roles = updated.find_related(roles::Entity).all(&db).await
+    |                         ------------ ^^^^^^^^^^^^^ unsatisfied trait bound
+    |                         |
+    |                         required by a bound introduced by this call
+    |
+help: the trait `sea_orm::Related<entities::roles::Entity>` is not implemented for `usuarios::Entity`
+   --> src/entities/usuarios.rs:6:35
+    |
+  6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+    |                                   ^^^^^^^^^^^^^^^^^
+    = help: the following other types implement trait `sea_orm::Related<R>`:
+              `usuarios::Entity` implements `sea_orm::Related<auditoria_acciones::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<empresas::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<entities::activos_equipos::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<entities::mantenimiento_calendario::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<orden_trabajo_comentarios::Entity>`
+              `usuarios::Entity` implements `sea_orm::Related<usuario_roles::Entity>`
+note: required by a bound in `sea_orm::ModelTrait::find_related`
+   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/entity/model.rs:26:23
+    |
+ 23 |     fn find_related<R>(&self, _: R) -> Select<R>
+    |        ------------ required by a bound in this associated function
+...
+ 26 |         Self::Entity: Related<R>,
+    |                       ^^^^^^^^^^ required by this bound in `ModelTrait::find_related`
+    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `entities::activos_repuestos::Entity: sea_orm::Related<entities::activos_equipos::Entity>` is not satisfied
+  --> src/controllers/inventory.rs:77:28
+   |
+77 |         .find_with_related(activos_equipos::Entity)
+   |          ----------------- ^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+   |          |
+   |          required by a bound introduced by this call
+   |
+help: the trait `sea_orm::Related<entities::activos_equipos::Entity>` is not implemented for `entities::activos_repuestos::Entity`
+  --> src/entities/activos_repuestos.rs:6:35
+   |
+ 6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+   |                                   ^^^^^^^^^^^^^^^^^
+   = help: the following other types implement trait `sea_orm::Related<R>`:
+             `entities::activos_repuestos::Entity` implements `sea_orm::Related<bodega_ubicaciones::Entity>`
+             `entities::activos_repuestos::Entity` implements `sea_orm::Related<bodegas::Entity>`
+             `entities::activos_repuestos::Entity` implements `sea_orm::Related<compras_cotizacion_detalle::Entity>`
+             `entities::activos_repuestos::Entity` implements `sea_orm::Related<entities::proveedores::Entity>`
+             `entities::activos_repuestos::Entity` implements `sea_orm::Related<facturas_compras_detalle::Entity>`
+             `entities::activos_repuestos::Entity` implements `sea_orm::Related<historial_repuestos::Entity>`
+             `entities::activos_repuestos::Entity` implements `sea_orm::Related<mantenimiento_repuestos::Entity>`
+             `entities::activos_repuestos::Entity` implements `sea_orm::Related<repuestos_equipos::Entity>`
+note: required by a bound in `sea_orm::query::join::<impl sea_orm::Select<E>>::find_with_related`
+  --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/join.rs:61:12
+   |
+58 |     pub fn find_with_related<R>(self, r: R) -> SelectTwoMany<E, R>
+   |            ----------------- required by a bound in this associated function
+...
+61 |         E: Related<R>,
+   |            ^^^^^^^^^^ required by this bound in `sea_orm::query::join::<impl Select<E>>::find_with_related`
+   = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `entities::activos_repuestos::Entity: sea_orm::Related<entities::activos_equipos::Entity>` is not satisfied
+   --> src/controllers/inventory.rs:297:63
+    |
+297 |     let equipos: Vec<activos_equipos::Model> = p.find_related(activos_equipos::Entity).all(&db).await?;
+    |                                                  ------------ ^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |                                                  |
+    |                                                  required by a bound introduced by this call
+    |
+help: the trait `sea_orm::Related<entities::activos_equipos::Entity>` is not implemented for `entities::activos_repuestos::Entity`
+   --> src/entities/activos_repuestos.rs:6:35
+    |
+  6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+    |                                   ^^^^^^^^^^^^^^^^^
+    = help: the following other types implement trait `sea_orm::Related<R>`:
+              `entities::activos_repuestos::Entity` implements `sea_orm::Related<bodega_ubicaciones::Entity>`
+              `entities::activos_repuestos::Entity` implements `sea_orm::Related<bodegas::Entity>`
+              `entities::activos_repuestos::Entity` implements `sea_orm::Related<compras_cotizacion_detalle::Entity>`
+              `entities::activos_repuestos::Entity` implements `sea_orm::Related<entities::proveedores::Entity>`
+              `entities::activos_repuestos::Entity` implements `sea_orm::Related<facturas_compras_detalle::Entity>`
+              `entities::activos_repuestos::Entity` implements `sea_orm::Related<historial_repuestos::Entity>`
+              `entities::activos_repuestos::Entity` implements `sea_orm::Related<mantenimiento_repuestos::Entity>`
+              `entities::activos_repuestos::Entity` implements `sea_orm::Related<repuestos_equipos::Entity>`
+note: required by a bound in `sea_orm::ModelTrait::find_related`
+   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/entity/model.rs:26:23
+    |
+ 23 |     fn find_related<R>(&self, _: R) -> Select<R>
+    |        ------------ required by a bound in this associated function
+...
+ 26 |         Self::Entity: Related<R>,
+    |                       ^^^^^^^^^^ required by this bound in `ModelTrait::find_related`
+    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0599]: no variant or associated item named `InternalServerError` found for enum `AppError` in the current scope
+   --> src/controllers/maintenance.rs:161:38
+    |
+161 |             .ok_or_else(|| AppError::InternalServerError("Error al recuperar el mantenimiento recién creado".to_string()))?;
+    |                                      ^^^^^^^^^^^^^^^^^^^ variant or associated item not found in `AppError`
+    |
+   ::: src/utils/error.rs:9:1
+    |
+  9 | pub enum AppError {
+    | ----------------- variant or associated item `InternalServerError` not found for this enum
+
+error[E0277]: `AppError` doesn't implement `std::fmt::Debug`
+   --> src/controllers/maintenance.rs:165:78
+    |
+165 |              eprintln!("Error al crear OT manual desde mantenimiento: {:?}", e);
+    |                                                                       ----   ^ `AppError` cannot be formatted using `{:?}` because it doesn't implement `std::fmt::Debug`
+    |                                                                       |
+    |                                                                       required by this formatting parameter
+    |
+    = help: the trait `std::fmt::Debug` is not implemented for `AppError`
+    = note: add `#[derive(Debug)]` to `AppError` or manually `impl std::fmt::Debug for AppError`
+    = note: this error originates in the macro `$crate::format_args_nl` which comes from the expansion of the macro `eprintln` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider annotating `AppError` with `#[derive(Debug)]`
+   --> src/utils/error.rs:9:1
+    |
+  9 + #[derive(Debug)]
+ 10 | pub enum AppError {
+    |
+
+error[E0599]: no variant or associated item named `InternalServerError` found for enum `AppError` in the current scope
+   --> src/controllers/maintenance.rs:174:32
+    |
+174 |         .map_err(|e| AppError::InternalServerError(e.to_string()))?;
+    |                                ^^^^^^^^^^^^^^^^^^^ variant or associated item not found in `AppError`
+    |
+   ::: src/utils/error.rs:9:1
+    |
+  9 | pub enum AppError {
+    | ----------------- variant or associated item `InternalServerError` not found for this enum
+
+error[E0308]: mismatched types
+   --> src/controllers/maintenance.rs:178:24
+    |
+178 |         id_activo: Set(mnt.equipo_id),
+    |                    --- ^^^^^^^^^^^^^ expected `Option<i32>`, found `i32`
+    |                    |
+    |                    arguments to this enum variant are incorrect
+    |
+    = note: expected enum `std::option::Option<i32>`
+               found type `i32`
+help: the type constructed contains `i32` due to the type of the argument passed
+   --> src/controllers/maintenance.rs:178:20
+    |
+178 |         id_activo: Set(mnt.equipo_id),
+    |                    ^^^^-------------^
+    |                        |
+    |                        this argument influences the type of `Set`
+note: tuple variant defined here
+   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/entity/active_model.rs:45:5
+    |
+ 45 |     Set(V),
+    |     ^^^
+help: try wrapping the expression in `Some`
+    |
+178 |         id_activo: Set(Some(mnt.equipo_id)),
+    |                        +++++             +
+
+error[E0599]: no variant or associated item named `InternalServerError` found for enum `AppError` in the current scope
+   --> src/controllers/maintenance.rs:191:51
+    |
+191 |     new_ot.insert(db).await.map_err(|e| AppError::InternalServerError(e.to_string()))?;
+    |                                                   ^^^^^^^^^^^^^^^^^^^ variant or associated item not found in `AppError`
+    |
+   ::: src/utils/error.rs:9:1
+    |
+  9 | pub enum AppError {
+    | ----------------- variant or associated item `InternalServerError` not found for this enum
+
+error[E0308]: mismatched types
+  --> src/controllers/work_orders.rs:94:24
+   |
+94 | ...   id_activo: Set(payload.id_activo.unwrap_or(0)), // Entity still has i32 not Option if not regenerated properly or if ID 0 is used f...
+   |                  --- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Option<i32>`, found `i32`
+   |                  |
+   |                  arguments to this enum variant are incorrect
+   |
+   = note: expected enum `std::option::Option<i32>`
+              found type `i32`
+help: the type constructed contains `i32` due to the type of the argument passed
+  --> src/controllers/work_orders.rs:94:20
+   |
+94 | ...   id_activo: Set(payload.id_activo.unwrap_or(0)), // Entity still has i32 not Option if not regenerated properly or if ID 0 is used f...
+   |                  ^^^^------------------------------^
+   |                      |
+   |                      this argument influences the type of `Set`
+note: tuple variant defined here
+  --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/entity/active_model.rs:45:5
+   |
+45 |     Set(V),
+   |     ^^^
+help: try wrapping the expression in `Some`
+   |
+94 |         id_activo: Set(Some(payload.id_activo.unwrap_or(0))), // Entity still has i32 not Option if not regenerated properly or if ID 0 is used for null
+   |                        +++++                              +
+
+error[E0277]: the trait bound `orden_trabajo::Entity: sea_orm::Related<entities::activos_equipos::Entity>` is not satisfied
+   --> src/controllers/work_orders.rs:135:28
+    |
+135 |         .find_also_related(activos_equipos::Entity)
+    |          ----------------- ^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+help: the trait `sea_orm::Related<entities::activos_equipos::Entity>` is not implemented for `orden_trabajo::Entity`
+   --> src/entities/orden_trabajo.rs:6:35
+    |
+  6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+    |                                   ^^^^^^^^^^^^^^^^^
+    = help: the following other types implement trait `sea_orm::Related<R>`:
+              `orden_trabajo::Entity` implements `sea_orm::Related<entities::mantenimiento_calendario::Entity>`
+              `orden_trabajo::Entity` implements `sea_orm::Related<orden_trabajo_comentarios::Entity>`
+              `orden_trabajo::Entity` implements `sea_orm::Related<ubicaciones::Entity>`
+note: required by a bound in `sea_orm::query::join::<impl sea_orm::Select<E>>::find_also_related`
+   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/join.rs:52:12
+    |
+ 49 |     pub fn find_also_related<R>(self, r: R) -> SelectTwo<E, R>
+    |            ----------------- required by a bound in this associated function
+...
+ 52 |         E: Related<R>,
+    |            ^^^^^^^^^^ required by this bound in `sea_orm::query::join::<impl Select<E>>::find_also_related`
+    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0308]: mismatched types
+   --> src/controllers/work_orders.rs:201:43
+    |
+201 |             id_activo: if ot.id_activo == 0 { None } else { Some(ot.id_activo) },
+    |                           ------------    ^ expected `Option<i32>`, found integer
+    |                           |
+    |                           expected because this is `std::option::Option<i32>`
+    |
+    = note: expected enum `std::option::Option<i32>`
+               found type `{integer}`
+help: try wrapping the expression in `Some`
+    |
+201 |             id_activo: if ot.id_activo == Some(0) { None } else { Some(ot.id_activo) },
+    |                                           +++++ +
+
+error[E0308]: mismatched types
+   --> src/controllers/work_orders.rs:201:66
+    |
+201 |             id_activo: if ot.id_activo == 0 { None } else { Some(ot.id_activo) },
+    |                                                             ---- ^^^^^^^^^^^^ expected `i32`, found `Option<i32>`
+    |                                                             |
+    |                                                             arguments to this enum variant are incorrect
+    |
+    = note: expected type `i32`
+               found enum `std::option::Option<i32>`
+help: the type constructed contains `std::option::Option<i32>` due to the type of the argument passed
+   --> src/controllers/work_orders.rs:201:61
+    |
+201 |             id_activo: if ot.id_activo == 0 { None } else { Some(ot.id_activo) },
+    |                                                             ^^^^^------------^
+    |                                                                  |
+    |                                                                  this argument influences the type of `Some`
+note: tuple variant defined here
+   --> /rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234/library/core/src/option.rs:607:5
+help: consider using `Option::expect` to unwrap the `std::option::Option<i32>` value, panicking if the value is an `Option::None`
+    |
+201 |             id_activo: if ot.id_activo == 0 { None } else { Some(ot.id_activo.expect("REASON")) },
+    |                                                                              +++++++++++++++++
+
+error[E0308]: mismatched types
+   --> src/controllers/work_orders.rs:319:35
+    |
+319 |         ot_active.id_activo = Set(id_activo_opt.unwrap_or(0));
+    |                               --- ^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Option<i32>`, found `i32`
+    |                               |
+    |                               arguments to this enum variant are incorrect
+    |
+    = note: expected enum `std::option::Option<i32>`
+               found type `i32`
+help: the type constructed contains `i32` due to the type of the argument passed
+   --> src/controllers/work_orders.rs:319:31
+    |
+319 |         ot_active.id_activo = Set(id_activo_opt.unwrap_or(0));
+    |                               ^^^^--------------------------^
+    |                                   |
+    |                                   this argument influences the type of `Set`
+note: tuple variant defined here
+   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/entity/active_model.rs:45:5
+    |
+ 45 |     Set(V),
+    |     ^^^
+help: try wrapping the expression in `Some`
+    |
+319 |         ot_active.id_activo = Set(Some(id_activo_opt.unwrap_or(0)));
+    |                                   +++++                          +
+
+error[E0277]: the trait bound `orden_trabajo::Entity: sea_orm::Related<entities::activos_equipos::Entity>` is not satisfied
+   --> src/controllers/work_orders.rs:391:28
+    |
+391 |         .find_also_related(activos_equipos::Entity)
+    |          ----------------- ^^^^^^^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+    |          |
+    |          required by a bound introduced by this call
+    |
+help: the trait `sea_orm::Related<entities::activos_equipos::Entity>` is not implemented for `orden_trabajo::Entity`
+   --> src/entities/orden_trabajo.rs:6:35
+    |
+  6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+    |                                   ^^^^^^^^^^^^^^^^^
+    = help: the following other types implement trait `sea_orm::Related<R>`:
+              `orden_trabajo::Entity` implements `sea_orm::Related<entities::mantenimiento_calendario::Entity>`
+              `orden_trabajo::Entity` implements `sea_orm::Related<orden_trabajo_comentarios::Entity>`
+              `orden_trabajo::Entity` implements `sea_orm::Related<ubicaciones::Entity>`
+note: required by a bound in `sea_orm::query::join::<impl sea_orm::Select<E>>::find_also_related`
+   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/join.rs:52:12
+    |
+ 49 |     pub fn find_also_related<R>(self, r: R) -> SelectTwo<E, R>
+    |            ----------------- required by a bound in this associated function
+...
+ 52 |         E: Related<R>,
+    |            ^^^^^^^^^^ required by this bound in `sea_orm::query::join::<impl Select<E>>::find_also_related`
+    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0599]: `sea_orm::Select<orden_trabajo_comentarios::Entity>` is not an iterator
+   --> src/controllers/work_orders.rs:489:10
+    |
+488 |       let comments = orden_trabajo_comentarios::Entity::find()
+    |  ____________________-
+489 | |         .filter(orden_trabajo_comentarios::Column::OtId.eq(id))
+    | |         -^^^^^^ `sea_orm::Select<orden_trabajo_comentarios::Entity>` is not an iterator
+    | |_________|
+    |
+    |
+   ::: /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/select.rs:8:1
+    |
+  8 |   pub struct Select<E>
+    |   -------------------- doesn't satisfy `_: Iterator`
+    |
+    = note: the following trait bounds were not satisfied:
+            `sea_orm::Select<orden_trabajo_comentarios::Entity>: Iterator`
+            which is required by `&mut sea_orm::Select<orden_trabajo_comentarios::Entity>: Iterator`
+    = help: items from traits can only be used if the trait is in scope
+help: trait `QueryFilter` which provides `filter` is implemented but not in scope; perhaps you want to import it
+    |
+  1 + use sea_orm::QueryFilter;
+    |
+
+error[E0599]: `orden_trabajo_comentarios::Column` is not an iterator
+   --> src/controllers/work_orders.rs:489:57
+    |
+489 |         .filter(orden_trabajo_comentarios::Column::OtId.eq(id))
+    |                                                         ^^ `orden_trabajo_comentarios::Column` is not an iterator
+    |
+   ::: src/entities/orden_trabajo_comentarios.rs:6:35
+    |
+  6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+    |                                   ----------------- method `eq` not found for this enum because it doesn't satisfy `orden_trabajo_comentarios::Column: Iterator`
+    |
+    = note: the following trait bounds were not satisfied:
+            `orden_trabajo_comentarios::Column: Iterator`
+            which is required by `&mut orden_trabajo_comentarios::Column: Iterator`
+note: the trait `Iterator` must be implemented
+   --> /rustc/ded5c06cf21d2b93bffd5d884aa6e96934ee4234/library/core/src/iter/traits/iterator.rs:40:1
+    = help: items from traits can only be used if the trait is in scope
+help: trait `ColumnTrait` which provides `eq` is implemented but not in scope; perhaps you want to import it
+    |
+  1 + use sea_orm::ColumnTrait;
+    |
+
+error[E0282]: type annotations needed
+   --> src/controllers/work_orders.rs:488:20
+    |
+488 |       let comments = orden_trabajo_comentarios::Entity::find()
+    |  ____________________^
+489 | |         .filter(orden_trabajo_comentarios::Column::OtId.eq(id))
+490 | |         .find_also_related(usuarios::Entity)
+491 | |         .order_by_asc(orden_trabajo_comentarios::Column::FechaHora)
+492 | |         .all(&db)
+493 | |         .await
+    | |______________^ cannot infer type
+
+error[E0282]: type annotations needed
+   --> src/controllers/work_orders.rs:494:19
+    |
+494 |         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    |                   ^                                      - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+494 |         .map_err(|e: /* Type */| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    |                    ++++++++++++
+
+error[E0282]: type annotations needed for `({type error}, _)`
+   --> src/controllers/work_orders.rs:496:59
+    |
+496 |     let dtos: Vec<CommentDto> = comments.into_iter().map(|(c, u)| {
+    |                                                           ^^^^^^
+...
+501 |             usuario_nombre: u.map(|user| user.nombre).unwrap_or("Desconocido".to_string()),
+    |                             - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type, where the placeholders `_` are specified
+    |
+496 |     let dtos: Vec<CommentDto> = comments.into_iter().map(|(c, u): (_, _)| {
+    |                                                                 ++++++++
+
+error[E0277]: the trait bound `entities::roles::Entity: sea_orm::Related<permisos::Entity>` is not satisfied
+  --> src/controllers/roles.rs:54:34
+   |
+54 |     let permissions = roles_list.load_many_to_many(permisos::Entity, rol_permisos::Entity, &db).await
+   |                                  ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+   |
+help: the trait `sea_orm::Related<permisos::Entity>` is not implemented for `entities::roles::Entity`
+  --> src/entities/roles.rs:6:35
+   |
+ 6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+   |                                   ^^^^^^^^^^^^^^^^^
+   = help: the following other types implement trait `sea_orm::Related<R>`:
+             `entities::roles::Entity` implements `sea_orm::Related<rol_permisos::Entity>`
+             `entities::roles::Entity` implements `sea_orm::Related<usuario_roles::Entity>`
+note: required by a bound in `load_many_to_many`
+  --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/loader.rs:56:63
+   |
+43 |     async fn load_many_to_many<R, S, V, C>(
+   |              ----------------- required by a bound in this associated function
+...
+56 |         <<Self as LoaderTrait>::Model as ModelTrait>::Entity: Related<R>;
+   |                                                               ^^^^^^^^^^ required by this bound in `LoaderTrait::load_many_to_many`
+   = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `entities::roles::Entity: sea_orm::Related<usuarios::Entity>` is not satisfied
+  --> src/controllers/roles.rs:59:37
+   |
+59 |     let users_assigned = roles_list.load_many_to_many(crate::entities::usuarios::Entity, usuario_roles::Entity, &db).await
+   |                                     ^^^^^^^^^^^^^^^^^ unsatisfied trait bound
+   |
+help: the trait `sea_orm::Related<usuarios::Entity>` is not implemented for `entities::roles::Entity`
+  --> src/entities/roles.rs:6:35
+   |
+ 6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+   |                                   ^^^^^^^^^^^^^^^^^
+   = help: the following other types implement trait `sea_orm::Related<R>`:
+             `entities::roles::Entity` implements `sea_orm::Related<rol_permisos::Entity>`
+             `entities::roles::Entity` implements `sea_orm::Related<usuario_roles::Entity>`
+note: required by a bound in `load_many_to_many`
+  --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/loader.rs:56:63
+   |
+43 |     async fn load_many_to_many<R, S, V, C>(
+   |              ----------------- required by a bound in this associated function
+...
+56 |         <<Self as LoaderTrait>::Model as ModelTrait>::Entity: Related<R>;
+   |                                                               ^^^^^^^^^^ required by this bound in `LoaderTrait::load_many_to_many`
+   = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0308]: mismatched types
+   --> src/controllers/purchases.rs:104:28
+    |
+104 |         .find_also_related(proveedores::Entity)
+    |          ----------------- ^^^^^^^^^^^^^^^^^^^ expected `facturas_compras::Entity`, found `entities::proveedores::Entity`
+    |          |
+    |          arguments to this method are incorrect
+    |
+    = note: `entities::proveedores::Entity` and `facturas_compras::Entity` have similar names, but are actually distinct types
+note: `entities::proveedores::Entity` is defined in module `crate::entities::proveedores` of the current crate
+   --> src/entities/proveedores.rs:6:35
+    |
+  6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+    |                                   ^^^^^^^^^^^^^^^^^
+note: `facturas_compras::Entity` is defined in module `crate::entities::facturas_compras` of the current crate
+   --> src/entities/facturas_compras.rs:6:35
+    |
+  6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+    |                                   ^^^^^^^^^^^^^^^^^
+help: the return type of this call is `entities::proveedores::Entity` due to the type of the argument passed
+   --> src/controllers/purchases.rs:103:18
+    |
+103 |       let orders = orden_compra_repuesto::Entity::find()
+    |  __________________^
+104 | |         .find_also_related(proveedores::Entity)
+    | |____________________________-------------------^
+    |                              |
+    |                              this argument influences the return type of `find_also_related`
+note: method defined here
+   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/join.rs:49:12
+    |
+ 49 |     pub fn find_also_related<R>(self, r: R) -> SelectTwo<E, R>
+    |            ^^^^^^^^^^^^^^^^^
+    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0609]: no field `nombre_proveedor` on type `facturas_compras::Model`
+   --> src/controllers/purchases.rs:112:39
+    |
+112 |         nombre_proveedor: p.map(|x| x.nombre_proveedor),
+    |                                       ^^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `id`, `id_orden_compra`, `id_proveedor`, `numero_factura`, `fecha_emision` ... and 7 others
+
+error[E0308]: mismatched types
+   --> src/controllers/purchases.rs:394:28
+    |
+394 |         .find_also_related(activos_repuestos::Entity)
+    |          ----------------- ^^^^^^^^^^^^^^^^^^^^^^^^^ expected `facturas_compras_detalle::Entity`, found `entities::activos_repuestos::Entity`
+    |          |
+    |          arguments to this method are incorrect
+    |
+    = note: `entities::activos_repuestos::Entity` and `facturas_compras_detalle::Entity` have similar names, but are actually distinct types
+note: `entities::activos_repuestos::Entity` is defined in module `crate::entities::activos_repuestos` of the current crate
+   --> src/entities/activos_repuestos.rs:6:35
+    |
+  6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+    |                                   ^^^^^^^^^^^^^^^^^
+note: `facturas_compras_detalle::Entity` is defined in module `crate::entities::facturas_compras_detalle` of the current crate
+   --> src/entities/facturas_compras_detalle.rs:6:35
+    |
+  6 | #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+    |                                   ^^^^^^^^^^^^^^^^^
+help: the return type of this call is `entities::activos_repuestos::Entity` due to the type of the argument passed
+   --> src/controllers/purchases.rs:392:19
+    |
+392 |       let details = orden_compra_detalle::Entity::find()
+    |  ___________________^
+393 | |         .filter(orden_compra_detalle::Column::IdOrdenCompra.eq(id))
+394 | |         .find_also_related(activos_repuestos::Entity)
+    | |____________________________-------------------------^
+    |                              |
+    |                              this argument influences the return type of `find_also_related`
+note: method defined here
+   --> /Users/cbailey/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sea-orm-1.1.19/src/query/join.rs:49:12
+    |
+ 49 |     pub fn find_also_related<R>(self, r: R) -> SelectTwo<E, R>
+    |            ^^^^^^^^^^^^^^^^^
+    = note: this error originates in the derive macro `DeriveEntityModel` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0609]: no field `nombre_repuesto` on type `&facturas_compras_detalle::Model`
+   --> src/controllers/purchases.rs:406:51
+    |
+406 |             nombre_repuesto: p.as_ref().map(|x| x.nombre_repuesto.clone()),
+    |                                                   ^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `id`, `id_factura`, `id_repuesto`, `id_detalle_oc`, `cantidad`, `costo_unitario`
+
+error[E0609]: no field `codigo_repuesto` on type `&facturas_compras_detalle::Model`
+   --> src/controllers/purchases.rs:407:51
+    |
+407 |             codigo_repuesto: p.as_ref().map(|x| x.codigo_repuesto.clone()),
+    |                                                   ^^^^^^^^^^^^^^^ unknown field
+    |
+help: a field with a similar name exists
+    |
+407 -             codigo_repuesto: p.as_ref().map(|x| x.codigo_repuesto.clone()),
+407 +             codigo_repuesto: p.as_ref().map(|x| x.id_repuesto.clone()),
+    |
+
+Some errors have detailed explanations: E0277, E0282, E0308, E0599, E0609.
+For more information about an error, try `rustc --explain E0277`.
+warning: `backend` (bin "backend") generated 46 warnings
+error: could not compile `backend` (bin "backend") due to 28 previous errors; 46 warnings emitted
