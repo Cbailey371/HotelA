@@ -26,9 +26,10 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            // Optional: Redirect to login or clear storage
-            // window.location.href = '/login'; 
-            console.warn("Unauthorized, token might be invalid");
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login'; 
+            console.warn("Unauthorized, token might be invalid. Redirecting to login.");
         }
         return Promise.reject(error);
     }
