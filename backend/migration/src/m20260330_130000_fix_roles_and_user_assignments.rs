@@ -34,10 +34,10 @@ impl MigrationTrait for Migration {
         
         db.execute_unprepared("
             INSERT INTO usuario_roles (usuario_id, rol_id)
-            VALUES (
-                (SELECT id_usuario FROM usuarios WHERE usuario = 'recepcion'),
-                (SELECT id_rol FROM roles WHERE nombre_rol = 'RECEPCION')
-            );
+            SELECT u.id_usuario, r.id_rol
+            FROM usuarios u
+            CROSS JOIN roles r
+            WHERE u.usuario = 'recepcion' AND r.nombre_rol = 'RECEPCION';
         ").await?;
 
         Ok(())
