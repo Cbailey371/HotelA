@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import {
     ArrowUpRight, ArrowDownRight, TrendingUp, Upload, Download, Plus, Search, Edit2, Trash2, MapPin, AlertCircle, History, Package, X, ZoomIn
 } from 'lucide-react';

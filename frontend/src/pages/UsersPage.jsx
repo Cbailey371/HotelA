@@ -82,7 +82,7 @@ const UsersPage = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("¿Estás seguro de que deseas eliminar este usuario?")) return;
         try {
-            await axios.delete(`/api/users/${id}`);
+            await api.delete(`/users/${id}`);
             fetchUsers();
         } catch (error) {
             alert("Error al eliminar usuario");
@@ -104,7 +104,7 @@ const UsersPage = () => {
                 estado: newStatus
             };
 
-            await axios.put(`/api/users/${user.id}`, payload);
+            await api.put(`/users/${user.id}`, payload);
             fetchUsers();
         } catch (error) {
             alert("Error al cambiar estado");
@@ -120,9 +120,9 @@ const UsersPage = () => {
             };
 
             if (editingId) {
-                await axios.put(`/api/users/${editingId}`, payload);
+                await api.put(`/users/${editingId}`, payload);
             } else {
-                await axios.post('/api/users', payload);
+                await api.post('/users', payload);
             }
             setShowModal(false);
             resetForm();

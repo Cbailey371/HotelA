@@ -160,12 +160,12 @@ const AssetDetailPage = () => {
 
         try {
             // 1. Upload file
-            const uploadRes = await axios.post('/api/upload/manual', formData, {
+            const uploadRes = await api.post('/upload/manual', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
             // 2. Link to asset
-            await axios.post(`/api/assets/${id}/documents`, {
+            await api.post(`/assets/${id}/documents`, {
                 nombre_archivo: file.name,
                 url_archivo: uploadRes.data.url
             });

@@ -115,13 +115,12 @@ const AssetsPage = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('¿Está seguro de dar de baja este activo?')) {
-            try {
-                await axios.delete(`/api/assets/${id}`);
-                fetchAssets();
-            } catch (error) {
-                console.error("Error deleting asset", error);
-            }
+        if (!window.confirm("¿Estás seguro de que deseas eliminar este activo?")) return;
+        try {
+            await api.delete(`/assets/${id}`);
+            fetchAssets();
+        } catch (error) {
+            console.error("Error deleting asset", error);
         }
     };
 

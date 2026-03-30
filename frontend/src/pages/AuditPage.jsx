@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import {
     Shield, Search, Filter, History, User,
     Globe, Terminal, Database, ArrowRight
@@ -22,7 +22,7 @@ const AuditPage = () => {
 
     const fetchUsers = async () => {
         try {
-            const res = await axios.get('/api/users');
+            const res = await api.get('/users');
             setUsers(Array.isArray(res.data) ? res.data : (res.data.users || []));
         } catch (error) {
             console.error("Error fetching users:", error);
@@ -38,7 +38,7 @@ const AuditPage = () => {
             if (startDate) params.desde = startDate;
             if (endDate) params.hasta = endDate;
 
-            const res = await axios.get('/api/audit', { params });
+            const res = await api.get('/audit', { params });
             setLogs(res.data);
         } catch (error) {
             console.error("Error fetching audit logs:", error);
