@@ -25,7 +25,7 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4 transition-colors duration-300 relative">
+        <div className="min-h-[100dvh] bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4 transition-colors duration-300 relative">
             <button
                 onClick={toggleTheme}
                 className="absolute top-6 right-6 p-3 rounded-full bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 shadow-lg shadow-slate-200 dark:shadow-none border border-slate-200 dark:border-slate-800 transition-all"

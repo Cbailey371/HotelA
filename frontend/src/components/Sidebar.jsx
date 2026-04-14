@@ -120,7 +120,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         <aside
             className={`
                 fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-[#0f172a] text-slate-600 dark:text-slate-300 
-                flex flex-col h-screen border-r border-slate-200 dark:border-slate-800 transition-all duration-300 ease-in-out
+                flex flex-col h-[100dvh] border-r border-slate-200 dark:border-slate-800 transition-all duration-300 ease-in-out
                 md:relative md:translate-x-0 
                 ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:shadow-none'}
             `}
@@ -215,7 +215,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 })}
             </nav>
 
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
+            <div className="p-4 pb-8 md:pb-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
                 <button
                     onClick={toggleTheme}
                     className="w-full flex items-center justify-center gap-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-slate-300 text-sm font-medium"
