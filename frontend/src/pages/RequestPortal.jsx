@@ -131,6 +131,18 @@ const RequestPortal = () => {
         }
     };
 
+    const getAssetDisplayName = (assetId) => {
+        if (!assetId) return '';
+        const asset = assets.find(a => String(a.id) === String(assetId) || String(a.id_equipo) === String(assetId));
+        return asset ? (asset.nombre_equipo || asset.nombre || asset.codigo || 'Activo Seleccionado') : `Activo #${assetId}`;
+    };
+
+    const getLocationDisplayName = (locId) => {
+        if (!locId) return '';
+        const loc = locations.find(l => String(l.id) === String(locId));
+        return loc ? loc.nombre : `Ubicación #${locId}`;
+    };
+
     const getStatusStyle = (status) => {
         switch (status?.toLowerCase()) {
             case 'abierta': 
@@ -408,7 +420,8 @@ const RequestPortal = () => {
                                                             <div
                                                                 key={loc.id}
                                                                 className="px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer flex items-center justify-between border-b border-slate-50 dark:border-slate-800 last:border-0 group"
-                                                                onClick={() => {
+                                                                onPointerDown={(e) => {
+                                                                    e.preventDefault();
                                                                     setFormData(prev => ({ ...prev, id_ubicacion: loc.id }));
                                                                     setShowLocationDropdown(false);
                                                                     setLocationSearchQuery('');
@@ -434,7 +447,7 @@ const RequestPortal = () => {
                                         readOnly
                                         type="text"
                                         placeholder="Clic para asociar un equipo..."
-                                        value={formData.id_activo ? (assets.find(a => (a.id == formData.id_activo || a.id_equipo == formData.id_activo))?.nombre_equipo || assets.find(a => (a.id == formData.id_activo || a.id_equipo == formData.id_activo))?.nombre || '') : ''}
+                                        value={getAssetDisplayName(formData.id_activo)}
                                         onClick={() => {
                                             setAssetSearchQuery('');
                                             setShowAssetSearch(true);
@@ -552,7 +565,8 @@ const RequestPortal = () => {
                                     <div
                                         key={a.id}
                                         className="flex items-center gap-3 p-3 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer group transition-all"
-                                        onClick={() => {
+                                        onPointerDown={(e) => {
+                                            e.preventDefault();
                                             setFormData(prev => ({ ...prev, id_activo: a.id }));
                                             setShowAssetSearch(false);
                                         }}
