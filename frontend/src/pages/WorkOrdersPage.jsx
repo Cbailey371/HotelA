@@ -1008,14 +1008,10 @@ const WorkOrdersPage = () => {
                                                     <Camera className="w-8 h-8" />
                                                 )}
                                             </div>
-                                            <p className="text-xs font-bold text-slate-800 dark:text-white uppercase">Tocar para Cámara / Galería</p>
-                                        </div>
+                                            <p className="text-xs font-bold text-slate-800 dark:text-white uppercase mb-2">Tocar para Cámara / Galería</p>
                                             <div className="text-center">
                                                 <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
                                                     {uploading ? 'Subiendo imagen...' : 'Cargar foto del daño'}
-                                                </p>
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
-                                                    Click para seleccionar o arrastra aquí
                                                 </p>
                                             </div>
                                         </div>
