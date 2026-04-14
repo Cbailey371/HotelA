@@ -13,6 +13,7 @@ use dotenvy::dotenv;
 use sea_orm::{Database, DatabaseConnection};
 use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use axum::extract::DefaultBodyLimit;
 
 #[tokio::main]
 async fn main() {
@@ -360,7 +361,8 @@ async fn main() {
                 )
 
                 .layer(axum::middleware::from_fn_with_state(shared_state.clone(), middleware::auth::auth_middleware))
-        );
+        )
+        .layer(DefaultBodyLimit::max(50 * 1024 * 1024)); // 50MB Limit
     let allowed_origins_raw = std::env::var("ALLOWED_ORIGINS")
         .unwrap_or_else(|_| "http://localhost:5173,http://127.0.0.1:5173".into());
     

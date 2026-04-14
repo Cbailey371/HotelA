@@ -409,7 +409,7 @@ const RequestPortal = () => {
                                                                 key={loc.id}
                                                                 className="px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer flex items-center justify-between border-b border-slate-50 dark:border-slate-800 last:border-0 group"
                                                                 onClick={() => {
-                                                                    setFormData({ ...formData, id_ubicacion: loc.id });
+                                                                    setFormData(prev => ({ ...prev, id_ubicacion: loc.id }));
                                                                     setShowLocationDropdown(false);
                                                                     setLocationSearchQuery('');
                                                                 }}
@@ -447,7 +447,7 @@ const RequestPortal = () => {
                                             type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setFormData({ ...formData, id_activo: null });
+                                                setFormData(prev => ({ ...prev, id_activo: null }));
                                             }}
                                             className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 transition-colors"
                                         >
@@ -553,7 +553,7 @@ const RequestPortal = () => {
                                         key={a.id}
                                         className="flex items-center gap-3 p-3 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer group transition-all"
                                         onClick={() => {
-                                            setFormData({ ...formData, id_activo: a.id });
+                                            setFormData(prev => ({ ...prev, id_activo: a.id }));
                                             setShowAssetSearch(false);
                                         }}
                                     >
