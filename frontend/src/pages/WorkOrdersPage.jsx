@@ -9,7 +9,7 @@ import {
     Plus, Filter, Clock, CheckCircle, AlertTriangle, User, Calendar,
     Settings, Printer, Search, MoreVertical, FileText, Briefcase,
     Building, ClipboardList, Info, Trash2, Edit, Link2Off, X, Mail,
-    Upload, Loader2
+    Upload, Loader2, Camera
 } from 'lucide-react';
 import Modal from '../components/Modal';
 import { locationService } from '../services/locationService';
@@ -395,10 +395,10 @@ const WorkOrdersPage = () => {
         return (
             <div className="relative inline-block">
                 <select
-                    value={order.estado}
-                    onChange={(e) => handleStatusChange(order.id_ot, e.target.value)}
-                    className={`appearance-none pl-3 pr-8 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border cursor-pointer outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 transition-all ${currentStyle}`}
-                >
+                     value={order.estado}
+                     onChange={(e) => handleStatusChange(order.id_ot, e.target.value)}
+                     className={`appearance-none pl-3 pr-8 py-1 md:py-1.5 rounded-full text-xs md:text-[10px] font-black uppercase tracking-widest border cursor-pointer outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 transition-all sm:max-w-[120px] md:max-w-none truncate ${currentStyle}`}
+                 >
                     <option value="abierta">Abierta</option>
                     <option value="en_ejecucion">En Ejecución</option>
                     <option value="espera_repuestos">Espera Rep.</option>
@@ -1005,9 +1005,11 @@ const WorkOrdersPage = () => {
                                                 {uploading ? (
                                                     <Loader2 className="w-8 h-8 animate-spin" />
                                                 ) : (
-                                                    <Upload className="w-8 h-8" />
+                                                    <Camera className="w-8 h-8" />
                                                 )}
                                             </div>
+                                            <p className="text-xs font-bold text-slate-800 dark:text-white uppercase">Tocar para Cámara / Galería</p>
+                                        </div>
                                             <div className="text-center">
                                                 <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
                                                     {uploading ? 'Subiendo imagen...' : 'Cargar foto del daño'}

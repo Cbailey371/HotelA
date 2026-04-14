@@ -153,7 +153,7 @@ const TechniciansPage = () => {
 
             {/* Table View */}
             <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto w-full">
                     <table className="w-full text-left">
                         <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 text-[10px] font-black uppercase tracking-widest">
                             <tr>
@@ -237,7 +237,7 @@ const TechniciansPage = () => {
                 title={editingTech ? 'Editar Técnico' : 'Registro de Técnico'}
             >
                 <form onSubmit={handleSubmit} className="p-0 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="col-span-1">
                             {/* Code generation is now automatic in backend */}
                             <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Código Técnico (Auto)</label>
@@ -268,7 +268,7 @@ const TechniciansPage = () => {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Especialidad</label>
                             <input name="especialidad" value={formData.especialidad || ''} onChange={handleInputChange} placeholder="ej. Electricista" className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />

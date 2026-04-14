@@ -147,54 +147,56 @@ const ProvidersPage = () => {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-                <table className="w-full text-left">
-                    <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 text-xs uppercase font-semibold">
-                        <tr>
-                            <th className="px-6 py-4">Código</th>
-                            <th className="px-6 py-4">Proveedor</th>
-                            <th className="px-6 py-4">Tipo</th>
-                            <th className="px-6 py-4">Contacto</th>
-                            <th className="px-6 py-4">Ubicación</th>
-                            <th className="px-6 py-4 text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {loading ? (
-                            <tr><td colSpan="5" className="text-center py-8">Cargando...</td></tr>
-                        ) : filtered.map((p) => (
-                            <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                <td className="px-6 py-4">
-                                    <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
-                                        {p.codigo || 'N/A'}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 font-semibold text-slate-800 dark:text-white">{p.nombre}</td>
-                                <td className="px-6 py-4">
-                                    <span className="px-2 py-1 bg-blue-100 dark:bg-blue-500/10 text-blue-600 text-xs rounded uppercase font-bold">
-                                        {p.tipo}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-sm text-slate-500">
-                                    <div>{p.contacto}</div>
-                                    <div className="flex gap-2 mt-1">
-                                        {p.telefono && <Phone className="w-3 h-3" />}
-                                        {p.email && <Mail className="w-3 h-3" />}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-sm text-slate-500 flex items-center gap-1">
-                                    <MapPin className="w-3 h-3" /> {p.direccion || 'N/A'}
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <div className="flex justify-end gap-2">
-                                        <button onClick={() => openEditModal(p)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><Edit2 className="w-4 h-4" /></button>
-                                        <button onClick={() => handleDelete(p.id)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-red-500"><Trash2 className="w-4 h-4" /></button>
-                                    </div>
-                                </td>
+            <div className="bg-white dark:bg-[#1e293b] py-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left">
+                        <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 text-xs uppercase font-semibold">
+                            <tr>
+                                <th className="px-6 py-4">Código</th>
+                                <th className="px-6 py-4">Proveedor</th>
+                                <th className="px-6 py-4">Tipo</th>
+                                <th className="px-6 py-4">Contacto</th>
+                                <th className="px-6 py-4">Ubicación</th>
+                                <th className="px-6 py-4 text-right">Acciones</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            {loading ? (
+                                <tr><td colSpan="6" className="text-center py-8">Cargando...</td></tr>
+                            ) : filtered.map((p) => (
+                                <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                    <td className="px-6 py-4">
+                                        <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
+                                            {p.codigo || 'N/A'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 font-semibold text-slate-800 dark:text-white">{p.nombre}</td>
+                                    <td className="px-6 py-4">
+                                        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-500/10 text-blue-600 text-xs rounded uppercase font-bold">
+                                            {p.tipo}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-slate-500">
+                                        <div>{p.contacto}</div>
+                                        <div className="flex gap-2 mt-1">
+                                            {p.telefono && <Phone className="w-3 h-3" />}
+                                            {p.email && <Mail className="w-3 h-3" />}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-slate-500 flex items-center gap-1">
+                                        <MapPin className="w-3 h-3" /> {p.direccion || 'N/A'}
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <button onClick={() => openEditModal(p)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><Edit2 className="w-4 h-4" /></button>
+                                            <button onClick={() => handleDelete(p.id)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-red-500"><Trash2 className="w-4 h-4" /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <Modal
@@ -206,7 +208,7 @@ const ProvidersPage = () => {
                 width="max-w-lg"
             >
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Code generation is now automatic in backend */}
                         <div>
                             <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Nombre Empresa</label>
@@ -225,7 +227,7 @@ const ProvidersPage = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Tipo</label>
                             <select name="tipo_proveedor" value={formData.tipo_proveedor} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none">
@@ -239,7 +241,7 @@ const ProvidersPage = () => {
                             <input name="contacto_nombre" value={formData.contacto_nombre} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" placeholder="Nombre Contacto" />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Sitio Web</label>
                             <input name="sitio_web" value={formData.sitio_web} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" placeholder="https://..." />
@@ -259,7 +261,7 @@ const ProvidersPage = () => {
                             </select>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Teléfono</label>
                             <input name="telefono" value={formData.telefono} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />
@@ -273,7 +275,7 @@ const ProvidersPage = () => {
                         <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Dirección</label>
                         <input name="direccion" value={formData.direccion} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Ciudad</label>
                             <input name="ciudad" value={formData.ciudad} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />

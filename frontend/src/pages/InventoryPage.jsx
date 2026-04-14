@@ -386,85 +386,87 @@ const InventoryPage = () => {
                         <option value="inactivo">Inactivo</option>
                     </select>
                 </div>
-                <table className="w-full text-left">
-                    <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 text-xs uppercase font-semibold">
-                        <tr>
-                            <th className="px-6 py-4">Código / SKU</th>
-                            <th className="px-6 py-4">Repuesto</th>
-                            <th className="px-6 py-4">Categoría / Marca</th>
-                            <th className="px-6 py-4">Stock Actual</th>
-                            <th className="px-6 py-4">Precio Unit.</th>
-                            <th className="px-6 py-4">Ubicación</th>
-                            <th className="px-6 py-4">Estado</th>
-                            <th className="px-6 py-4 text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {loading ? (
-                            <tr><td colSpan="6" className="text-center py-8">Cargando almacén...</td></tr>
-                        ) : filtered.length === 0 ? (
-                            <tr><td colSpan="6" className="text-center py-8 text-slate-400 font-medium">No se encontraron suministros.</td></tr>
-                        ) : filtered.map((p) => (
-                            <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (p.imagen) setPreviewImage(`${p.imagen}`);
-                                            }}
-                                            className={`w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-600 flex-shrink-0 group-hover:border-blue-400 transition-colors ${p.imagen ? 'cursor-zoom-in' : ''}`}
-                                        >
-                                            {p.imagen ? (
-                                                <img src={`${p.imagen}`} alt={p.nombre} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <Package className="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors" />
-                                            )}
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
-                                                {p.codigo || 'N/A'}
-                                            </span>
-                                            {p.sku && <span className="text-[10px] text-slate-400 mt-1 font-mono">SKU: {p.sku}</span>}
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 font-bold text-slate-800 dark:text-white underline decoration-blue-500/20 underline-offset-4">{p.nombre}</td>
-                                <td className="px-6 py-4">
-                                    <div className="text-xs font-medium text-slate-500 uppercase">{p.categoria}</div>
-                                    <div className="text-sm text-slate-800 dark:text-slate-200">{p.marca || 'Genérico'}</div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <StockIndicator stock={p.stock} min={p.stock_minimo} />
-                                    <span className="text-[10px] text-slate-400 font-bold uppercase">Mín: {p.stock_minimo} {p.unidad}</span>
-                                </td>
-                                <td className="px-6 py-4 text-sm font-bold text-slate-600 dark:text-slate-300">
-                                    ${p.precio.toFixed(2)}
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                                        <MapPin className="w-3 h-3 text-red-400" />
-                                        {p.ubicacion || 'ALM-GRAL'}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded-md text-xs font-semibold uppercase ${p.estado === 'activo' || !p.estado ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' :
-                                        'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400'
-                                        }`}>
-                                        {(p.estado || 'activo').toUpperCase()}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <div className="flex justify-end gap-2">
-                                        <button onClick={() => openHistoryModal(p)} className="p-2 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg text-blue-600" title="Ver Historial"><History className="w-4 h-4" /></button>
-                                        <button onClick={() => openEditModal(p)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><Edit2 className="w-4 h-4" /></button>
-                                        <button onClick={() => handleDelete(p.id)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-red-500" title="Dar de baja"><Trash2 className="w-4 h-4" /></button>
-                                    </div>
-                                </td>
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left">
+                        <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 text-xs uppercase font-semibold">
+                            <tr>
+                                <th className="px-6 py-4">Código / SKU</th>
+                                <th className="px-6 py-4">Repuesto</th>
+                                <th className="px-6 py-4">Categoría / Marca</th>
+                                <th className="px-6 py-4">Stock Actual</th>
+                                <th className="px-6 py-4">Precio Unit.</th>
+                                <th className="px-6 py-4">Ubicación</th>
+                                <th className="px-6 py-4">Estado</th>
+                                <th className="px-6 py-4 text-right">Acciones</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            {loading ? (
+                                <tr><td colSpan="6" className="text-center py-8">Cargando almacén...</td></tr>
+                            ) : filtered.length === 0 ? (
+                                <tr><td colSpan="6" className="text-center py-8 text-slate-400 font-medium">No se encontraron suministros.</td></tr>
+                            ) : filtered.map((p) => (
+                                <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (p.imagen) setPreviewImage(`${p.imagen}`);
+                                                }}
+                                                className={`w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-600 flex-shrink-0 group-hover:border-blue-400 transition-colors ${p.imagen ? 'cursor-zoom-in' : ''}`}
+                                            >
+                                                {p.imagen ? (
+                                                    <img src={`${p.imagen}`} alt={p.nombre} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <Package className="w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
+                                                    {p.codigo || 'N/A'}
+                                                </span>
+                                                {p.sku && <span className="text-[10px] text-slate-400 mt-1 font-mono">SKU: {p.sku}</span>}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 font-bold text-slate-800 dark:text-white underline decoration-blue-500/20 underline-offset-4">{p.nombre}</td>
+                                    <td className="px-6 py-4">
+                                        <div className="text-xs font-medium text-slate-500 uppercase">{p.categoria}</div>
+                                        <div className="text-sm text-slate-800 dark:text-slate-200">{p.marca || 'Genérico'}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <StockIndicator stock={p.stock} min={p.stock_minimo} />
+                                        <span className="text-[10px] text-slate-400 font-bold uppercase">Mín: {p.stock_minimo} {p.unidad}</span>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm font-bold text-slate-600 dark:text-slate-300">
+                                        ${p.precio.toFixed(2)}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                                            <MapPin className="w-3 h-3 text-red-400" />
+                                            {p.ubicacion || 'ALM-GRAL'}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2 py-1 rounded-md text-xs font-semibold uppercase ${p.estado === 'activo' || !p.estado ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' :
+                                            'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400'
+                                            }`}>
+                                            {(p.estado || 'activo').toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <button onClick={() => openHistoryModal(p)} className="p-2 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg text-blue-600" title="Ver Historial"><History className="w-4 h-4" /></button>
+                                            <button onClick={() => openEditModal(p)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><Edit2 className="w-4 h-4" /></button>
+                                            <button onClick={() => handleDelete(p.id)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-red-500" title="Dar de baja"><Trash2 className="w-4 h-4" /></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Modal CRUD */}

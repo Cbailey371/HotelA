@@ -56,7 +56,7 @@ const Modal = ({
                     }
                 }}
             >
-                <div className={`bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl w-full ${width} border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in duration-200`}>
+                <div className={`bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl w-full max-w-full md:${width} max-h-[95dvh] flex flex-col border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in duration-200`}>
                     <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                         <h2 className="text-xl font-bold text-slate-800 dark:text-white">{title}</h2>
                         <button
@@ -67,7 +67,7 @@ const Modal = ({
                         </button>
                     </div>
 
-                    <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                    <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
                         {children}
                     </div>
 

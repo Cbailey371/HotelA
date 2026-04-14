@@ -650,7 +650,7 @@ const MaintenancePage = () => {
                 title={editingId ? `Editar Servicio - ${schedules.find(s => s.id === editingId)?.codigo}` : 'Programar Nuevo Servicio'}
             >
                 <form onSubmit={handleScheduleSubmit} className="p-0 space-y-6">
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="col-span-1">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Prioridad</label>
                             <select
@@ -714,7 +714,7 @@ const MaintenancePage = () => {
                                 {taskTypes.map(t => <option key={t.id} value={t.id}>{t.nombre}</option>)}
                             </select>
                         </div>
-                        <div className="col-span-1 grid grid-cols-2 gap-3">
+                        <div className="col-span-1 grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Fecha Planeada</label>
                                 <input
@@ -838,7 +838,7 @@ const MaintenancePage = () => {
                             </label>
                         </div>
 
-                        <div className="col-span-2 grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
                             <div className="col-span-1">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Frecuencia</label>
                                 <select
@@ -975,7 +975,7 @@ const MaintenancePage = () => {
                 title="Registrar Ejecución Técnica"
             >
                 <form onSubmit={handleExecuteSubmit} className="p-0 space-y-6">
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="col-span-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Técnico Ejecutor *</label>
                             <select

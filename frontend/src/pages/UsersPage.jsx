@@ -170,7 +170,7 @@ const UsersPage = () => {
             </div>
 
             {/* Filters Bar */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white dark:bg-[#1e293b] p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white dark:bg-[#1e293b] p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div className="relative md:col-span-2">
                     <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
                     <input
@@ -206,83 +206,85 @@ const UsersPage = () => {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-                <table className="w-full text-left">
-                    <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold">
-                        <tr>
-                            <th className="px-6 py-4">Código</th>
-                            <th className="px-6 py-4">Usuario</th>
-                            <th className="px-6 py-4">Rol / Cargo</th>
-                            <th className="px-6 py-4">Estado</th>
-                            <th className="px-6 py-4 text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {loading ? (
-                            <tr><td colSpan="4" className="text-center py-8 text-slate-500 font-medium">Cargando usuarios...</td></tr>
-                        ) : error ? (
-                            <tr><td colSpan="4" className="text-center py-8 text-red-500 font-medium">{error}</td></tr>
-                        ) : filteredUsers.length === 0 ? (
-                            <tr><td colSpan="5" className="text-center py-8 text-slate-500 italic">No se encontraron usuarios</td></tr>
-                        ) : filteredUsers.map((user) => (
-                            <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td className="px-6 py-4">
-                                    <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
-                                        {user.codigo || 'N/A'}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-white font-bold">
-                                            {user.nombre[0]}{user.apellido[0]}
-                                        </div>
-                                        <div>
-                                            <div className="font-medium text-slate-800 dark:text-white">{user.nombre} {user.apellido}</div>
-                                            <div className="text-xs text-slate-500 flex items-center gap-1">
-                                                <Mail className="w-3 h-3" /> {user.email}
+            <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left">
+                        <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold">
+                            <tr>
+                                <th className="px-6 py-4">Código</th>
+                                <th className="px-6 py-4">Usuario</th>
+                                <th className="px-6 py-4">Rol / Cargo</th>
+                                <th className="px-6 py-4">Estado</th>
+                                <th className="px-6 py-4 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            {loading ? (
+                                <tr><td colSpan="4" className="text-center py-8 text-slate-500 font-medium">Cargando usuarios...</td></tr>
+                            ) : error ? (
+                                <tr><td colSpan="4" className="text-center py-8 text-red-500 font-medium">{error}</td></tr>
+                            ) : filteredUsers.length === 0 ? (
+                                <tr><td colSpan="5" className="text-center py-8 text-slate-500 italic">No se encontraron usuarios</td></tr>
+                            ) : filteredUsers.map((user) => (
+                                <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <td className="px-6 py-4">
+                                        <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
+                                            {user.codigo || 'N/A'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-white font-bold">
+                                                {user.nombre[0]}{user.apellido[0]}
+                                            </div>
+                                            <div>
+                                                <div className="font-medium text-slate-800 dark:text-white">{user.nombre} {user.apellido}</div>
+                                                <div className="text-xs text-slate-500 flex items-center gap-1">
+                                                    <Mail className="w-3 h-3" /> {user.email}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex flex-col">
-                                        <span className="text-slate-700 dark:text-slate-200 font-medium">{user.rol_nombre || 'Sin Rol'}</span>
-                                        <span className="text-xs text-slate-500">{user.cargo || 'Sin cargo'}</span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <button
-                                        onClick={() => handleToggleStatus(user)}
-                                        className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${user.estado === 'activo'
-                                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400'
-                                            : 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-400'
-                                            }`}
-                                    >
-                                        {user.estado === 'activo' ? 'Activo' : 'Inactivo'}
-                                    </button>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <div className="flex justify-end gap-2">
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-slate-700 dark:text-slate-200 font-medium">{user.rol_nombre || 'Sin Rol'}</span>
+                                            <span className="text-xs text-slate-500">{user.cargo || 'Sin cargo'}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
                                         <button
-                                            onClick={() => handleEdit(user)}
-                                            className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-                                            title="Editar Usuario"
+                                            onClick={() => handleToggleStatus(user)}
+                                            className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${user.estado === 'activo'
+                                                ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400'
+                                                : 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-400'
+                                                }`}
                                         >
-                                            <Edit2 className="w-4 h-4" />
+                                            {user.estado === 'activo' ? 'Activo' : 'Inactivo'}
                                         </button>
-                                        <button
-                                            onClick={() => handleDelete(user.id)}
-                                            className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-                                            title="Eliminar Usuario"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <button
+                                                onClick={() => handleEdit(user)}
+                                                className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                                                title="Editar Usuario"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(user.id)}
+                                                className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                                                title="Eliminar Usuario"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Modal Crear/Editar Usuario */}
@@ -294,7 +296,7 @@ const UsersPage = () => {
                 title={editingId ? 'Editar Usuario' : 'Crear Nuevo Usuario'}
             >
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Code generation is now automatic in backend */}
                         <div>
                             <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Nombre</label>
