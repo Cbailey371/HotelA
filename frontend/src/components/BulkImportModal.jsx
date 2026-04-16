@@ -20,11 +20,22 @@ const BulkImportModal = ({ isOpen, onClose, title, entityName, onDownloadTemplat
 
         try {
             if (activeTab === 'create') {
-                await onImportCreate(formData);
-                setMessage({ type: 'success', text: `Creación masiva de ${entityName} completada con éxito.` });
+                const result = await onImportCreate(formData);
+                let skippedItems = null;
+                if (result && result.skipped && result.skipped.length > 0) {
+                    skippedItems = result.skipped;
+                }
+                setMessage({ 
+                    type: skippedItems ? 'warning' : 'success', 
+                    text: result?.message || `Creación masiva de ${entityName} completada con éxito.`,
+                    skipped: skippedItems
+                });
             } else {
-                await onImportUpdate(formData);
-                setMessage({ type: 'success', text: `Actualización masiva de ${entityName} completada con éxito.` });
+                const result = await onImportUpdate(formData);
+                setMessage({ 
+                    type: 'success', 
+                    text: result?.message || `Actualización masiva de ${entityName} completada con éxito.` 
+                });
             }
             // Clear file input
             e.target.value = '';
@@ -72,10 +83,30 @@ const BulkImportModal = ({ isOpen, onClose, title, entityName, onDownloadTemplat
                 {/* Content */}
                 <div className="p-8 overflow-y-auto">
                     {message && (
-                        <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'
+                        <div className={`mb-6 p-4 rounded-lg flex flex-col gap-3 ${
+                            message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 
+                            message.type === 'warning' ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+                            'bg-red-50 text-red-700 border border-red-200'
                             }`}>
-                            <div className={`w-2 h-2 rounded-full ${message.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                            <p className="text-sm font-medium">{message.text}</p>
+                            <div className="flex items-center gap-3">
+                                <div className={`w-2 h-2 rounded-full shrink-0 ${
+                                    message.type === 'success' ? 'bg-emerald-500' : 
+                                    message.type === 'warning' ? 'bg-amber-500' :
+                                    'bg-red-500'
+                                    }`} />
+                                <p className="text-sm font-medium">{message.text}</p>
+                            </div>
+                            
+                            {message.skipped && message.skipped.length > 0 && (
+                                <div className="mt-2 text-xs bg-white/50 dark:bg-black/20 p-3 rounded border border-amber-200/50 max-h-32 overflow-y-auto">
+                                    <p className="font-semibold mb-1">Registros omitidos (Duplicados o Errores):</p>
+                                    <ul className="list-disc pl-4 space-y-1">
+                                        {message.skipped.map((skip, i) => (
+                                            <li key={i}>{skip}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     )}
 

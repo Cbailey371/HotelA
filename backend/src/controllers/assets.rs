@@ -2,8 +2,15 @@ use axum::{Json, extract::{State, Path}, response::IntoResponse, Extension};
 use axum_extra::extract::Multipart;
 use serde::{Deserialize, Serialize};
 use crate::entities::{activos_equipos, mantenimiento_historial, historial_repuestos, activos_repuestos, tecnicos, activos_documentos};
-use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QueryOrder};
+use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QueryOrder, Condition, PaginatorTrait};
 use crate::utils::{jwt, audit, code_generator::generate_next_code, error::AppError};
+
+#[derive(Serialize)]
+pub struct ImportResponse {
+    pub message: String,
+    pub created: usize,
+    pub skipped: Vec<String>,
+}
 
 #[derive(Deserialize)]
 pub struct CreateAssetRequest {
@@ -506,6 +513,7 @@ pub async fn import_assets_create(
     mut multipart: Multipart,
 ) -> Result<impl IntoResponse, AppError> {
     let mut count = 0;
+    let mut skipped = Vec::new();
     
     while let Some(field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
         if field.name() == Some("file") {
@@ -513,12 +521,58 @@ pub async fn import_assets_create(
             let mut reader = csv::Reader::from_reader(&data[..]);
             
             for result in reader.deserialize() {
-                let record: CreateAssetRequest = result.map_err(|e| AppError::BadRequest(format!("CSV format error: {}", e)))?;
-                
-                // GENERATE NEW CODE ALWAYS FOR CREATE
-                // If user provided one, we warn or ignore? 
-                // Plan says: "Import New (Create): ... The template should not require the auto-generated code."
-                // So we generate it here.
+                let record: CreateAssetRequest = match result {
+                    Ok(r) => r,
+                    Err(e) => {
+                        skipped.push(format!("Error de formato en fila: {}", e));
+                        continue;
+                    }
+                };
+
+                let mut is_duplicate = false;
+                let mut reason = String::new();
+
+                // 1. By Serial Number
+                if let Some(sn) = &record.numero_serie {
+                    if !sn.trim().is_empty() {
+                        let exists = activos_equipos::Entity::find().filter(activos_equipos::Column::NumeroSerie.eq(sn.clone())).count(&db).await? > 0;
+                        if exists {
+                            is_duplicate = true;
+                            reason = format!("Número de serie '{}' ya existe", sn);
+                        }
+                    }
+                }
+
+                // 2. By Codigo Administrativo
+                if !is_duplicate {
+                    if let Some(ca) = &record.codigo_administrativo {
+                        if !ca.trim().is_empty() {
+                             let exists = activos_equipos::Entity::find().filter(activos_equipos::Column::CodigoAdministrativo.eq(ca.clone())).count(&db).await? > 0;
+                             if exists {
+                                is_duplicate = true;
+                                reason = format!("Código Administrativo '{}' ya existe", ca);
+                            }
+                        }
+                    }
+                }
+
+                // 3. By Name + Brand + Location
+                if !is_duplicate {
+                    let mut q = activos_equipos::Entity::find().filter(activos_equipos::Column::NombreEquipo.eq(record.nombre_equipo.clone()));
+                    if let Some(marca) = &record.marca { q = q.filter(activos_equipos::Column::Marca.eq(marca.clone())); }
+                    if let Some(loc) = &record.ubicacion { q = q.filter(activos_equipos::Column::Ubicacion.eq(loc.clone())); }
+                    
+                    let exists = q.count(&db).await? > 0;
+                    if exists {
+                        is_duplicate = true;
+                        reason = "Coincidencia de Nombre, Marca y Ubicación".to_string();
+                    }
+                }
+
+                if is_duplicate {
+                     skipped.push(format!("{} - {}", record.nombre_equipo, reason));
+                     continue;
+                }
                 
                 let codigo_equipo = generate_next_code(&db, "activos_equipos", "codigo_equipo", "ACT-").await?;
 
@@ -526,11 +580,6 @@ pub async fn import_assets_create(
                     codigo_equipo: Set(codigo_equipo),
                     ..Default::default()
                 };
-
-                // If user provided a manual code (codigo_equipo) in CSV, we SHOULD CHECK IF THEY MEAN TO OVERRIDE THE AUTO-GEN OR IF IT'S A MISTAKE.
-                // But specifically for 'Create', we usually want system codes. 
-                // However, let's stick to: Create = Generate New Internal Code. 
-                // But keep record.codigo_administrativo if present.
 
                 active_model.codigo_administrativo = Set(record.codigo_administrativo);
                 active_model.nombre_equipo = Set(record.nombre_equipo);
@@ -571,11 +620,15 @@ pub async fn import_assets_create(
         "IMPORT_CREATE", 
         "activos_equipos", 
         None, 
-        Some(format!("Importados {} nuevos activos vía CSV", count)),
+        Some(format!("Importados {} nuevos activos vía CSV. Omitidos: {}", count, skipped.len())),
         None
     ).await;
 
-    Ok(Json(format!("Successfully created {} assets", count)))
+    Ok(Json(ImportResponse {
+        message: format!("Proceso completado. {} creados, {} saltados.", count, skipped.len()),
+        created: count,
+        skipped,
+    }))
 }
 
 pub async fn import_assets_update(
