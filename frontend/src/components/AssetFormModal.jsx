@@ -164,7 +164,7 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
 
         setUploading(true);
         try {
-            const res = await axios.post('/api/upload', uploadData, {
+            const res = await axios.post('/api/upload/image', uploadData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setFormData(prev => ({ ...prev, imagen_url: res.data.url }));
