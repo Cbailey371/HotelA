@@ -358,48 +358,48 @@ const AssetDetailPage = () => {
                     </p>
 
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-                        <div className="space-y-1">
+                        <div className="space-y-1 min-w-0">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Marca</span>
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">{asset.marca || '---'}</span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-200 break-words break-all">{asset.marca || '---'}</span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1 min-w-0">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Modelo</span>
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">{asset.modelo || '---'}</span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-200 break-words break-all">{asset.modelo || '---'}</span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1 min-w-0">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">N° de Serie</span>
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">{asset.serie || '---'}</span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-200 break-words break-all">{asset.serie || '---'}</span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1 min-w-0">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Ubicación</span>
-                            <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200">
-                                <MapPin className="w-3.5 h-3.5 text-blue-500" />
-                                {asset.ubicacion || 'N/A'}
+                            <div className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200 break-words break-all">
+                                <MapPin className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                <span>{asset.ubicacion || 'N/A'}</span>
                             </div>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1 min-w-0">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Año / Cant</span>
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">{asset.anio || '---'} / {asset.cantidad || 1}</span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-200 break-words break-all">{asset.anio || '---'} / {asset.cantidad || 1}</span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1 min-w-0">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Color</span>
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">{asset.color || '---'}</span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-200 break-words break-all">{asset.color || '---'}</span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1 min-w-0">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">N° Motor</span>
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">{asset.numero_motor || '---'}</span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-200 break-words break-all">{asset.numero_motor || '---'}</span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1 min-w-0">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">N° Chasis</span>
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">{asset.numero_chasis || '---'}</span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-200 break-words break-all">{asset.numero_chasis || '---'}</span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1 min-w-0">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">F. Instalación</span>
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">{asset.fecha_instalacion || '---'}</span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-200 break-words break-all">{asset.fecha_instalacion || '---'}</span>
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1 min-w-0">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Ubic. Detallada</span>
-                            <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs">{asset.ubicacion_detallada || '---'}</span>
+                            <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs break-words break-all">{asset.ubicacion_detallada || '---'}</span>
                         </div>
                     </div>
                 </div>

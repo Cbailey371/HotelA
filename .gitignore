@@ -40,3 +40,4 @@ bun.lockb
 package-lock.json
 backend/update_pass.sql
 backend/seed_local.sql
+backend/src/bin/test_csv.rs
