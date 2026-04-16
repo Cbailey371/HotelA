@@ -347,11 +347,16 @@ async fn generate_report_data(
         },
         "Activos" => {
             let mut query = activos_equipos::Entity::find();
+            let mut has_estado_filter = false;
             
             for cond in conditions {
                 let field = cond.get("field").and_then(|v| v.as_str()).unwrap_or("");
                 let operator = cond.get("operator").and_then(|v| v.as_str()).unwrap_or("eq");
                 let value = cond.get("value").and_then(|v| v.as_str()).unwrap_or("");
+                
+                if field == "Estado" {
+                    has_estado_filter = true;
+                }
 
                 if field.is_empty() || value.is_empty() { continue; }
 
@@ -369,6 +374,10 @@ async fn generate_report_data(
                 };
 
                 query = apply_filter(query, column, operator, value);
+            }
+
+            if !has_estado_filter {
+                query = query.filter(activos_equipos::Column::Estado.ne("baja"));
             }
 
             let assets = query.all(db).await?;
