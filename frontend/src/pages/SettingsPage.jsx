@@ -326,7 +326,8 @@ const SettingsPage = () => {
             setTimeout(() => setMessage({ type: '', text: '' }), 3000);
         } catch (error) {
             console.error("Error deleting location", error);
-            setMessage({ type: 'error', text: 'Error al eliminar ubicación' });
+            const errorMsg = typeof error.response?.data === 'string' ? error.response.data : error.message;
+            setMessage({ type: 'error', text: `Error al eliminar ubicación: ${errorMsg}` });
         }
     };
 
@@ -515,7 +516,21 @@ const SettingsPage = () => {
                 fetchPaymentTerms();
             } catch (error) {
                 console.error("Error deleting payment term", error);
-                setMessage({ type: 'error', text: 'Error eliminando término de pago' });
+                const errorMsg = typeof error.response?.data === 'string' ? error.response.data : error.message;
+                setMessage({ type: 'error', text: `Error eliminando término de pago: ${errorMsg}` });
+            }
+            return;
+        }
+
+        if (activeTab === 'brands') {
+            try {
+                await api.delete(`/settings/brands/${id}`);
+                setMessage({ type: 'success', text: 'Marca eliminada correctamente' });
+                fetchBrands();
+            } catch (error) {
+                console.error("Error deleting brand", error);
+                const errorMsg = typeof error.response?.data === 'string' ? error.response.data : error.message;
+                setMessage({ type: 'error', text: `Error eliminando marca: ${errorMsg}` });
             }
             return;
         }
@@ -531,7 +546,8 @@ const SettingsPage = () => {
             else fetchTaskTypes();
         } catch (error) {
             console.error("Error deleting item", error);
-            setMessage({ type: 'error', text: 'Error eliminando elemento' });
+            const errorMsg = typeof error.response?.data === 'string' ? error.response.data : error.message;
+            setMessage({ type: 'error', text: `Error eliminando elemento: ${errorMsg}` });
         }
     };
 

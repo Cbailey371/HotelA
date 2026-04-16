@@ -301,7 +301,14 @@ pub async fn delete_location(
     let result = ubicaciones::Entity::delete_by_id(id)
         .exec(&db)
         .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+        .map_err(|e| {
+            let msg = e.to_string().to_lowercase();
+            if msg.contains("foreign key") || msg.contains("llave foránea") || msg.contains("violates") {
+                (StatusCode::BAD_REQUEST, "No se puede eliminar: el elemento está vinculado a un activo u orden de trabajo.".to_string())
+            } else {
+                (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+            }
+        })?;
 
     if result.rows_affected == 0 {
         return Err((StatusCode::NOT_FOUND, "Location not found".to_string()));
