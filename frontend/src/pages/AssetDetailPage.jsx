@@ -203,8 +203,9 @@ const AssetDetailPage = () => {
                 background: white;
             }
             .header { font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
-            .code { font-size: 16px; font-weight: 900; margin-top: 15px; font-family: monospace; letter-spacing: 1px; }
-            .name { font-size: 12px; margin-top: 5px; font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+            .code { font-size: 16px; font-weight: 900; margin-top: 15px; font-family: monospace; letter-spacing: 1px; color: #0f172a; }
+            .admin-code { font-size: 14px; font-weight: 700; margin-top: 4px; color: #475569; }
+            .name { font-size: 12px; margin-top: 8px; font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #334155; }
         `);
         win.document.write('</style></head><body>');
         win.document.write(content.outerHTML);
@@ -610,7 +611,10 @@ const AssetDetailPage = () => {
                                         />
                                     </div>
                                     <div className="code text-lg font-black mt-4 font-mono text-slate-900">{asset.codigo}</div>
-                                    <div className="name text-xs font-bold mt-1 max-w-[200px] truncate mx-auto text-slate-700">{asset.nombre}</div>
+                                    {asset.codigo_administrativo && (
+                                        <div className="admin-code text-sm font-bold mt-1 text-slate-600">{asset.codigo_administrativo}</div>
+                                    )}
+                                    <div className="name text-xs font-bold mt-2 max-w-[200px] truncate mx-auto text-slate-700">{asset.nombre}</div>
                                 </div>
                             </div>
 
