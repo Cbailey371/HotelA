@@ -91,7 +91,7 @@ const PublicCalendar = () => {
             const dayEvents = events.filter(e => e.fecha === dateStr);
 
             days.push(
-                <div key={d} className={`h-32 p-2 border-r border-b border-slate-100 dark:border-slate-800 flex flex-col group transition-colors hover:z-50 ${isToday(date) ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}>
+                <div key={d} className={`min-h-[140px] p-2 border-r border-b border-slate-100 dark:border-slate-800 flex flex-col group/day relative transition-all hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:z-50 ${isToday(date) ? 'bg-blue-50/30 dark:bg-blue-900/20' : ''}`}>
                     <div className="flex justify-between items-center mb-1">
                         <span className={`text-xs font-black ${isToday(date) ? 'bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center' : 'text-slate-400'}`}>
                             {d}
@@ -100,45 +100,50 @@ const PublicCalendar = () => {
                             <span className="text-[10px] font-black text-blue-500 uppercase">{dayEvents.length} Tareas</span>
                         )}
                     </div>
-                    <div className="flex-1 overflow-y-auto space-y-1 scrollbar-hide hover:overflow-visible">
-                        {dayEvents.slice(0, 3).map((e, idx) => (
-                            <div key={idx} className={`group/event relative text-[9px] p-1.5 rounded-lg border font-bold truncate transition-all hover:scale-[1.02] cursor-default ${getStatusColor(e.estado)}`}>
-                                <div className="truncate">{e.asunto || 'Mantenimiento'}</div>
-                                <div className="text-[8px] opacity-60 truncate">{e.equipo}</div>
-
-                                {/* Tooltip */}
-                                <div className="absolute z-[100] invisible group-hover/event:visible opacity-0 group-hover/event:opacity-100 transition-all duration-200 bg-slate-900 text-white p-3 rounded-xl shadow-2xl border border-slate-700 w-64 pointer-events-none left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-normal">
-                                    <div className="space-y-2">
-                                        <div className="border-b border-white/10 pb-1.5">
-                                            <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">ASUNTO</div>
-                                            <div className="text-xs font-bold leading-tight">{e.asunto || 'Sin asunto'}</div>
-                                        </div>
-                                        <div>
-                                            <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">ACTIVO</div>
-                                            <div className="text-xs font-bold">{e.equipo}</div>
-                                        </div>
-                                        <div className="flex gap-4">
-                                            <div>
-                                                <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">CÓDIGO MNT</div>
-                                                <div className="text-xs font-bold">{e.codigo || 'N/A'}</div>
-                                            </div>
-                                            {e.codigo_ot && (
-                                                <div>
-                                                    <div className="text-[10px] font-black tracking-widest text-purple-400 uppercase">ORDEN TRABAJO</div>
-                                                    <div className="text-xs font-bold text-purple-200">{e.codigo_ot}</div>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">PROVEEDOR</div>
-                                            <div className="text-xs font-bold">{e.proveedor_nombre || 'Interno / No asignado'}</div>
-                                        </div>
+                        <div className="flex-1 space-y-1 relative">
+                            {dayEvents.slice(0, 3).map((e) => (
+                                <div key={e.id} className="group/event relative">
+                                    <div className={`p-1.5 rounded-lg text-[9px] font-bold border leading-tight transition-all cursor-help shadow-sm hover:scale-[1.02] ${
+                                        e.prioridad?.toLowerCase() === 'alta' ? 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400' : 
+                                        'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400'
+                                    }`}>
+                                        <div className="truncate">{e.asunto || e.equipo}</div>
+                                        <div className="text-[8px] opacity-60 truncate">{e.equipo}</div>
                                     </div>
-                                    {/* Arrow */}
-                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
+                                    
+                                    {/* Tooltip Detallado (Mismo diseño que el dashboard) */}
+                                    <div className="absolute z-[100] invisible group-hover/event:visible opacity-0 group-hover/event:opacity-100 transition-all duration-200 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-700 w-72 pointer-events-none left-1/2 -translate-x-1/2 bottom-full mb-3 whitespace-normal">
+                                        <div className="space-y-3">
+                                            <div className="border-b border-white/10 pb-2">
+                                                <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase mb-0.5">ASUNTO</div>
+                                                <div className="text-xs font-bold leading-tight">{e.asunto || 'Sin asunto'}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase mb-0.5">ACTIVO</div>
+                                                <div className="text-xs font-bold">{e.equipo}</div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase mb-0.5">CÓDIGO MNT</div>
+                                                    <div className="text-xs font-bold text-slate-300">{e.codigo || 'N/A'}</div>
+                                                </div>
+                                                {e.codigo_ot && (
+                                                    <div>
+                                                        <div className="text-[10px] font-black tracking-widest text-purple-400 uppercase mb-0.5">ORDEN TRABAJO</div>
+                                                        <div className="text-xs font-bold text-purple-200">{e.codigo_ot}</div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase mb-0.5">PROVEEDOR</div>
+                                                <div className="text-xs font-bold text-slate-300">{e.proveedor_nombre || 'Mantenimiento Interno'}</div>
+                                            </div>
+                                        </div>
+                                        {/* Arrow */}
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
                         {dayEvents.length > 3 && (
                             <div className="text-[9px] text-center font-black text-slate-400">+{dayEvents.length - 3} más</div>
                         )}
