@@ -87,7 +87,7 @@ const PublicCalendar = () => {
 
         for (let d = 1; d <= daysInMonth; d++) {
             const date = new Date(year, month, d);
-            const dateStr = date.toISOString().split('T')[0];
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const dayEvents = events.filter(e => e.fecha === dateStr);
 
             days.push(
@@ -159,6 +159,8 @@ const PublicCalendar = () => {
         );
     };
 
+    const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD format safe for local date
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 p-4 lg:p-8 font-sans transition-colors duration-500">
             {/* Header */}
@@ -223,7 +225,7 @@ const PublicCalendar = () => {
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center"><Clock className="w-6 h-6 text-blue-500" /></div>
                                 <div>
-                                    <div className="text-2xl font-black">{events.filter(e => e.fecha === new Date().toISOString().split('T')[0]).length}</div>
+                                    <div className="text-2xl font-black">{events.filter(e => e.fecha === todayStr).length}</div>
                                     <div className="text-[10px] font-black text-slate-400 uppercase">Tareas Hoy</div>
                                 </div>
                             </div>
