@@ -173,7 +173,7 @@ pub async fn get_schedule(
         equipo: e.map(|v| v.nombre_equipo).unwrap_or("N/A".to_string()),
         tipo: tipo_nombre,
         fecha: s.fecha_programada.map(|d| d.to_string()),
-        estado: s.estado.cloned().unwrap_or("programado".to_string()),
+        estado: s.estado.clone().unwrap_or("programado".to_string()),
         responsable: s.responsable_interno_email.clone().or_else(|| Some("Asignado".to_string())).take().unwrap_or_default(),
         codigo: s.codigo_mantenimiento.clone(),
         prioridad: s.prioridad.clone().unwrap_or("media".to_string()),

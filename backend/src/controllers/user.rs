@@ -266,7 +266,7 @@ pub async fn delete_user(
         let mut user_am: usuarios::ActiveModel = _user.into();
         user_am.estado = Set(Some("inactivo".to_string()));
         user_am.update(&db).await
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("No se pudo eliminar el usuario porque tiene registros vinculados. Se intentó desactivar pero falló: {:?}", delete_result.err().unwrap())))?;
+            .map_err(|_e| (StatusCode::INTERNAL_SERVER_ERROR, format!("No se pudo eliminar el usuario porque tiene registros vinculados. Se intentó desactivar pero falló: {:?}", delete_result.err().unwrap())))?;
     }
 
     audit::log_action(

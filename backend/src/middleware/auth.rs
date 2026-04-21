@@ -54,7 +54,7 @@ pub async fn check_permission(
 
 pub async fn require_permission(
     State(db): State<DatabaseConnection>,
-    mut request: Request<Body>,
+    request: Request<Body>,
     next: Next,
     permission_code: &'static str,
 ) -> Result<Response, StatusCode> {

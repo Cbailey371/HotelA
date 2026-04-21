@@ -2,7 +2,7 @@ use axum::{Json, extract::{State, Path}, response::IntoResponse, Extension};
 use axum_extra::extract::Multipart;
 use serde::{Deserialize, Serialize};
 use crate::entities::{activos_equipos, mantenimiento_historial, historial_repuestos, activos_repuestos, tecnicos, activos_documentos};
-use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QueryOrder, Condition, PaginatorTrait};
+use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QueryOrder, PaginatorTrait};
 use crate::utils::{jwt, audit, code_generator::generate_next_code, error::AppError};
 
 #[derive(Serialize)]
