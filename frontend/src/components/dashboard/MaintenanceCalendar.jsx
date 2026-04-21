@@ -108,7 +108,7 @@ const MaintenanceCalendar = ({ events }) => {
                         const dayNum = dateObj ? dateObj.getDate() : null;
 
                         return (
-                            <div key={idx} className={`relative p-2 rounded-xl border border-slate-100 dark:border-slate-800 transition-all 
+                            <div key={idx} className={`relative p-2 rounded-xl border border-slate-100 dark:border-slate-800 transition-all hover:z-50
                                 ${dateObj ? 'hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer' : 'bg-transparent border-none'} 
                                 ${isToday ? 'bg-blue-50/50 ring-1 ring-blue-200' : ''}
                                 ${view === 'day' ? 'min-h-[200px]' : ''}
@@ -121,7 +121,7 @@ const MaintenanceCalendar = ({ events }) => {
                                             </span>
                                             {view !== 'month' && dayEvents.length > 0 && <span className="text-[10px] text-slate-400 font-bold">{dayEvents.length} tareas</span>}
                                         </div>
-                                        <div className={`mt-2 space-y-1 overflow-y-auto scrollbar-hide ${view === 'month' ? 'max-h-[60px]' : 'max-h-full'}`}>
+                                        <div className={`mt-2 space-y-1 overflow-y-auto scrollbar-hide hover:overflow-visible ${view === 'month' ? 'max-h-[60px]' : 'max-h-full'}`}>
                                             {dayEvents.length > 0 ? dayEvents.map(ev => (
                                                 <div key={ev.id} className={`group/event relative text-[10px] px-2 py-1.5 rounded-lg font-bold border-l-4 mb-1.5 shadow-sm transition-all hover:scale-[1.02] active:scale-95
                                                     ${ev.priority?.toLowerCase() === 'alta' ? 'bg-red-50 text-red-700 border-red-500' :
@@ -131,7 +131,7 @@ const MaintenanceCalendar = ({ events }) => {
                                                     <div className="text-[9px] opacity-60 line-clamp-1">{ev.equipo_nombre || ev.title}</div>
                                                     
                                                     {/* Tooltip */}
-                                                    <div className="fixed z-[100] invisible group-hover/event:visible opacity-0 group-hover/event:opacity-100 transition-all duration-200 bg-slate-900 text-white p-3 rounded-xl shadow-2xl border border-slate-700 w-64 pointer-events-none left-1/2 -translate-x-1/2 bottom-full mb-2">
+                                                    <div className="absolute z-[100] invisible group-hover/event:visible opacity-0 group-hover/event:opacity-100 transition-all duration-200 bg-slate-900 text-white p-3 rounded-xl shadow-2xl border border-slate-700 w-64 pointer-events-none left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-normal">
                                                         <div className="space-y-2">
                                                             <div className="border-b border-white/10 pb-1.5">
                                                                 <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">ASUNTO</div>

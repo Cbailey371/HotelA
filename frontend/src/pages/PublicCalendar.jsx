@@ -91,7 +91,7 @@ const PublicCalendar = () => {
             const dayEvents = events.filter(e => e.fecha === dateStr);
 
             days.push(
-                <div key={d} className={`h-32 p-2 border-r border-b border-slate-100 dark:border-slate-800 flex flex-col group transition-colors ${isToday(date) ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}>
+                <div key={d} className={`h-32 p-2 border-r border-b border-slate-100 dark:border-slate-800 flex flex-col group transition-colors hover:z-50 ${isToday(date) ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}>
                     <div className="flex justify-between items-center mb-1">
                         <span className={`text-xs font-black ${isToday(date) ? 'bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center' : 'text-slate-400'}`}>
                             {d}
@@ -100,14 +100,14 @@ const PublicCalendar = () => {
                             <span className="text-[10px] font-black text-blue-500 uppercase">{dayEvents.length} Tareas</span>
                         )}
                     </div>
-                    <div className="flex-1 overflow-y-auto space-y-1 scrollbar-hide">
+                    <div className="flex-1 overflow-y-auto space-y-1 scrollbar-hide hover:overflow-visible">
                         {dayEvents.slice(0, 3).map((e, idx) => (
                             <div key={idx} className={`group/event relative text-[9px] p-1.5 rounded-lg border font-bold truncate transition-all hover:scale-[1.02] cursor-default ${getStatusColor(e.estado)}`}>
                                 <div className="truncate">{e.asunto || 'Mantenimiento'}</div>
                                 <div className="text-[8px] opacity-60 truncate">{e.equipo}</div>
 
                                 {/* Tooltip */}
-                                <div className="fixed z-[100] invisible group-hover/event:visible opacity-0 group-hover/event:opacity-100 transition-all duration-200 bg-slate-900 text-white p-3 rounded-xl shadow-2xl border border-slate-700 w-64 pointer-events-none left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-normal">
+                                <div className="absolute z-[100] invisible group-hover/event:visible opacity-0 group-hover/event:opacity-100 transition-all duration-200 bg-slate-900 text-white p-3 rounded-xl shadow-2xl border border-slate-700 w-64 pointer-events-none left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-normal">
                                     <div className="space-y-2">
                                         <div className="border-b border-white/10 pb-1.5">
                                             <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">ASUNTO</div>
