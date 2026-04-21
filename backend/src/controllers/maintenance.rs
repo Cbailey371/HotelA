@@ -27,6 +27,7 @@ pub struct CreateScheduleRequest {
     pub crear_ot: Option<bool>,
     pub asunto: Option<String>,
     pub id_ots: Option<Vec<i32>>,
+    pub componente_id: Option<i32>,
 }
 
 #[derive(Serialize)]
@@ -56,6 +57,8 @@ pub struct ScheduleDto {
     pub codigo_ot: Option<String>, // Mantener el primero por compatibilidad
     pub proveedor_nombre: Option<String>,
     pub ots_vinculadas: Vec<LinkedOtDto>,
+    pub componente_id: Option<i32>,
+    pub nombre_componente: Option<String>,
 }
 
 #[derive(Serialize, Clone)]
@@ -93,9 +96,15 @@ pub async fn get_schedules(
         .await?;
 
     let providers_list = proveedores::Entity::find().all(&db).await?;
-    let prov_map: HashMap<i32, String> = providers_list.into_iter()
+    let prov_map: std::collections::HashMap<i32, String> = providers_list.into_iter()
         .map(|p| (p.id_proveedor, p.nombre_proveedor))
         .collect();
+
+    let components = crate::entities::componentes_estandar::Entity::find().all(&db).await.unwrap_or_default();
+    let comp_map: std::collections::HashMap<i32, String> = components.into_iter()
+        .map(|c| (c.id, c.nombre))
+        .collect();
+
 
     let mut ot_groups: HashMap<i32, Vec<LinkedOtDto>> = HashMap::new();
     for ot in ots {
@@ -114,8 +123,9 @@ pub async fn get_schedules(
             .unwrap_or_else(|| "Preventivo".to_string());
 
         let my_ots = ot_groups.get(&s.id_mantenimiento_calendario).cloned().unwrap_or_default();
-        let first_ot = my_ots.first();
+        let first_ot = my_ots.first().cloned();
         let prov_name = s.proveedor_id.and_then(|pid| prov_map.get(&pid).cloned());
+        let comp_name = s.componente_id.and_then(|cid| comp_map.get(&cid).cloned());
 
         ScheduleDto {
             id: s.id_mantenimiento_calendario,
@@ -126,7 +136,7 @@ pub async fn get_schedules(
             responsable: s.responsable_interno_email.clone().or_else(|| Some("Asignado".to_string())).take().unwrap_or_default(),
             codigo: s.codigo_mantenimiento,
             prioridad: s.prioridad.unwrap_or("media".to_string()),
-            orden_trabajo_id: first_ot.map(|v| v.id),
+            orden_trabajo_id: first_ot.as_ref().map(|v| v.id),
             tiene_ot: !my_ots.is_empty(),
             equipo_id: s.equipo_id,
             tipo_mantenimiento_id: s.tipo_mantenimiento_id,
@@ -143,6 +153,8 @@ pub async fn get_schedules(
             codigo_ot: first_ot.map(|v| v.codigo.clone()),
             proveedor_nombre: prov_name,
             ots_vinculadas: my_ots,
+            componente_id: s.componente_id,
+            nombre_componente: comp_name,
         }
     }).collect();
 
@@ -188,6 +200,9 @@ pub async fn get_schedule(
     let first_ot = ots_vinculadas.first();
     let prov_name = s.proveedor_id.and_then(|pid| prov_map.get(&pid).cloned());
 
+    let components = crate::entities::componentes_estandar::Entity::find().all(&db).await.unwrap_or_default();
+    let comp_name = s.componente_id.and_then(|cid| components.iter().find(|c| c.id == cid).map(|c| c.nombre.clone()));
+
     let dto = ScheduleDto {
         id: s.id_mantenimiento_calendario,
         equipo: e.map(|v| v.nombre_equipo).unwrap_or("N/A".to_string()),
@@ -197,7 +212,7 @@ pub async fn get_schedule(
         responsable: s.responsable_interno_email.clone().or_else(|| Some("Asignado".to_string())).take().unwrap_or_default(),
         codigo: s.codigo_mantenimiento.clone(),
         prioridad: s.prioridad.clone().unwrap_or("media".to_string()),
-        orden_trabajo_id: first_ot.map(|v| v.id),
+        orden_trabajo_id: first_ot.as_ref().map(|v| v.id),
         tiene_ot: !ots_vinculadas.is_empty(),
         equipo_id: s.equipo_id,
         tipo_mantenimiento_id: s.tipo_mantenimiento_id,
@@ -211,9 +226,11 @@ pub async fn get_schedule(
         observaciones: s.observaciones.clone(),
         responsable_id: s.responsable_id,
         asunto: s.asunto.clone(),
-        codigo_ot: first_ot.map(|v| v.codigo.clone()),
+        codigo_ot: first_ot.as_ref().map(|v| v.codigo.clone()),
         proveedor_nombre: prov_name,
         ots_vinculadas,
+        componente_id: s.componente_id,
+        nombre_componente: comp_name,
     };
 
     Ok(Json(dto))
@@ -248,6 +265,7 @@ pub async fn create_schedule(
         recurrente: Set(payload.recurrente.unwrap_or(false)),
         responsable_interno_email: Set(payload.responsable_interno_email),
         asunto: Set(payload.asunto),
+        componente_id: Set(payload.componente_id),
         ..Default::default()
     };
 
@@ -298,6 +316,7 @@ async fn create_ot_from_maintenance_manual(db: &DatabaseConnection, mnt: &manten
         costo_estimado: Set(mnt.costo_estimado),
         tipo_ot: Set("Preventiva".to_string()),
         asunto: Set(mnt.asunto.clone()),
+        componente_id: Set(mnt.componente_id),
         ..Default::default()
     };
 
@@ -321,9 +340,11 @@ pub struct UpdateScheduleRequest {
     pub tarea_tipo_id: Option<i32>,
     pub recurrente: Option<bool>,
     pub responsable_interno_email: Option<String>,
+    pub crear_ot: Option<bool>,
     pub estado: Option<String>,
     pub asunto: Option<String>,
     pub id_ots: Option<Vec<i32>>,
+    pub componente_id: Option<i32>,
 }
 
 pub async fn update_schedule(
@@ -361,6 +382,7 @@ pub async fn update_schedule(
     if let Some(v) = payload.responsable_interno_email { schedule_active.responsable_interno_email = Set(Some(v)); }
     if let Some(v) = payload.estado { schedule_active.estado = Set(Some(v)); }
     if let Some(v) = payload.asunto { schedule_active.asunto = Set(Some(v)); }
+    if let Some(v) = payload.componente_id { schedule_active.componente_id = Set(Some(v)); }
 
     schedule_active.update(&db).await?;
 
@@ -725,6 +747,12 @@ pub async fn get_public_schedules(
         .filter(orden_trabajo::Column::IdCalendario.is_not_null())
         .all(&db)
         .await?;
+
+    let components = crate::entities::componentes_estandar::Entity::find().all(&db).await.unwrap_or_default();
+    let comp_map: std::collections::HashMap<i32, String> = components.into_iter()
+        .map(|c| (c.id, c.nombre))
+        .collect();
+
     let ot_map: std::collections::HashMap<i32, (i32, String)> = ots.into_iter()
         .filter_map(|ot| ot.id_calendario.map(|cal_id| (cal_id, (ot.id_ot, ot.codigo_ot.unwrap_or_default()))))
         .collect();
@@ -766,6 +794,8 @@ pub async fn get_public_schedules(
             codigo_ot: ot_code,
             proveedor_nombre: prov_name,
             ots_vinculadas: Vec::new(),
+            componente_id: s.componente_id,
+            nombre_componente: s.componente_id.and_then(|cid| comp_map.get(&cid).cloned()),
         }
     }).collect();
 
@@ -796,6 +826,12 @@ pub async fn get_pending_schedules(
         .filter(orden_trabajo::Column::IdCalendario.is_not_null())
         .all(&db)
         .await?;
+
+    let components = crate::entities::componentes_estandar::Entity::find().all(&db).await.unwrap_or_default();
+    let comp_map: std::collections::HashMap<i32, String> = components.into_iter()
+        .map(|c| (c.id, c.nombre))
+        .collect();
+
     let ot_map: std::collections::HashMap<i32, (i32, String)> = ots.into_iter()
         .filter_map(|ot| ot.id_calendario.map(|cal_id| (cal_id, (ot.id_ot, ot.codigo_ot.unwrap_or_default()))))
         .collect();
@@ -837,6 +873,8 @@ pub async fn get_pending_schedules(
             codigo_ot: ot_code,
             proveedor_nombre: prov_name,
             ots_vinculadas: Vec::new(),
+            componente_id: s.componente_id,
+            nombre_componente: s.componente_id.and_then(|cid| comp_map.get(&cid).cloned()),
         }
     }).collect();
 

@@ -24,3 +24,4 @@ pub mod backup;
 pub mod purchase_invoices;
 pub mod purchase_quotes;
 pub mod notifications;
+pub mod components;

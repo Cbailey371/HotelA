@@ -30,6 +30,7 @@ const SettingsPage = () => {
     const [paymentTerms, setPaymentTerms] = useState([]);
     // New States
     const [brands, setBrands] = useState([]);
+    const [standardComponents, setStandardComponents] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
     const [selectedWarehouse, setSelectedWarehouse] = useState(null);
     const [warehouseLocations, setWarehouseLocations] = useState([]);
@@ -89,10 +90,7 @@ const SettingsPage = () => {
         if (activeTab === 'tasks') fetchTaskTypes();
         if (activeTab === 'payment-terms') fetchPaymentTerms();
         if (activeTab === 'brands') fetchBrands();
-        if (activeTab === 'warehouses') fetchWarehouses();
-        if (activeTab === 'tasks') fetchTaskTypes();
-        if (activeTab === 'payment-terms') fetchPaymentTerms();
-        if (activeTab === 'brands') fetchBrands();
+        if (activeTab === 'standard-components') fetchStandardComponents();
         if (activeTab === 'warehouses') fetchWarehouses();
         if (activeTab === 'manuals' && !selectedManual) {
             setSelectedManual(manuals[0]);
@@ -200,6 +198,18 @@ const SettingsPage = () => {
             setBrands(res.data);
         } catch (error) {
             console.error("Error loading brands", error);
+        } finally {
+            setConfigLoading(false);
+        }
+    };
+    
+    const fetchStandardComponents = async () => {
+        setConfigLoading(true);
+        try {
+            const res = await api.get('/asset-config/standard-components');
+            setStandardComponents(res.data);
+        } catch (error) {
+            console.error("Error loading standard components", error);
         } finally {
             setConfigLoading(false);
         }
@@ -446,37 +456,33 @@ const SettingsPage = () => {
             return;
         }
 
-        if (activeTab === 'warehouses') {
+        if (activeTab === 'standard-components') {
             try {
-                if (editingWarehouse) {
-                    await api.put(`/settings/warehouses/${editingWarehouse.id}`, {
+                if (editingConfigItem) {
+                    await api.put(`/asset-config/standard-components/${editingConfigItem.id}`, {
                         nombre: newItemName,
-                        ubicacion: newItemLocation,
                         descripcion: newItemDesc
                     });
-                    setMessage({ type: 'success', text: 'Bodega actualizada correctamente' });
-                    setEditingWarehouse(null);
+                    setMessage({ type: 'success', text: 'Componente actualizado' });
+                    setEditingConfigItem(null);
                 } else {
-                    await api.post('/settings/warehouses', {
+                    await api.post('/asset-config/standard-components', {
                         nombre: newItemName,
-                        ubicacion: newItemLocation,
                         descripcion: newItemDesc
                     });
-                    setMessage({ type: 'success', text: 'Bodega creada correctamente' });
+                    setMessage({ type: 'success', text: 'Componente creado' });
                 }
-
                 setNewItemName('');
-                setNewItemLocation('');
                 setNewItemDesc('');
-                fetchWarehouses();
+                fetchStandardComponents();
             } catch (error) {
-                console.error("Error saving warehouse", error);
-                setMessage({ type: 'error', text: 'Error guardando bodega' });
+                console.error("Error saving component", error);
+                setMessage({ type: 'error', text: 'Error guardando componente' });
             }
             return;
         }
 
-        const endpoint = activeTab === 'categories' ? 'categories' : (activeTab === 'types' ? 'types' : (activeTab === 'locations' ? 'locations' : 'maintenance-tasks'));
+        const endpoint = activeTab === 'categories' ? 'categories' : (activeTab === 'types' ? 'types' : (activeTab === 'locations' ? 'locations' : (activeTab === 'standard-components' ? 'standard-components' : 'maintenance-tasks')));
         try {
             if (editingConfigItem) {
                 await api.put(`/asset-config/${endpoint}/${editingConfigItem.id}`, {
@@ -522,20 +528,20 @@ const SettingsPage = () => {
             return;
         }
 
-        if (activeTab === 'brands') {
+        if (activeTab === 'standard-components') {
             try {
-                await api.delete(`/settings/brands/${id}`);
-                setMessage({ type: 'success', text: 'Marca eliminada correctamente' });
-                fetchBrands();
+                await api.delete(`/asset-config/standard-components/${id}`);
+                setMessage({ type: 'success', text: 'Componente eliminado' });
+                fetchStandardComponents();
             } catch (error) {
-                console.error("Error deleting brand", error);
+                console.error("Error deleting component", error);
                 const errorMsg = typeof error.response?.data === 'string' ? error.response.data : error.message;
-                setMessage({ type: 'error', text: `Error eliminando marca: ${errorMsg}` });
+                setMessage({ type: 'error', text: `Error eliminando componente: ${errorMsg}` });
             }
             return;
         }
 
-        const endpoint = activeTab === 'categories' ? 'categories' : (activeTab === 'types' ? 'types' : (activeTab === 'locations' ? 'locations' : 'maintenance-tasks'));
+        const endpoint = activeTab === 'categories' ? 'categories' : (activeTab === 'types' ? 'types' : (activeTab === 'locations' ? 'locations' : (activeTab === 'standard-components' ? 'standard-components' : 'maintenance-tasks')));
         try {
             await api.delete(`/asset-config/${endpoint}/${id}`);
             setMessage({ type: 'success', text: 'Elemento eliminado correctamente' });
@@ -1331,6 +1337,12 @@ const SettingsPage = () => {
                     <Tag className="w-4 h-4" /> Tipos de Activos
                 </button>
                 <button
+                    onClick={() => setActiveTab('standard-components')}
+                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'standard-components' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                >
+                    <LayoutGrid className="w-4 h-4" /> Componentes Estándar
+                </button>
+                <button
                     onClick={() => setActiveTab('payment-terms')}
                     className={`px-4 py-2 text-sm font-medium rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'payment-terms' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                 >
@@ -1380,6 +1392,7 @@ const SettingsPage = () => {
                 {activeTab === 'categories' && renderConfigTable(categories, 'Categoría')}
                 {activeTab === 'locations' && renderConfigTable(locations, 'Ubicación')}
                 {activeTab === 'types' && renderConfigTable(types, 'Tipo de Activo')}
+                {activeTab === 'standard-components' && renderConfigTable(standardComponents, 'Componente Estándar')}
                 {activeTab === 'payment-terms' && (
                     <div className="space-y-6">
                         <div className="bg-slate-50 dark:bg-[#0f172a] p-4 rounded-xl border border-slate-200 dark:border-slate-700">

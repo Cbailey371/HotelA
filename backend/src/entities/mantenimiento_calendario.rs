@@ -32,6 +32,7 @@ pub struct Model {
     pub responsable_interno_email: Option<String>,
     pub orden_trabajo_id: Option<i32>,
     pub asunto: Option<String>,
+    pub componente_id: Option<i32>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

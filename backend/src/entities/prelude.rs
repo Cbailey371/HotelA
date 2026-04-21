@@ -8,6 +8,7 @@ pub use super::auditoria_acciones::Entity as AuditoriaAcciones;
 pub use super::bodega_ubicaciones::Entity as BodegaUbicaciones;
 pub use super::bodegas::Entity as Bodegas;
 pub use super::categorias_activos::Entity as CategoriasActivos;
+pub use super::componentes_estandar::Entity as ComponentesEstandar;
 pub use super::compras_cotizacion_detalle::Entity as ComprasCotizacionDetalle;
 pub use super::compras_cotizaciones::Entity as ComprasCotizaciones;
 pub use super::compras_solicitud_detalle::Entity as ComprasSolicitudDetalle;

@@ -22,6 +22,7 @@ pub struct CreateWorkOrderRequest {
     pub costo_estimado: Option<f64>,
     pub terminos_pago: Option<String>,
     pub foto_dano: Option<String>,
+    pub componente_id: Option<i32>,
 }
 
 #[derive(Deserialize)]
@@ -42,6 +43,7 @@ pub struct UpdateWorkOrderRequest {
     pub comentario_final: Option<String>,
     pub foto_dano: Option<String>,
     pub estado: Option<String>,
+    pub componente_id: Option<Option<i32>>,
 }
 
 #[derive(Serialize)]
@@ -78,6 +80,8 @@ pub struct WorkOrderDto {
     pub id_calendarios: Vec<i32>, // List of IDs for easy hydration
     pub id_usuario: Option<i32>,
     pub nombre_usuario: Option<String>,
+    pub componente_id: Option<i32>,
+    pub nombre_componente: Option<String>,
 }
 
 #[derive(Serialize, Clone)]
@@ -122,6 +126,7 @@ pub async fn create_work_order(
         terminos_pago: Set(payload.terminos_pago),
         foto_dano: Set(payload.foto_dano),
         id_usuario: Set(Some(claims.user_id)),
+        componente_id: Set(payload.componente_id),
         ..Default::default()
     };
 
@@ -202,6 +207,8 @@ pub async fn get_work_order(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+    let components = crate::entities::componentes_estandar::Entity::find().all(&db).await.unwrap_or_default();
+
     let nombre_tecnico = ot.id_tecnico.and_then(|id| {
         techs.iter().find(|t| t.id_tecnico == id).map(|t| format!("{} {}", t.nombre, t.apellido).trim().to_string())
     });
@@ -244,6 +251,10 @@ pub async fn get_work_order(
         locations.iter().find(|l| l.id == id).map(|l| l.nombre.clone())
     });
 
+    let nombre_componente = ot.componente_id.and_then(|id| {
+        components.iter().find(|c| c.id == id).map(|c| c.nombre.clone())
+    });
+
     let dto = WorkOrderDto {
         id_ot: ot.id_ot,
         id_calendario: ot.id_calendario,
@@ -279,6 +290,8 @@ pub async fn get_work_order(
         mantenimientos: linked,
         id_usuario: ot.id_usuario,
         nombre_usuario,
+        componente_id: ot.componente_id,
+        nombre_componente,
     };
 
     Ok(Json(dto))
@@ -323,6 +336,8 @@ pub async fn get_work_orders(
         .all(&db)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let components = crate::entities::componentes_estandar::Entity::find().all(&db).await.unwrap_or_default();
 
     let dtos: Vec<WorkOrderDto> = orders.into_iter().map(|(ot, activo)| {
         let nombre_usuario = ot.id_usuario.and_then(|id| {
@@ -369,6 +384,10 @@ pub async fn get_work_orders(
             locations.iter().find(|l| l.id == id).map(|l| l.nombre.clone())
         });
 
+        let nombre_componente = ot.componente_id.and_then(|id| {
+            components.iter().find(|c| c.id == id).map(|c| c.nombre.clone())
+        });
+
         WorkOrderDto {
             id_ot: ot.id_ot,
             id_calendario: ot.id_calendario,
@@ -404,6 +423,8 @@ pub async fn get_work_orders(
             mantenimientos: linked,
             id_usuario: ot.id_usuario,
             nombre_usuario,
+            componente_id: ot.componente_id,
+            nombre_componente,
         }
     }).collect();
 
@@ -524,6 +545,10 @@ pub async fn update_work_order(
 
     if let Some(tipo_ot) = payload.tipo_ot {
         ot_active.tipo_ot = Set(tipo_ot);
+    }
+
+    if let Some(componente_id_opt) = payload.componente_id {
+        ot_active.componente_id = Set(componente_id_opt);
     }
 
     if let Some(comentario) = payload.comentario_final {

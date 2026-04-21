@@ -32,6 +32,7 @@ pub struct Model {
     #[sea_orm(column_type = "Text", nullable)]
     pub foto_dano: Option<String>,
     pub id_usuario: Option<i32>,
+    pub componente_id: Option<i32>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

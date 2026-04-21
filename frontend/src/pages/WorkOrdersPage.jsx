@@ -26,6 +26,7 @@ const WorkOrdersPage = () => {
     const [technicians, setTechnicians] = useState([]);
     const [providers, setProviders] = useState([]);
     const [maintenanceTypes, setMaintenanceTypes] = useState([]);
+    const [standardComponents, setStandardComponents] = useState([]);
     const [pendingSchedules, setPendingSchedules] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -78,6 +79,7 @@ const WorkOrdersPage = () => {
         costo_estimado: '',
         terminos_pago: '',
         foto_dano: null,
+        componente_id: ''
     });
     const [uploading, setUploading] = useState(false);
 
@@ -90,7 +92,7 @@ const WorkOrdersPage = () => {
             if (!silent) setLoading(true);
             else setRefreshing(true);
 
-            const [ordersData, assetsData, techsData, provsData, schedulesRes, mTypesRes, paymentTermsRes, locationsData] = await Promise.all([
+            const [ordersData, assetsData, techsData, provsData, schedulesRes, mTypesRes, paymentTermsRes, locationsData, compRes] = await Promise.all([
                 workOrderService.getAll(),
                 assetService.getAll(),
                 technicianService.getAll(),
@@ -98,7 +100,8 @@ const WorkOrdersPage = () => {
                 api.get('/maintenance/pending-schedules'),
                 api.get('/maintenance/types'),
                 api.get('/settings/payment-terms'),
-                locationService.getAll()
+                locationService.getAll(),
+                api.get('/asset-config/standard-components')
             ]);
 
             setOrders(ordersData.sort((a, b) => a.id_ot - b.id_ot));
@@ -109,6 +112,7 @@ const WorkOrdersPage = () => {
             setPendingSchedules(schedulesRes.data);
             setLocations(locationsData);
             setPaymentTerms(paymentTermsRes.data);
+            setStandardComponents(compRes.data || []);
         } catch (error) {
             console.error("Error fetching data", error);
         } finally {
@@ -142,9 +146,10 @@ const WorkOrdersPage = () => {
             observaciones: selectedItems.length === 1
                 ? (primary.codigo ? `Plan de Mantenimiento: ${primary.codigo}` : `Plan de Mantenimiento ID: ${primary.id}`)
                 : `Orden de Trabajo Múltiple (${selectedItems.length} mantenimientos vinculados).\nItems: ${selectedItems.map(s => s.codigo || s.id).join(', ')}`,
-            costo_estimado: primary.costo_estimado || '',
-            terminos_pago: primary.terminos_pago || ''
-        });
+                costo_estimado: primary.costo_estimado || '',
+                terminos_pago: primary.terminos_pago || '',
+                componente_id: primary.componente_id || ''
+            });
         setIsDirty(true);
         setShowMaintenanceSelector(false);
     };
@@ -208,12 +213,13 @@ const WorkOrdersPage = () => {
             if (editingOrder) {
                 await workOrderService.update(editingOrder.id_ot, {
                     ...formData,
-                    id_activo: parseInt(formData.id_activo),
+                    id_activo: formData.id_activo ? parseInt(formData.id_activo) : null,
                     id_tipo_mantenimiento: parseInt(formData.id_tipo_mantenimiento),
                     id_tecnico: formData.id_tecnico ? parseInt(formData.id_tecnico) : null,
                     id_proveedor: formData.id_proveedor ? parseInt(formData.id_proveedor) : null,
                     costo_estimado: formData.costo_estimado !== '' ? parseFloat(formData.costo_estimado) : null,
-                    foto_dano: formData.foto_dano
+                    foto_dano: formData.foto_dano,
+                    componente_id: formData.componente_id ? parseInt(formData.componente_id) : null
                 });
             } else {
                 await workOrderService.create({
@@ -230,7 +236,8 @@ const WorkOrdersPage = () => {
                     asunto: formData.asunto,
                     tipo_ot: formData.tipo_ot,
                     costo_estimado: formData.costo_estimado !== '' ? parseFloat(formData.costo_estimado) : null,
-                    foto_dano: formData.foto_dano
+                    foto_dano: formData.foto_dano,
+                    componente_id: formData.componente_id ? parseInt(formData.componente_id) : null
                 });
             }
             setShowModal(false);
@@ -282,7 +289,8 @@ const WorkOrdersPage = () => {
             observaciones: order.observaciones || '',
             costo_estimado: (order.costo_estimado !== null && order.costo_estimado !== undefined) ? order.costo_estimado.toString() : '',
             terminos_pago: order.terminos_pago || '',
-            foto_dano: order.foto_dano
+            foto_dano: order.foto_dano,
+            componente_id: order.componente_id || ''
         });
         setShowModal(true);
         setIsDirty(false);
@@ -460,7 +468,7 @@ const WorkOrdersPage = () => {
                 <button
                     onClick={() => {
                         setEditingOrder(null);
-                        setFormData({ codigo_ot: '', id_activo: '', id_tipo_mantenimiento: '', id_calendario: null, id_calendarios: [], id_tecnico: '', id_proveedor: '', prioridad: 'media', tipo_ot: 'preventiva', id_ubicacion: '', asunto: '', observaciones: '', costo_estimado: '', terminos_pago: '' });
+                        setFormData({ codigo_ot: '', id_activo: '', id_tipo_mantenimiento: '', id_calendario: null, id_calendarios: [], id_tecnico: '', id_proveedor: '', prioridad: 'media', tipo_ot: 'preventiva', id_ubicacion: '', asunto: '', observaciones: '', costo_estimado: '', terminos_pago: '', componente_id: '' });
                         setShowModal(true);
                         setIsDirty(false);
                     }}
@@ -849,47 +857,65 @@ const WorkOrdersPage = () => {
                                 </div>
                             )}
 
-                            <div>
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">
-                                    Activo / Equipo {formData.tipo_ot === 'general' && <span className="text-slate-400 lowercase italic font-normal">(opcional)</span>}
-                                </label>
-                                <div className="relative group">
-                                    <input
-                                        readOnly
-                                        required={formData.tipo_ot !== 'general'}
-                                        type="text"
-                                        placeholder="Haga clic para buscar equipo..."
-                                        value={formData.id_activo ? assets.find(a => a.id == formData.id_activo)?.nombre_equipo : ''}
-                                        onClick={() => {
-                                            if (formData.id_calendario || (formData.id_calendarios && formData.id_calendarios.length > 0)) {
-                                                alert("No puede cambiar el equipo de una Orden de Trabajo vinculada a un mantenimiento programado.");
-                                                return;
-                                            }
-                                            setAssetSearchQuery('');
-                                            setShowAssetSearch(true);
-                                        }}
-                                        className="w-full bg-slate-50 dark:bg-[#0f172a] border-2 border-dashed border-slate-200 dark:border-slate-700/50 hover:border-indigo-400 dark:hover:border-indigo-500 rounded-xl p-3.5 pl-10 text-sm font-bold outline-none cursor-pointer transition-all text-slate-700 dark:text-slate-200 placeholder:text-slate-400 italic"
-                                    />
-                                    <Search className="w-4 h-4 text-slate-400 absolute left-4 top-4 group-hover:text-indigo-500 transition-colors pointer-events-none" />
-                                    {formData.id_activo && (
-                                        <div className="absolute right-4 top-4 flex items-center gap-2">
-                                            <div className="text-[10px] font-black text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded uppercase tracking-widest">
-                                                ID: {assets.find(a => a.id == formData.id_activo)?.codigo_equipo || assets.find(a => a.id == formData.id_activo)?.codigo}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">
+                                        Activo / Equipo {formData.tipo_ot === 'general' && <span className="text-slate-400 lowercase italic font-normal">(opcional)</span>}
+                                    </label>
+                                    <div className="relative group">
+                                        <input
+                                            readOnly
+                                            required={formData.tipo_ot !== 'general'}
+                                            type="text"
+                                            placeholder="Haga clic para buscar equipo..."
+                                            value={formData.id_activo ? assets.find(a => a.id == formData.id_activo)?.nombre_equipo : ''}
+                                            onClick={() => {
+                                                if (formData.id_calendario || (formData.id_calendarios && formData.id_calendarios.length > 0)) {
+                                                    alert("No puede cambiar el equipo de una Orden de Trabajo vinculada a un mantenimiento programado.");
+                                                    return;
+                                                }
+                                                setAssetSearchQuery('');
+                                                setShowAssetSearch(true);
+                                            }}
+                                            className="w-full bg-slate-50 dark:bg-[#0f172a] border-2 border-dashed border-slate-200 dark:border-slate-700/50 hover:border-indigo-400 dark:hover:border-indigo-500 rounded-xl p-3.5 pl-10 text-sm font-bold outline-none cursor-pointer transition-all text-slate-700 dark:text-slate-200 placeholder:text-slate-400 italic"
+                                        />
+                                        <Search className="w-4 h-4 text-slate-400 absolute left-4 top-4 group-hover:text-indigo-500 transition-colors pointer-events-none" />
+                                        {formData.id_activo && (
+                                            <div className="absolute right-4 top-4 flex items-center gap-2">
+                                                <div className="text-[10px] font-black text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded uppercase tracking-widest">
+                                                    ID: {assets.find(a => a.id == formData.id_activo)?.codigo_equipo || assets.find(a => a.id == formData.id_activo)?.codigo}
+                                                </div>
+                                                {formData.tipo_ot === 'general' && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setFormData({ ...formData, id_activo: '' });
+                                                        }}
+                                                        className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
+                                                    >
+                                                        <X className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
                                             </div>
-                                            {formData.tipo_ot === 'general' && (
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setFormData({ ...formData, id_activo: '' });
-                                                    }}
-                                                    className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
-                                                >
-                                                    <X className="w-3.5 h-3.5" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Componente Específico (Opcional)</label>
+                                    <select
+                                        className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
+                                        value={formData.componente_id}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, componente_id: e.target.value });
+                                            setIsDirty(true);
+                                        }}
+                                    >
+                                        <option value="">-- No aplica --</option>
+                                        {standardComponents.map(c => (
+                                            <option key={c.id} value={c.id}>{c.nombre}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
 

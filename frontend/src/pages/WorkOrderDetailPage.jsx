@@ -25,6 +25,7 @@ const WorkOrderDetailPage = () => {
     const [technicians, setTechnicians] = useState([]);
     const [providers, setProviders] = useState([]);
     const [locations, setLocations] = useState([]);
+    const [standardComponents, setStandardComponents] = useState([]);
     const [comments, setComments] = useState([]);
     const canEdit = !['SOLICITANTE', 'LIMPIEZA', 'RECEPCION'].includes(user?.role?.toUpperCase());
     const canUploadPhoto = canEdit || ['RECEPCION', 'LIMPIEZA'].includes(user?.role?.toUpperCase());
@@ -65,14 +66,15 @@ const WorkOrderDetailPage = () => {
     const fetchOrderDetail = async () => {
         try {
             setLoading(true);
-            const [orderData, assetsData, techsData, provsData, locationsData, commentsData, termsData] = await Promise.all([
+            const [orderData, assetsData, techsData, provsData, locationsData, commentsData, termsData, compRes] = await Promise.all([
                 workOrderService.getById(id),
                 assetService.getAll().catch(() => []),
                 technicianService.getAll().catch(() => []),
                 providerService.getAll().catch(() => []),
                 locationService.getAll().catch(() => []),
                 api.get(`/work-orders/${id}/comments`).then(res => res.data).catch(() => []),
-                api.get('/settings/payment-terms').then(res => res.data).catch(() => [])
+                api.get('/settings/payment-terms').then(res => res.data).catch(() => []),
+                api.get('/asset-config/standard-components').catch(() => ({ data: [] }))
             ]);
             
             setOrder(orderData);
@@ -82,6 +84,7 @@ const WorkOrderDetailPage = () => {
             setLocations(locationsData);
             setComments(commentsData);
             setPaymentTerms(termsData);
+            setStandardComponents(compRes.data || []);
         } catch (err) {
             console.error("Error fetching order detail:", err);
             setError("No se pudo cargar la información de la orden de trabajo.");
@@ -183,7 +186,8 @@ const WorkOrderDetailPage = () => {
             costo_estimado: order.costo_estimado || 0,
             terminos_pago: order.terminos_pago || '',
             observaciones: order.observaciones || '',
-            id_calendarios: order.id_calendarios || []
+            id_calendarios: order.id_calendarios || [],
+            componente_id: order.componente_id || ''
         });
         setSelectedMaintenanceIds(order.id_calendarios || []);
         setShowEditModal(true);
@@ -212,7 +216,8 @@ const WorkOrderDetailPage = () => {
                 id_tecnico: editFormData.id_tecnico ? parseInt(editFormData.id_tecnico) : null,
                 id_proveedor: editFormData.id_proveedor ? parseInt(editFormData.id_proveedor) : null,
                 costo_estimado: parseFloat(editFormData.costo_estimado) || 0,
-                id_calendarios: editFormData.id_calendarios || []
+                id_calendarios: editFormData.id_calendarios || [],
+                componente_id: editFormData.componente_id ? parseInt(editFormData.componente_id) : null
             });
             setShowEditModal(false);
             fetchOrderDetail();
@@ -422,10 +427,19 @@ const WorkOrderDetailPage = () => {
                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Código</span>
                                             <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{assets.find(a => a.id == order.id_activo)?.codigo_administrativo || assets.find(a => a.id == order.id_activo)?.codigo_equipo || 'S/N'}</span>
                                         </div>
-                                        <div className="bg-slate-50 dark:bg-[#0f172a]/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Categoría</span>
-                                            <span className="font-bold text-slate-700 dark:text-slate-300">{assets.find(a => a.id == order.id_activo)?.categoria || 'N/A'}</span>
-                                        </div>
+                                        {order.componente_id ? (
+                                            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
+                                                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block mb-1">Parte / Componente</span>
+                                                <span className="font-bold text-indigo-700 dark:text-indigo-300">
+                                                    {standardComponents.find(c => c.id == order.componente_id)?.nombre || `ID: ${order.componente_id}`}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <div className="bg-slate-50 dark:bg-[#0f172a]/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Categoría</span>
+                                                <span className="font-bold text-slate-700 dark:text-slate-300">{assets.find(a => a.id == order.id_activo)?.categoria || 'N/A'}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -682,6 +696,20 @@ const WorkOrderDetailPage = () => {
                                 value={editFormData.asunto}
                                 onChange={(e) => setEditFormData({...editFormData, asunto: e.target.value})}
                             />
+                        </div>
+
+                        <div>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Componente Específico (Opcional)</label>
+                            <select 
+                                className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-sm font-bold outline-none"
+                                value={editFormData.componente_id}
+                                onChange={(e) => setEditFormData({...editFormData, componente_id: e.target.value})}
+                            >
+                                <option value="">-- No aplica --</option>
+                                {standardComponents.map(c => (
+                                    <option key={c.id} value={c.id}>{c.nombre}</option>
+                                ))}
+                            </select>
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4">

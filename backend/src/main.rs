@@ -346,6 +346,7 @@ async fn main() {
                         .route("/types", get(controllers::asset_config::get_types))
                         .route("/locations", get(controllers::asset_config::get_locations))
                         .route("/maintenance-tasks", get(controllers::asset_config::get_maintenance_tasks))
+                        .route("/standard-components", get(controllers::components::get_componentes))
                         .merge(
                             Router::new()
                                 .route("/categories", post(controllers::asset_config::create_category))
@@ -356,6 +357,8 @@ async fn main() {
                                 .route("/locations/{id}", delete(controllers::asset_config::delete_location).put(controllers::asset_config::update_location))
                                 .route("/maintenance-tasks", post(controllers::asset_config::create_maintenance_task))
                                 .route("/maintenance-tasks/{id}", delete(controllers::asset_config::delete_maintenance_task).put(controllers::asset_config::update_maintenance_task))
+                                .route("/standard-components", post(controllers::components::create_componente))
+                                .route("/standard-components/{id}", delete(controllers::components::delete_componente).put(controllers::components::update_componente))
                                 .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "admin_access")))
                         )
                 )

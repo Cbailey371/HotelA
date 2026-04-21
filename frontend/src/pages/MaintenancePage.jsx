@@ -15,7 +15,8 @@ const MaintenancePage = () => {
     const [taskTypes, setTaskTypes] = useState([]);
     const [providers, setProviders] = useState([]);
     const [users, setUsers] = useState([]);
-    const [inventory, setInventory] = useState([]); // New state
+    const [inventory, setInventory] = useState([]);
+    const [standardComponents, setStandardComponents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [showExecuteModal, setShowExecuteModal] = useState(false);
@@ -64,7 +65,8 @@ const MaintenancePage = () => {
         hora: '08',
         minutos: '00',
         periodo: 'AM',
-        id_ots: [] // Nuevo campo
+        id_ots: [],
+        componente_id: ''
     });
 
     const [executeForm, setExecuteForm] = useState({
@@ -82,7 +84,7 @@ const MaintenancePage = () => {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [sRes, tRes, aRes, tyRes, pRes, ttRes, iRes, uRes, woRes] = await Promise.all([
+            const [sRes, tRes, aRes, tyRes, pRes, ttRes, iRes, uRes, woRes, compRes] = await Promise.all([
                 api.get('/maintenance/schedule'),
                 api.get('/technicians'),
                 api.get('/assets'),
@@ -91,7 +93,8 @@ const MaintenancePage = () => {
                 api.get('/asset-config/maintenance-tasks'),
                 api.get('/inventory'), 
                 api.get('/users'),
-                api.get('/work-orders') // Cargar OTs
+                api.get('/work-orders'),
+                api.get('/asset-config/standard-components')
             ]);
             setSchedules(sRes.data);
             setTechs(tRes.data);
@@ -102,6 +105,7 @@ const MaintenancePage = () => {
             setInventory(iRes?.data || []); 
             setUsers(uRes?.data || []);
             setWorkOrders(woRes?.data || []);
+            setStandardComponents(compRes.data || []);
         } catch (error) {
         } finally {
             setLoading(false);
@@ -179,7 +183,7 @@ const MaintenancePage = () => {
         if (e) e.preventDefault();
         const sanitizedData = { ...scheduleForm };
         // Sanitize IDs
-        ['equipo_id', 'tipo_mantenimiento_id', 'responsable_id', 'proveedor_id', 'tecnico_id', 'tarea_tipo_id'].forEach(field => {
+        ['equipo_id', 'tipo_mantenimiento_id', 'responsable_id', 'proveedor_id', 'tecnico_id', 'tarea_tipo_id', 'componente_id'].forEach(field => {
             if (sanitizedData[field] === '') sanitizedData[field] = null;
             else if (sanitizedData[field] !== null) sanitizedData[field] = parseInt(sanitizedData[field]);
         });
@@ -389,6 +393,7 @@ const MaintenancePage = () => {
                 asunto: schedule.asunto || '',
                 estado: schedule.estado,
                 id_ots: schedule.ots_vinculadas?.map(ot => ot.id) || [],
+                componente_id: schedule.componente_id || '',
                 hora, minutos, periodo
             });
             await fetchMaintenanceParts(schedule.id);
@@ -414,6 +419,7 @@ const MaintenancePage = () => {
                 asunto: '',
                 estado: 'programado',
                 id_ots: [],
+                componente_id: '',
                 hora: '08',
                 minutos: '00',
                 periodo: 'AM'
@@ -766,16 +772,31 @@ const MaintenancePage = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="col-span-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Asunto del Servicio / Título</label>
-                            <input
-                                required
-                                type="text"
-                                placeholder="Ej: Mantenimiento Preventivo Trimestral"
-                                value={scheduleForm.asunto}
-                                onChange={(e) => handleScheduleChange('asunto', e.target.value)}
-                                className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
-                            />
+                        <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Asunto del Servicio / Título</label>
+                                <input
+                                    required
+                                    type="text"
+                                    placeholder="Ej: Mantenimiento Preventivo Trimestral"
+                                    value={scheduleForm.asunto}
+                                    onChange={(e) => handleScheduleChange('asunto', e.target.value)}
+                                    className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Componente Específico (Opcional)</label>
+                                <select
+                                    value={scheduleForm.componente_id}
+                                    onChange={(e) => handleScheduleChange('componente_id', e.target.value)}
+                                    className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
+                                >
+                                    <option value="">-- No aplica --</option>
+                                    {standardComponents.map(c => (
+                                        <option key={c.id} value={c.id}>{c.nombre}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                         <div className="col-span-1">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Tipo de Tarea (Específico)</label>

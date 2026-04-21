@@ -9,6 +9,7 @@ pub mod auditoria_acciones;
 pub mod bodega_ubicaciones;
 pub mod bodegas;
 pub mod categorias_activos;
+pub mod componentes_estandar;
 pub mod compras_cotizacion_detalle;
 pub mod compras_cotizaciones;
 pub mod compras_solicitud_detalle;

@@ -68,7 +68,9 @@ const MaintenanceSelectorModal = ({
                                             <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{s.codigo || `MANT-${s.id}`}</span>
                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.fecha}</span>
                                         </div>
-                                        <h4 className="font-bold text-slate-800 dark:text-white mb-1">{s.equipo}</h4>
+                                        <h4 className="font-bold text-slate-800 dark:text-white mb-1">
+                                            {s.equipo} {s.nombre_componente ? ` (${s.nombre_componente})` : ''}
+                                        </h4>
                                         <p className="text-xs text-slate-500 font-medium mb-3">{s.tipo}</p>
                                         <div className="flex gap-4">
                                             {s.tecnico_id && (
