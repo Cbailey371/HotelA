@@ -511,34 +511,36 @@ const MaintenancePage = () => {
                                     />
                                 </th>
                                 <th className="px-8 py-4">Código</th>
+                                <th className="px-8 py-4">Asunto / Título</th>
                                 <th className="px-8 py-4">Equipo / Activo</th>
                                 <th className="px-8 py-4">Servicio</th>
                                 <th className="px-8 py-4">Fecha Programada</th>
-                                <th className="px-8 py-4">Prioridad / Estado</th>
                                 <th className="px-8 py-4 text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
-                                <tr><td colSpan="6" className="text-center py-20 animate-pulse font-bold text-slate-400">Consultando base de mantenimiento...</td></tr>
+                                <tr><td colSpan="7" className="text-center py-20 animate-pulse font-bold text-slate-400">Consultando base de mantenimiento...</td></tr>
                             ) : schedules.filter(s => {
                                 // Exclude completed and cancelled from active maintenance
                                 if (s.estado === 'completado' || s.estado === 'cancelado') return false;
 
                                 const matchesSearch = (s.equipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
                                     (s.tipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
+                                    (s.asunto || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
                                     (s.codigo || '').toLowerCase().includes(scheduleSearch.toLowerCase());
                                 const matchesStatus = statusFilter === 'all' || s.estado === statusFilter;
                                 const matchesPriority = priorityFilter === 'all' || (s.prioridad || '').toLowerCase() === priorityFilter;
                                 return matchesSearch && matchesStatus && matchesPriority;
                             }).length === 0 ? (
-                                <tr><td colSpan="6" className="text-center py-20 text-slate-400 font-bold">No se encontraron servicios que coincidan con los filtros.</td></tr>
+                                <tr><td colSpan="7" className="text-center py-20 text-slate-400 font-bold">No se encontraron servicios que coincidan con los filtros.</td></tr>
                             ) : schedules.filter(s => {
                                 // Exclude completed and cancelled from active maintenance
                                 if (s.estado === 'completado' || s.estado === 'cancelado') return false;
 
                                 const matchesSearch = (s.equipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
                                     (s.tipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
+                                    (s.asunto || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
                                     (s.codigo || '').toLowerCase().includes(scheduleSearch.toLowerCase());
                                 const matchesStatus = statusFilter === 'all' || s.estado === statusFilter;
                                 const matchesPriority = priorityFilter === 'all' || (s.prioridad || '').toLowerCase() === priorityFilter;
@@ -556,9 +558,54 @@ const MaintenancePage = () => {
                                     <td className="px-8 py-5">
                                         <div className="text-xs font-black text-slate-400 mb-0.5 uppercase tracking-wider">{s.codigo || 'N/A'}</div>
                                     </td>
+                                    <td className="px-8 py-5 relative group/asunto overflow-visible">
+                                        <div className="font-bold text-blue-600 dark:text-blue-400 text-sm tracking-tight cursor-help border-b border-dotted border-blue-400/30 w-fit">
+                                            {s.asunto || 'Sin asunto'}
+                                        </div>
+                                        
+                                        {/* Tooltip Detallado (Mismo diseño que el calendario) */}
+                                        <div className="absolute z-[100] invisible group-hover/asunto:visible opacity-0 group-hover/asunto:opacity-100 transition-all duration-200 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-700 w-72 pointer-events-none left-0 bottom-full mb-3 whitespace-normal translate-x-4">
+                                            <div className="space-y-3">
+                                                <div className="border-b border-white/10 pb-2">
+                                                    <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase mb-0.5">ASUNTO</div>
+                                                    <div className="text-xs font-bold leading-tight">{s.asunto || 'Sin asunto definido'}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase mb-0.5">ACTIVO / EQUIPO</div>
+                                                    <div className="text-xs font-bold">{s.equipo}</div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase mb-0.5">CÓDIGO MNT</div>
+                                                        <div className="text-xs font-bold text-slate-300">{s.codigo || 'N/A'}</div>
+                                                    </div>
+                                                    {s.codigo_ot && (
+                                                        <div>
+                                                            <div className="text-[10px] font-black tracking-widest text-purple-400 uppercase mb-0.5">ORDEN TRABAJO</div>
+                                                            <div className="text-xs font-bold text-purple-200">{s.codigo_ot}</div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase mb-0.5">PROVEEDOR</div>
+                                                    <div className="text-xs font-bold text-slate-300">{s.proveedor_nombre || 'Mantenimiento Interno'}</div>
+                                                </div>
+                                                <div className="pt-1">
+                                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${
+                                                        s.prioridad?.toLowerCase() === 'alta' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' :
+                                                        s.prioridad?.toLowerCase() === 'media' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+                                                        'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                                    }`}>
+                                                        Prioridad {s.prioridad || 'Media'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            {/* Arrow */}
+                                            <div className="absolute top-full left-4 border-8 border-transparent border-t-slate-900"></div>
+                                        </div>
+                                    </td>
                                     <td className="px-8 py-5">
                                         <div className="flex items-center gap-4">
-
                                             <div className="font-bold text-slate-800 dark:text-white text-sm tracking-tight">{s.equipo}</div>
                                         </div>
                                     </td>
