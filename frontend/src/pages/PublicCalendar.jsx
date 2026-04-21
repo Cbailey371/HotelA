@@ -5,7 +5,7 @@ import {
     RefreshCcw, AlertTriangle, CheckCircle, Activity, LayoutGrid, CalendarRange
 } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const PublicCalendar = () => {
     const [events, setEvents] = useState([]);
@@ -25,7 +25,7 @@ const PublicCalendar = () => {
 
     const fetchEvents = useCallback(async () => {
         try {
-            const response = await axios.get(`${API_URL}/api/public/calendar`);
+            const response = await axios.get(`${API_URL}/public/calendar`);
             setEvents(response.data || []);
             setLastUpdated(new Date());
             setRefreshTime(15);
