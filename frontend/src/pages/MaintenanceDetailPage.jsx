@@ -89,16 +89,12 @@ const MaintenanceDetailPage = () => {
     const fetchDetail = async () => {
         try {
             setLoading(true);
-            const [sRes, pRes, tRes, aRes, provRes, usersRes, ttRes, invRes, woRes] = await Promise.all([
+            const [sRes, pRes, tRes, aRes, provRes] = await Promise.all([
                 api.get(`/maintenance/schedule/${id}`),
                 api.get(`/maintenance/schedule/${id}/parts`),
                 api.get('/technicians'),
                 api.get('/assets'),
-                api.get('/providers'),
-                api.get('/users/all'),
-                api.get('/maintenance/task-types'),
-                api.get('/inventory'),
-                api.get('/work-orders')
+                api.get('/providers')
             ]);
             
             setSchedule(sRes.data);
@@ -106,19 +102,33 @@ const MaintenanceDetailPage = () => {
             setTechs(tRes.data);
             setAssets(aRes.data);
             setProviders(provRes.data);
-            setUsers(usersRes.data);
-            setTaskTypes(ttRes.data);
-            setInventory(invRes.data);
-            setWorkOrders(woRes.data);
             
             if (sRes.data.tecnico_id) {
                 setExecuteForm(prev => ({ ...prev, tecnico_id: sRes.data.tecnico_id }));
             }
         } catch (err) {
             console.error("Error fetching maintenance detail:", err);
-            setError("No se pudo cargar la información del mantenimiento.");
+            setError("No se pudo cargar la información del mantenimiento. El mantenimiento solicitado no existe o ha sido eliminado.");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchEditMasters = async () => {
+        try {
+            const [usersRes, ttRes, invRes, woRes] = await Promise.all([
+                api.get('/users/all').catch(() => ({ data: [] })),
+                api.get('/maintenance/task-types').catch(() => ({ data: [] })),
+                api.get('/inventory').catch(() => ({ data: [] })),
+                api.get('/work-orders').catch(() => ({ data: [] }))
+            ]);
+            
+            setUsers(usersRes.data);
+            setTaskTypes(ttRes.data);
+            setInventory(invRes.data);
+            setWorkOrders(woRes.data);
+        } catch (error) {
+            console.error("Error loading edit masters:", error);
         }
     };
 
@@ -150,6 +160,8 @@ const MaintenanceDetailPage = () => {
 
     const openEditScheduleModal = () => {
         if (!schedule) return;
+        
+        fetchEditMasters();
         
         let hora = '08', minutos = '00', periodo = 'AM';
         const rawDate = schedule.fecha; // "YYYY-MM-DD" or similar
