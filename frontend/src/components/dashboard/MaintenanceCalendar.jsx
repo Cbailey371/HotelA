@@ -121,14 +121,47 @@ const MaintenanceCalendar = ({ events }) => {
                                             </span>
                                             {view !== 'month' && dayEvents.length > 0 && <span className="text-[10px] text-slate-400 font-bold">{dayEvents.length} tareas</span>}
                                         </div>
-
                                         <div className={`mt-2 space-y-1 overflow-y-auto scrollbar-hide ${view === 'month' ? 'max-h-[60px]' : 'max-h-full'}`}>
                                             {dayEvents.length > 0 ? dayEvents.map(ev => (
-                                                <div key={ev.id} className={`text-[10px] px-2 py-1.5 rounded-lg font-bold border-l-4 mb-1.5 shadow-sm
+                                                <div key={ev.id} className={`group/event relative text-[10px] px-2 py-1.5 rounded-lg font-bold border-l-4 mb-1.5 shadow-sm transition-all hover:scale-[1.02] active:scale-95
                                                     ${ev.priority?.toLowerCase() === 'alta' ? 'bg-red-50 text-red-700 border-red-500' :
                                                         ev.priority?.toLowerCase() === 'baja' ? 'bg-emerald-50 text-emerald-700 border-emerald-500' :
                                                             'bg-amber-50 text-amber-700 border-amber-500'}`}>
-                                                    <div className="line-clamp-1">{ev.title}</div>
+                                                    <div className="line-clamp-1">{ev.asunto || 'Mantenimiento'}</div>
+                                                    <div className="text-[9px] opacity-60 line-clamp-1">{ev.equipo_nombre || ev.title}</div>
+                                                    
+                                                    {/* Tooltip */}
+                                                    <div className="fixed z-[100] invisible group-hover/event:visible opacity-0 group-hover/event:opacity-100 transition-all duration-200 bg-slate-900 text-white p-3 rounded-xl shadow-2xl border border-slate-700 w-64 pointer-events-none left-1/2 -translate-x-1/2 bottom-full mb-2">
+                                                        <div className="space-y-2">
+                                                            <div className="border-b border-white/10 pb-1.5">
+                                                                <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">ASUNTO</div>
+                                                                <div className="text-xs font-bold leading-tight">{ev.asunto || 'Sin asunto'}</div>
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">ACTIVO</div>
+                                                                <div className="text-xs font-bold">{ev.equipo_nombre || ev.title}</div>
+                                                            </div>
+                                                            <div className="flex gap-4">
+                                                                <div>
+                                                                    <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">CÓDIGO MNT</div>
+                                                                    <div className="text-xs font-bold">{ev.codigo_mantenimiento || 'N/A'}</div>
+                                                                </div>
+                                                                {ev.codigo_ot && (
+                                                                    <div>
+                                                                        <div className="text-[10px] font-black tracking-widest text-purple-400 uppercase">ORDEN TRABAJO</div>
+                                                                        <div className="text-xs font-bold text-purple-200">{ev.codigo_ot}</div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">PROVEEDOR</div>
+                                                                <div className="text-xs font-bold">{ev.proveedor_nombre || 'Interno / No asignado'}</div>
+                                                            </div>
+                                                        </div>
+                                                        {/* Arrow */}
+                                                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
+                                                    </div>
+
                                                     {(view === 'week' || view === 'day') && (
                                                         <div className="flex gap-2 mt-1 opacity-75 text-[9px]">
                                                             <span>{ev.type_name}</span>

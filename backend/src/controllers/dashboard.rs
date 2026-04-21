@@ -1,7 +1,7 @@
 use axum::{Json, extract::State, response::IntoResponse};
 use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait, PaginatorTrait, QuerySelect, QueryOrder};
 use serde::Serialize;
-use crate::entities::{activos_equipos, mantenimiento_calendario, activos_repuestos, mantenimiento_historial, orden_compra_repuesto};
+use crate::entities::{activos_equipos, mantenimiento_calendario, activos_repuestos, mantenimiento_historial, orden_compra_repuesto, proveedores, orden_trabajo};
 use chrono::{Local, NaiveDate, Datelike};
 use std::collections::HashMap;
 use crate::utils::error::AppError;
@@ -19,6 +19,12 @@ pub struct UpcomingEventDto {
     pub date: String,
     pub priority: String,
     pub type_name: String,
+    pub asunto: Option<String>,
+    pub equipo_nombre: String,
+    pub codigo_mantenimiento: Option<String>,
+    pub tiene_ot: bool,
+    pub codigo_ot: Option<String>,
+    pub proveedor_nombre: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -186,13 +192,36 @@ pub async fn get_stats(
         .all(&db)
         .await?;
 
+    let providers_list = proveedores::Entity::find().all(&db).await?;
+    let prov_map: std::collections::HashMap<i32, String> = providers_list.into_iter()
+        .map(|p| (p.id_proveedor, p.nombre_proveedor))
+        .collect();
+
+    let ots = orden_trabajo::Entity::find()
+        .filter(orden_trabajo::Column::IdCalendario.is_not_null())
+        .all(&db)
+        .await?;
+    let ot_map: std::collections::HashMap<i32, String> = ots.into_iter()
+        .filter_map(|ot| ot.id_calendario.map(|cal_id| (cal_id, ot.codigo_ot.unwrap_or_default())))
+        .collect();
+
     let upcoming_maintenance: Vec<UpcomingEventDto> = upcoming_tasks.into_iter().map(|(task, equipment)| {
+        let equipo_name = equipment.map(|e| e.nombre_equipo).unwrap_or("N/A".to_string());
+        let ot_code = ot_map.get(&task.id_mantenimiento_calendario).cloned();
+        let prov_name = task.proveedor_id.and_then(|pid| prov_map.get(&pid).cloned());
+
         UpcomingEventDto {
             id: task.id_mantenimiento_calendario,
-            title: equipment.map(|e| e.nombre_equipo).unwrap_or("Equipo Generico".to_string()),
+            title: equipo_name.clone(),
             date: task.fecha_programada.map(|d| d.to_string()).unwrap_or_default(),
             priority: task.prioridad.unwrap_or("Media".to_string()),
             type_name: "Mantenimiento".to_string(),
+            asunto: task.asunto,
+            equipo_nombre: equipo_name,
+            codigo_mantenimiento: task.codigo_mantenimiento,
+            tiene_ot: ot_code.is_some(),
+            codigo_ot: ot_code,
+            proveedor_nombre: prov_name,
         }
     }).collect();
 
@@ -208,12 +237,22 @@ pub async fn get_stats(
         .await?;
 
     let calendar_events: Vec<UpcomingEventDto> = calendar_tasks.into_iter().map(|(task, equipment)| {
+        let equipo_name = equipment.map(|e| e.nombre_equipo).unwrap_or("Mantenimiento".to_string());
+        let ot_code = ot_map.get(&task.id_mantenimiento_calendario).cloned();
+        let prov_name = task.proveedor_id.and_then(|pid| prov_map.get(&pid).cloned());
+
         UpcomingEventDto {
             id: task.id_mantenimiento_calendario,
-            title: equipment.map(|e| e.nombre_equipo).unwrap_or("Mantenimiento".to_string()),
+            title: equipo_name.clone(),
             date: task.fecha_programada.map(|d| d.to_string()).unwrap_or_default(),
             priority: task.prioridad.unwrap_or("media".to_string()),
             type_name: "Preventivo".to_string(), 
+            asunto: task.asunto,
+            equipo_nombre: equipo_name,
+            codigo_mantenimiento: task.codigo_mantenimiento,
+            tiene_ot: ot_code.is_some(),
+            codigo_ot: ot_code,
+            proveedor_nombre: prov_name,
         }
     }).collect();
 

@@ -1,7 +1,7 @@
 use axum::{Json, extract::{State, Path}, response::IntoResponse, Extension};
 use sea_orm::{DatabaseConnection, EntityTrait, Set, ActiveModelTrait, QueryFilter, ColumnTrait, QueryOrder, TransactionTrait};
 use serde::{Deserialize, Serialize};
-use crate::entities::{mantenimiento_calendario, mantenimiento_historial, mantenimiento_tipo, activos_equipos, orden_trabajo, mantenimiento_repuestos};
+use crate::entities::{mantenimiento_calendario, mantenimiento_historial, mantenimiento_tipo, activos_equipos, orden_trabajo, mantenimiento_repuestos, proveedores};
 use chrono::NaiveDate;
 use crate::utils::{code_generator::generate_next_code, error::AppError, audit};
 use crate::utils::jwt::Claims;
@@ -52,6 +52,8 @@ pub struct ScheduleDto {
     pub observaciones: Option<String>,
     pub responsable_id: Option<i32>,
     pub asunto: Option<String>,
+    pub codigo_ot: Option<String>,
+    pub proveedor_nombre: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -82,8 +84,13 @@ pub async fn get_schedules(
         .all(&db)
         .await?;
 
-    let ot_map: HashMap<i32, i32> = ots.into_iter()
-        .filter_map(|ot| ot.id_calendario.map(|cal_id| (cal_id, ot.id_ot)))
+    let providers_list = proveedores::Entity::find().all(&db).await?;
+    let prov_map: HashMap<i32, String> = providers_list.into_iter()
+        .map(|p| (p.id_proveedor, p.nombre_proveedor))
+        .collect();
+
+    let ot_map: HashMap<i32, (i32, String)> = ots.into_iter()
+        .filter_map(|ot| ot.id_calendario.map(|cal_id| (cal_id, (ot.id_ot, ot.codigo_ot.unwrap_or_default()))))
         .collect();
 
     let dtos: Vec<ScheduleDto> = schedules.into_iter().map(|(s, e)| {
@@ -92,7 +99,10 @@ pub async fn get_schedules(
             .map(|t| t.nombre_tipo.clone())
             .unwrap_or_else(|| "Preventivo".to_string());
 
-        let ot_id = ot_map.get(&s.id_mantenimiento_calendario).cloned();
+        let ot_info = ot_map.get(&s.id_mantenimiento_calendario);
+        let ot_id = ot_info.map(|v| v.0);
+        let ot_code = ot_info.map(|v| v.1.clone());
+        let prov_name = s.proveedor_id.and_then(|pid| prov_map.get(&pid).cloned());
 
         ScheduleDto {
             id: s.id_mantenimiento_calendario,
@@ -117,6 +127,8 @@ pub async fn get_schedules(
             observaciones: s.observaciones,
             responsable_id: s.responsable_id,
             asunto: s.asunto,
+            codigo_ot: ot_code,
+            proveedor_nombre: prov_name,
         }
     }).collect();
 
@@ -585,11 +597,29 @@ pub async fn get_public_schedules(
         .all(&db)
         .await?;
 
+    let providers_list = proveedores::Entity::find().all(&db).await?;
+    let prov_map: std::collections::HashMap<i32, String> = providers_list.into_iter()
+        .map(|p| (p.id_proveedor, p.nombre_proveedor))
+        .collect();
+
+    let ots = orden_trabajo::Entity::find()
+        .filter(orden_trabajo::Column::IdCalendario.is_not_null())
+        .all(&db)
+        .await?;
+    let ot_map: std::collections::HashMap<i32, (i32, String)> = ots.into_iter()
+        .filter_map(|ot| ot.id_calendario.map(|cal_id| (cal_id, (ot.id_ot, ot.codigo_ot.unwrap_or_default()))))
+        .collect();
+
     let dtos: Vec<ScheduleDto> = schedules.into_iter().map(|(s, e)| {
         let tipo_nombre = m_types.iter()
             .find(|t| t.id_tipo_mantenimiento == s.tipo_mantenimiento_id)
             .map(|t| t.nombre_tipo.clone())
             .unwrap_or_else(|| "Preventivo".to_string());
+
+        let ot_info = ot_map.get(&s.id_mantenimiento_calendario);
+        let ot_id = ot_info.map(|v| v.0);
+        let ot_code = ot_info.map(|v| v.1.clone());
+        let prov_name = s.proveedor_id.and_then(|pid| prov_map.get(&pid).cloned());
 
         ScheduleDto {
             id: s.id_mantenimiento_calendario,
@@ -600,8 +630,8 @@ pub async fn get_public_schedules(
             responsable: s.responsable_interno_email.clone().or_else(|| Some("Asignado".to_string())).take().unwrap_or_default(),
             codigo: s.codigo_mantenimiento,
             prioridad: s.prioridad.unwrap_or("media".to_string()),
-            orden_trabajo_id: None,
-            tiene_ot: false,
+            orden_trabajo_id: ot_id,
+            tiene_ot: ot_id.is_some(),
             equipo_id: s.equipo_id,
             tipo_mantenimiento_id: s.tipo_mantenimiento_id,
             tecnico_id: s.tecnico_id,
@@ -614,6 +644,8 @@ pub async fn get_public_schedules(
             observaciones: s.observaciones,
             responsable_id: s.responsable_id,
             asunto: s.asunto,
+            codigo_ot: ot_code,
+            proveedor_nombre: prov_name,
         }
     }).collect();
 
@@ -635,11 +667,29 @@ pub async fn get_pending_schedules(
         .all(&db)
         .await?;
 
+    let providers_list = proveedores::Entity::find().all(&db).await?;
+    let prov_map: std::collections::HashMap<i32, String> = providers_list.into_iter()
+        .map(|p| (p.id_proveedor, p.nombre_proveedor))
+        .collect();
+
+    let ots = orden_trabajo::Entity::find()
+        .filter(orden_trabajo::Column::IdCalendario.is_not_null())
+        .all(&db)
+        .await?;
+    let ot_map: std::collections::HashMap<i32, (i32, String)> = ots.into_iter()
+        .filter_map(|ot| ot.id_calendario.map(|cal_id| (cal_id, (ot.id_ot, ot.codigo_ot.unwrap_or_default()))))
+        .collect();
+
     let dtos: Vec<ScheduleDto> = schedules.into_iter().map(|(s, e)| {
         let tipo_nombre = m_types.iter()
             .find(|t| t.id_tipo_mantenimiento == s.tipo_mantenimiento_id)
             .map(|t| t.nombre_tipo.clone())
             .unwrap_or_else(|| "Preventivo".to_string());
+
+        let ot_info = ot_map.get(&s.id_mantenimiento_calendario);
+        let ot_id = ot_info.map(|v| v.0);
+        let ot_code = ot_info.map(|v| v.1.clone());
+        let prov_name = s.proveedor_id.and_then(|pid| prov_map.get(&pid).cloned());
 
         ScheduleDto {
             id: s.id_mantenimiento_calendario,
@@ -650,8 +700,8 @@ pub async fn get_pending_schedules(
             responsable: s.responsable_interno_email.clone().or_else(|| Some("Asignado".to_string())).take().unwrap_or_default(),
             codigo: s.codigo_mantenimiento,
             prioridad: s.prioridad.unwrap_or("media".to_string()),
-            orden_trabajo_id: None,
-            tiene_ot: false,
+            orden_trabajo_id: ot_id,
+            tiene_ot: ot_id.is_some(),
             equipo_id: s.equipo_id,
             tipo_mantenimiento_id: s.tipo_mantenimiento_id,
             tecnico_id: s.tecnico_id,
@@ -664,6 +714,8 @@ pub async fn get_pending_schedules(
             observaciones: s.observaciones,
             responsable_id: s.responsable_id,
             asunto: s.asunto,
+            codigo_ot: ot_code,
+            proveedor_nombre: prov_name,
         }
     }).collect();
 

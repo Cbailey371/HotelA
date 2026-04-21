@@ -102,8 +102,41 @@ const PublicCalendar = () => {
                     </div>
                     <div className="flex-1 overflow-y-auto space-y-1 scrollbar-hide">
                         {dayEvents.slice(0, 3).map((e, idx) => (
-                            <div key={idx} className={`text-[9px] p-1.5 rounded-lg border font-bold truncate ${getStatusColor(e.estado)}`}>
-                                {e.equipo}
+                            <div key={idx} className={`group/event relative text-[9px] p-1.5 rounded-lg border font-bold truncate transition-all hover:scale-[1.02] cursor-default ${getStatusColor(e.estado)}`}>
+                                <div className="truncate">{e.asunto || 'Mantenimiento'}</div>
+                                <div className="text-[8px] opacity-60 truncate">{e.equipo}</div>
+
+                                {/* Tooltip */}
+                                <div className="fixed z-[100] invisible group-hover/event:visible opacity-0 group-hover/event:opacity-100 transition-all duration-200 bg-slate-900 text-white p-3 rounded-xl shadow-2xl border border-slate-700 w-64 pointer-events-none left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-normal">
+                                    <div className="space-y-2">
+                                        <div className="border-b border-white/10 pb-1.5">
+                                            <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">ASUNTO</div>
+                                            <div className="text-xs font-bold leading-tight">{e.asunto || 'Sin asunto'}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">ACTIVO</div>
+                                            <div className="text-xs font-bold">{e.equipo}</div>
+                                        </div>
+                                        <div className="flex gap-4">
+                                            <div>
+                                                <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">CÓDIGO MNT</div>
+                                                <div className="text-xs font-bold">{e.codigo || 'N/A'}</div>
+                                            </div>
+                                            {e.codigo_ot && (
+                                                <div>
+                                                    <div className="text-[10px] font-black tracking-widest text-purple-400 uppercase">ORDEN TRABAJO</div>
+                                                    <div className="text-xs font-bold text-purple-200">{e.codigo_ot}</div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase">PROVEEDOR</div>
+                                            <div className="text-xs font-bold">{e.proveedor_nombre || 'Interno / No asignado'}</div>
+                                        </div>
+                                    </div>
+                                    {/* Arrow */}
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
+                                </div>
                             </div>
                         ))}
                         {dayEvents.length > 3 && (
