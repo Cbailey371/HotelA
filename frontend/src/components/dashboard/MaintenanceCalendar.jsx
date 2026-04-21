@@ -9,7 +9,7 @@ const MaintenanceCalendar = ({ events }) => {
 
     const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
-    const navigate = (direction) => {
+    const changeDate = (direction) => {
         const newDate = new Date(currentDate);
         if (view === 'month') {
             newDate.setMonth(currentDate.getMonth() + direction);
@@ -70,13 +70,13 @@ const MaintenanceCalendar = ({ events }) => {
                 </div>
 
                 <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 p-1 rounded-lg">
-                    <button onClick={() => navigate(-1)} className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded-md shadow-sm transition-all"><ChevronLeft className="w-4 h-4 text-slate-500" /></button>
+                    <button onClick={() => changeDate(-1)} className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded-md shadow-sm transition-all"><ChevronLeft className="w-4 h-4 text-slate-500" /></button>
                     <span className="px-3 text-xs font-bold text-slate-700 dark:text-slate-300 min-w-[120px] text-center capitalize">
                         {view === 'day'
                             ? currentDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
                             : `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`}
                     </span>
-                    <button onClick={() => navigate(1)} className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded-md shadow-sm transition-all"><ChevronRight className="w-4 h-4 text-slate-500" /></button>
+                    <button onClick={() => changeDate(1)} className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded-md shadow-sm transition-all"><ChevronRight className="w-4 h-4 text-slate-500" /></button>
                 </div>
 
                 <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
