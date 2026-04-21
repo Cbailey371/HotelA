@@ -21,7 +21,8 @@ const MaintenancePage = () => {
     const [showExecuteModal, setShowExecuteModal] = useState(false);
     const [selectedSchedule, setSelectedSchedule] = useState(null);
     const [editingId, setEditingId] = useState(null);
-    const [selectedIds, setSelectedIds] = useState([]); // New state for bulk selection
+    const [selectedIds, setSelectedIds] = useState([]); 
+    const [workOrders, setWorkOrders] = useState([]); // Nuevo estado para OTs
     const [maintenanceParts, setMaintenanceParts] = useState([]); // New state for parts
     const [showPartSearch, setShowPartSearch] = useState(false);
     const [partSearchQuery, setPartSearchQuery] = useState('');
@@ -62,7 +63,8 @@ const MaintenancePage = () => {
         asunto: '',
         hora: '08',
         minutos: '00',
-        periodo: 'AM'
+        periodo: 'AM',
+        id_ots: [] // Nuevo campo
     });
 
     const [executeForm, setExecuteForm] = useState({
@@ -80,15 +82,16 @@ const MaintenancePage = () => {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [sRes, tRes, aRes, tyRes, pRes, ttRes, iRes, uRes] = await Promise.all([
+            const [sRes, tRes, aRes, tyRes, pRes, ttRes, iRes, uRes, woRes] = await Promise.all([
                 api.get('/maintenance/schedule'),
                 api.get('/technicians'),
                 api.get('/assets'),
                 api.get('/maintenance/types'),
                 api.get('/providers'),
                 api.get('/asset-config/maintenance-tasks'),
-                api.get('/inventory'), // Correct endpoint for parts
-                api.get('/users')
+                api.get('/inventory'), 
+                api.get('/users'),
+                api.get('/work-orders') // Cargar OTs
             ]);
             setSchedules(sRes.data);
             setTechs(tRes.data);
@@ -96,8 +99,9 @@ const MaintenancePage = () => {
             setTypes(tyRes.data);
             setProviders(pRes.data);
             setTaskTypes(ttRes.data || []);
-            setInventory(iRes?.data || []); // New state
+            setInventory(iRes?.data || []); 
             setUsers(uRes?.data || []);
+            setWorkOrders(woRes?.data || []);
         } catch (error) {
         } finally {
             setLoading(false);
@@ -205,11 +209,13 @@ const MaintenancePage = () => {
                 const newId = res.data;
 
                 // Save parts for new schedule
-                for (const part of maintenanceParts) {
-                    await api.post(`/maintenance/schedule/${newId}/parts`, {
-                        repuesto_id: part.repuesto_id,
-                        cantidad: part.cantidad_estimada
-                    });
+                if (maintenanceParts.length > 0) {
+                    for (const part of maintenanceParts) {
+                        await api.post(`/maintenance/schedule/${newId}/parts`, {
+                            repuesto_id: part.repuesto_id,
+                            cantidad: part.cantidad_estimada
+                        });
+                    }
                 }
 
                 alert('Plan creado exitosamente');
@@ -382,6 +388,7 @@ const MaintenancePage = () => {
                 responsable_interno_email: schedule.responsable_interno_email || '',
                 asunto: schedule.asunto || '',
                 estado: schedule.estado,
+                id_ots: schedule.ots_vinculadas?.map(ot => ot.id) || [],
                 hora, minutos, periodo
             });
             await fetchMaintenanceParts(schedule.id);
@@ -406,6 +413,7 @@ const MaintenancePage = () => {
                 responsable_interno_email: '',
                 asunto: '',
                 estado: 'programado',
+                id_ots: [],
                 hora: '08',
                 minutos: '00',
                 periodo: 'AM'
@@ -916,6 +924,28 @@ const MaintenancePage = () => {
                                         <option key={f} value={f}>{f}</option>
                                     ))}
                                 </select>
+                            </div>
+                            <div className="col-span-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Vincular OTs Existentes</label>
+                                <select
+                                    multiple
+                                    value={scheduleForm.id_ots}
+                                    onChange={(e) => {
+                                        const values = Array.from(e.target.selectedOptions, option => parseInt(option.value));
+                                        handleScheduleChange('id_ots', values);
+                                    }}
+                                    className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none h-24"
+                                >
+                                    {workOrders
+                                        .filter(wo => !scheduleForm.equipo_id || wo.id_activo === parseInt(scheduleForm.equipo_id))
+                                        .map(wo => (
+                                            <option key={wo.id_ot} value={wo.id_ot}>
+                                                {wo.codigo_ot || `OT-${wo.id_ot}`} - {wo.asunto || 'Sin asunto'}
+                                            </option>
+                                        ))
+                                    }
+                                </select>
+                                <p className="text-[9px] text-slate-400 mt-1 italic">Mantenga Ctrl/Cmd presionado para seleccionar varias</p>
                             </div>
                         </div>
 

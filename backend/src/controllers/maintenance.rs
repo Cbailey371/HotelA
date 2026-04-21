@@ -26,6 +26,7 @@ pub struct CreateScheduleRequest {
     pub responsable_interno_email: Option<String>,
     pub crear_ot: Option<bool>,
     pub asunto: Option<String>,
+    pub id_ots: Option<Vec<i32>>,
 }
 
 #[derive(Serialize)]
@@ -38,7 +39,7 @@ pub struct ScheduleDto {
     pub responsable: String,
     pub codigo: Option<String>,
     pub prioridad: String,
-    pub orden_trabajo_id: Option<i32>,
+    pub orden_trabajo_id: Option<i32>, // Mantener por compatibilidad con móvil si aplica
     pub tiene_ot: bool,
     pub equipo_id: i32,
     pub tipo_mantenimiento_id: i32,
@@ -52,8 +53,15 @@ pub struct ScheduleDto {
     pub observaciones: Option<String>,
     pub responsable_id: Option<i32>,
     pub asunto: Option<String>,
-    pub codigo_ot: Option<String>,
+    pub codigo_ot: Option<String>, // Mantener el primero por compatibilidad
     pub proveedor_nombre: Option<String>,
+    pub ots_vinculadas: Vec<LinkedOtDto>,
+}
+
+#[derive(Serialize)]
+pub struct LinkedOtDto {
+    pub id: i32,
+    pub codigo: String,
 }
 
 #[derive(Deserialize)]
@@ -89,9 +97,15 @@ pub async fn get_schedules(
         .map(|p| (p.id_proveedor, p.nombre_proveedor))
         .collect();
 
-    let ot_map: HashMap<i32, (i32, String)> = ots.into_iter()
-        .filter_map(|ot| ot.id_calendario.map(|cal_id| (cal_id, (ot.id_ot, ot.codigo_ot.unwrap_or_default()))))
-        .collect();
+    let mut ot_groups: HashMap<i32, Vec<LinkedOtDto>> = HashMap::new();
+    for ot in ots {
+        if let Some(cal_id) = ot.id_calendario {
+            ot_groups.entry(cal_id).or_insert_with(Vec::new).push(LinkedOtDto {
+                id: ot.id_ot,
+                codigo: ot.codigo_ot.unwrap_or_else(|| format!("OT-{}", ot.id_ot)),
+            });
+        }
+    }
 
     let dtos: Vec<ScheduleDto> = schedules.into_iter().map(|(s, e)| {
         let tipo_nombre = m_types.iter()
@@ -99,9 +113,8 @@ pub async fn get_schedules(
             .map(|t| t.nombre_tipo.clone())
             .unwrap_or_else(|| "Preventivo".to_string());
 
-        let ot_info = ot_map.get(&s.id_mantenimiento_calendario);
-        let ot_id = ot_info.map(|v| v.0);
-        let ot_code = ot_info.map(|v| v.1.clone());
+        let my_ots = ot_groups.get(&s.id_mantenimiento_calendario).cloned().unwrap_or_default();
+        let first_ot = my_ots.first();
         let prov_name = s.proveedor_id.and_then(|pid| prov_map.get(&pid).cloned());
 
         ScheduleDto {
@@ -113,8 +126,8 @@ pub async fn get_schedules(
             responsable: s.responsable_interno_email.clone().or_else(|| Some("Asignado".to_string())).take().unwrap_or_default(),
             codigo: s.codigo_mantenimiento,
             prioridad: s.prioridad.unwrap_or("media".to_string()),
-            orden_trabajo_id: ot_id,
-            tiene_ot: ot_id.is_some(),
+            orden_trabajo_id: first_ot.map(|v| v.id),
+            tiene_ot: !my_ots.is_empty(),
             equipo_id: s.equipo_id,
             tipo_mantenimiento_id: s.tipo_mantenimiento_id,
             tecnico_id: s.tecnico_id,
@@ -127,8 +140,9 @@ pub async fn get_schedules(
             observaciones: s.observaciones,
             responsable_id: s.responsable_id,
             asunto: s.asunto,
-            codigo_ot: ot_code,
+            codigo_ot: first_ot.map(|v| v.codigo.clone()),
             proveedor_nombre: prov_name,
+            ots_vinculadas: my_ots,
         }
     }).collect();
 
@@ -149,10 +163,15 @@ pub async fn get_schedule(
         .all(&db)
         .await?;
 
-    let ot = orden_trabajo::Entity::find()
+    let linked_ots = orden_trabajo::Entity::find()
         .filter(orden_trabajo::Column::IdCalendario.eq(id))
-        .one(&db)
+        .all(&db)
         .await?;
+
+    let ots_vinculadas = linked_ots.into_iter().map(|ot| LinkedOtDto {
+        id: ot.id_ot,
+        codigo: ot.codigo_ot.unwrap_or_else(|| format!("OT-{}", ot.id_ot)),
+    }).collect::<Vec<_>>();
 
     let providers_list = proveedores::Entity::find().all(&db).await?;
     let prov_map: std::collections::HashMap<i32, String> = providers_list.into_iter()
@@ -166,6 +185,7 @@ pub async fn get_schedule(
         .map(|t| t.nombre_tipo.clone())
         .unwrap_or_else(|| "Preventivo".to_string());
 
+    let first_ot = ots_vinculadas.first();
     let prov_name = s.proveedor_id.and_then(|pid| prov_map.get(&pid).cloned());
 
     let dto = ScheduleDto {
@@ -177,8 +197,8 @@ pub async fn get_schedule(
         responsable: s.responsable_interno_email.clone().or_else(|| Some("Asignado".to_string())).take().unwrap_or_default(),
         codigo: s.codigo_mantenimiento.clone(),
         prioridad: s.prioridad.clone().unwrap_or("media".to_string()),
-        orden_trabajo_id: ot.as_ref().map(|o| o.id_ot),
-        tiene_ot: ot.is_some(),
+        orden_trabajo_id: first_ot.map(|v| v.id),
+        tiene_ot: !ots_vinculadas.is_empty(),
         equipo_id: s.equipo_id,
         tipo_mantenimiento_id: s.tipo_mantenimiento_id,
         tecnico_id: s.tecnico_id,
@@ -191,8 +211,9 @@ pub async fn get_schedule(
         observaciones: s.observaciones.clone(),
         responsable_id: s.responsable_id,
         asunto: s.asunto.clone(),
-        codigo_ot: ot.as_ref().and_then(|o| o.codigo_ot.clone()),
+        codigo_ot: first_ot.map(|v| v.codigo.clone()),
         proveedor_nombre: prov_name,
+        ots_vinculadas,
     };
 
     Ok(Json(dto))
@@ -231,6 +252,18 @@ pub async fn create_schedule(
     };
 
     let s = new_schedule.insert(&db).await?;
+
+    // Vincular OTs existentes si se proporcionan
+    if let Some(ot_ids) = payload.id_ots {
+        for ot_id in ot_ids {
+            let ot_opt = orden_trabajo::Entity::find_by_id(ot_id).one(&db).await?;
+            if let Some(ot) = ot_opt {
+                let mut ot_active: orden_trabajo::ActiveModel = ot.into();
+                ot_active.id_calendario = Set(Some(s.id_mantenimiento_calendario));
+                ot_active.update(&db).await?;
+            }
+        }
+    }
 
     if payload.crear_ot.unwrap_or(false) {
         // Encontrar el modelo insertado para tener sus campos
@@ -290,6 +323,7 @@ pub struct UpdateScheduleRequest {
     pub responsable_interno_email: Option<String>,
     pub estado: Option<String>,
     pub asunto: Option<String>,
+    pub id_ots: Option<Vec<i32>>,
 }
 
 pub async fn update_schedule(
@@ -329,6 +363,29 @@ pub async fn update_schedule(
     if let Some(v) = payload.asunto { schedule_active.asunto = Set(Some(v)); }
 
     schedule_active.update(&db).await?;
+
+    // Actualizar vinculación de OTs
+    if let Some(ot_ids) = payload.id_ots {
+        // 1. Desvincular OTs que ya no están en la lista (o todas las actuales)
+        // Para simplificar, desvinculamos todas las actuales de este calendario primero
+        use sea_orm::QueryOrder; // Just in case, but filter is enough
+        
+        orden_trabajo::Entity::update_many()
+            .col_expr(orden_trabajo::Column::IdCalendario, sea_orm::sea_query::Expr::value(Option::<i32>::None))
+            .filter(orden_trabajo::Column::IdCalendario.eq(id))
+            .exec(&db)
+            .await?;
+
+        // 2. Vincular las nuevas
+        for ot_id in ot_ids {
+            let ot_opt = orden_trabajo::Entity::find_by_id(ot_id).one(&db).await?;
+            if let Some(ot) = ot_opt {
+                let mut ot_active: orden_trabajo::ActiveModel = ot.into();
+                ot_active.id_calendario = Set(Some(id));
+                ot_active.update(&db).await?;
+            }
+        }
+    }
 
     Ok(Json("Schedule updated successfully".to_string()))
 }
