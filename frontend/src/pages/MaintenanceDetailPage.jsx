@@ -5,7 +5,8 @@ import {
     ArrowLeft, Calendar, Clock, CheckCircle, AlertTriangle, User, 
     Settings, Printer, FileText, Building, ClipboardList, Info, 
     Trash2, Edit, X, Mail, Upload, Loader2, MessageSquare, 
-    Maximize2, ExternalLink, MapPin, Tag, Wrench, Activity
+    Maximize2, ExternalLink, MapPin, Tag, Wrench, Activity,
+    Play, ChevronRight
 } from 'lucide-react';
 import api from '../services/api';
 import Modal from '../components/Modal';
