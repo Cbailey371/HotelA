@@ -58,7 +58,7 @@ pub struct ScheduleDto {
     pub ots_vinculadas: Vec<LinkedOtDto>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct LinkedOtDto {
     pub id: i32,
     pub codigo: String,
@@ -368,7 +368,6 @@ pub async fn update_schedule(
     if let Some(ot_ids) = payload.id_ots {
         // 1. Desvincular OTs que ya no están en la lista (o todas las actuales)
         // Para simplificar, desvinculamos todas las actuales de este calendario primero
-        use sea_orm::QueryOrder; // Just in case, but filter is enough
         
         orden_trabajo::Entity::update_many()
             .col_expr(orden_trabajo::Column::IdCalendario, sea_orm::sea_query::Expr::value(Option::<i32>::None))
@@ -766,6 +765,7 @@ pub async fn get_public_schedules(
             asunto: s.asunto,
             codigo_ot: ot_code,
             proveedor_nombre: prov_name,
+            ots_vinculadas: Vec::new(),
         }
     }).collect();
 
@@ -836,6 +836,7 @@ pub async fn get_pending_schedules(
             asunto: s.asunto,
             codigo_ot: ot_code,
             proveedor_nombre: prov_name,
+            ots_vinculadas: Vec::new(),
         }
     }).collect();
 
