@@ -57,6 +57,7 @@ const MaintenancePage = () => {
         tarea_tipo_id: '',
         recurrente: false,
         responsable_interno_email: '',
+        asunto: '',
         hora: '08',
         minutos: '00',
         periodo: 'AM'
@@ -377,6 +378,7 @@ const MaintenancePage = () => {
                 tarea_tipo_id: schedule.tarea_tipo_id || '',
                 recurrente: schedule.recurrente || false,
                 responsable_interno_email: schedule.responsable_interno_email || '',
+                asunto: schedule.asunto || '',
                 estado: schedule.estado,
                 hora, minutos, periodo
             });
@@ -400,6 +402,7 @@ const MaintenancePage = () => {
                 tarea_tipo_id: '',
                 recurrente: false,
                 responsable_interno_email: '',
+                asunto: '',
                 estado: 'programado',
                 hora: '08',
                 minutos: '00',
@@ -702,6 +705,17 @@ const MaintenancePage = () => {
                                     </div>
                                 )}
                             </div>
+                        </div>
+                        <div className="col-span-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Asunto del Servicio / Título</label>
+                            <input
+                                required
+                                type="text"
+                                placeholder="Ej: Mantenimiento Preventivo Trimestral"
+                                value={scheduleForm.asunto}
+                                onChange={(e) => handleScheduleChange('asunto', e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
+                            />
                         </div>
                         <div className="col-span-1">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Tipo de Tarea (Específico)</label>

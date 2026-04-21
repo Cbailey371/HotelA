@@ -68,6 +68,7 @@ mod m20260326_163000_add_homologacion_permissions;
 mod m20260330_110000_add_dashboard_permission;
 mod m20260330_120000_cleanup_recepcion_permissions;
 mod m20260330_130000_fix_roles_and_user_assignments;
+mod m20260420_000000_add_asunto_mantenimiento;
 
 pub struct Migrator;
 
@@ -142,6 +143,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260330_110000_add_dashboard_permission::Migration),
             Box::new(m20260330_120000_cleanup_recepcion_permissions::Migration),
             Box::new(m20260330_130000_fix_roles_and_user_assignments::Migration),
+            Box::new(m20260420_000000_add_asunto_mantenimiento::Migration),
         ]
     }
 }

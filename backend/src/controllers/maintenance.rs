@@ -25,6 +25,7 @@ pub struct CreateScheduleRequest {
     pub recurrente: Option<bool>,
     pub responsable_interno_email: Option<String>,
     pub crear_ot: Option<bool>,
+    pub asunto: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -50,6 +51,7 @@ pub struct ScheduleDto {
     pub frecuencia: Option<String>,
     pub observaciones: Option<String>,
     pub responsable_id: Option<i32>,
+    pub asunto: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -114,6 +116,7 @@ pub async fn get_schedules(
             frecuencia: s.frecuencia,
             observaciones: s.observaciones,
             responsable_id: s.responsable_id,
+            asunto: s.asunto,
         }
     }).collect();
 
@@ -148,6 +151,7 @@ pub async fn create_schedule(
         tarea_tipo_id: Set(payload.tarea_tipo_id),
         recurrente: Set(payload.recurrente.unwrap_or(false)),
         responsable_interno_email: Set(payload.responsable_interno_email),
+        asunto: Set(payload.asunto),
         ..Default::default()
     };
 
@@ -185,6 +189,7 @@ async fn create_ot_from_maintenance_manual(db: &DatabaseConnection, mnt: &manten
         estado: Set(Some("abierta".to_string())),
         costo_estimado: Set(mnt.costo_estimado),
         tipo_ot: Set("Preventiva".to_string()),
+        asunto: Set(mnt.asunto.clone()),
         ..Default::default()
     };
 
@@ -209,6 +214,7 @@ pub struct UpdateScheduleRequest {
     pub recurrente: Option<bool>,
     pub responsable_interno_email: Option<String>,
     pub estado: Option<String>,
+    pub asunto: Option<String>,
 }
 
 pub async fn update_schedule(
@@ -245,6 +251,7 @@ pub async fn update_schedule(
     if let Some(v) = payload.recurrente { schedule_active.recurrente = Set(v); }
     if let Some(v) = payload.responsable_interno_email { schedule_active.responsable_interno_email = Set(Some(v)); }
     if let Some(v) = payload.estado { schedule_active.estado = Set(Some(v)); }
+    if let Some(v) = payload.asunto { schedule_active.asunto = Set(Some(v)); }
 
     schedule_active.update(&db).await?;
 
@@ -395,6 +402,7 @@ pub async fn execute_maintenance(
                 tarea_tipo_id: Set(schedule.tarea_tipo_id),
                 recurrente: Set(true),
                 responsable_interno_email: Set(schedule.responsable_interno_email.clone()),
+                asunto: Set(schedule.asunto.clone()),
                 ..Default::default()
             };
             next_schedule.insert(&txn).await?;
@@ -605,6 +613,7 @@ pub async fn get_public_schedules(
             frecuencia: s.frecuencia,
             observaciones: s.observaciones,
             responsable_id: s.responsable_id,
+            asunto: s.asunto,
         }
     }).collect();
 
@@ -654,6 +663,7 @@ pub async fn get_pending_schedules(
             frecuencia: s.frecuencia,
             observaciones: s.observaciones,
             responsable_id: s.responsable_id,
+            asunto: s.asunto,
         }
     }).collect();
 
