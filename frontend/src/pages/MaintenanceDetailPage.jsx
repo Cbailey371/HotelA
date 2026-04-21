@@ -6,7 +6,7 @@ import {
     Settings, Printer, FileText, Building, ClipboardList, Info, 
     Trash2, Edit, X, Mail, Upload, Loader2, MessageSquare, 
     Maximize2, ExternalLink, MapPin, Tag, Wrench, Activity,
-    Play, ChevronRight
+    Play, ChevronRight, Plus, Filter, Search
 } from 'lucide-react';
 import api from '../services/api';
 import Modal from '../components/Modal';
@@ -35,6 +35,49 @@ const MaintenanceDetailPage = () => {
         costo_mano_obra: 0
     });
 
+    // Edit Schedule Modal States
+    const [showScheduleModal, setShowScheduleModal] = useState(false);
+    const [scheduleForm, setScheduleForm] = useState({
+        equipo_id: '',
+        tipo_mantenimiento_id: 1,
+        fecha_programada: '',
+        prioridad: 'media',
+        responsable_id: '',
+        responsable_interno_email: '',
+        asunto: '',
+        estado: 'programado',
+        costo_estimado: 0,
+        dias_anticipacion: 3,
+        tarea_tipo_id: '',
+        recurrente: false,
+        frecuencia: 'Mensual',
+        observaciones: '',
+        id_ots: []
+    });
+
+    // Masters for edit modal
+    const [taskTypes, setTaskTypes] = useState([]);
+    const [inventory, setInventory] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [workOrders, setWorkOrders] = useState([]);
+
+    // Search and filters for edit modal
+    const [showAssetSearch, setShowAssetSearch] = useState(false);
+    const [assetSearchQuery, setAssetSearchQuery] = useState('');
+    const [showAdvancedAssetFilters, setShowAdvancedAssetFilters] = useState(false);
+    const [assetCategoryFilter, setAssetCategoryFilter] = useState('');
+    const [assetLocationFilter, setAssetLocationFilter] = useState('');
+
+    const [showPartSearch, setShowPartSearch] = useState(false);
+    const [selectedPart, setSelectedPart] = useState(null);
+    const [partSearchQuery, setPartSearchQuery] = useState('');
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+    const [partCategoryFilter, setPartCategoryFilter] = useState('');
+    const [partStockFilter, setPartStockFilter] = useState('all');
+    const [partPriceMax, setPartPriceMax] = useState('');
+
+    const [isDirty, setIsDirty] = useState(false);
+
     const canEdit = !['SOLICITANTE', 'LIMPIEZA', 'RECEPCION'].includes(user?.role?.toUpperCase());
 
     useEffect(() => {
@@ -46,12 +89,16 @@ const MaintenanceDetailPage = () => {
     const fetchDetail = async () => {
         try {
             setLoading(true);
-            const [sRes, pRes, tRes, aRes, provRes] = await Promise.all([
+            const [sRes, pRes, tRes, aRes, provRes, usersRes, ttRes, invRes, woRes] = await Promise.all([
                 api.get(`/maintenance/schedule/${id}`),
                 api.get(`/maintenance/schedule/${id}/parts`),
                 api.get('/technicians'),
                 api.get('/assets'),
-                api.get('/providers')
+                api.get('/providers'),
+                api.get('/users/all'),
+                api.get('/maintenance/task-types'),
+                api.get('/inventory'),
+                api.get('/work-orders')
             ]);
             
             setSchedule(sRes.data);
@@ -59,6 +106,10 @@ const MaintenanceDetailPage = () => {
             setTechs(tRes.data);
             setAssets(aRes.data);
             setProviders(provRes.data);
+            setUsers(usersRes.data);
+            setTaskTypes(ttRes.data);
+            setInventory(invRes.data);
+            setWorkOrders(woRes.data);
             
             if (sRes.data.tecnico_id) {
                 setExecuteForm(prev => ({ ...prev, tecnico_id: sRes.data.tecnico_id }));
@@ -94,6 +145,84 @@ const MaintenanceDetailPage = () => {
             navigate('/maintenance');
         } catch (error) {
             alert('Error al eliminar');
+        }
+    };
+
+    const openEditScheduleModal = () => {
+        if (!schedule) return;
+        
+        let hora = '08', minutos = '00', periodo = 'AM';
+        const rawDate = schedule.fecha; // "YYYY-MM-DD" or similar
+
+        setScheduleForm({
+            equipo_id: schedule.equipo_id || '',
+            tipo_mantenimiento_id: schedule.tipo_mantenimiento_id || 1,
+            fecha_programada: schedule.fecha || '',
+            prioridad: schedule.prioridad?.toLowerCase() || 'media',
+            responsable_id: schedule.responsable_id || '',
+            responsable_interno_email: schedule.responsable_interno_email || '',
+            asunto: schedule.asunto || '',
+            id_ots: schedule.ots_vinculadas?.map(ot => ot.id) || [],
+            estado: schedule.estado,
+            costo_estimado: schedule.costo_estimado || 0,
+            dias_anticipacion: schedule.dias_anticipacion || 3,
+            tarea_tipo_id: schedule.tarea_tipo_id || '',
+            recurrente: schedule.recurrente || false,
+            frecuencia: schedule.frecuencia || 'Mensual',
+            observaciones: schedule.observaciones || '',
+            hora, minutos, periodo
+        });
+        setIsDirty(false);
+        setShowScheduleModal(true);
+    };
+
+    const handleScheduleChange = (field, value) => {
+        setScheduleForm(prev => ({ ...prev, [field]: value }));
+        setIsDirty(true);
+    };
+
+    const handleScheduleSubmit = async (e) => {
+        if (e) e.preventDefault();
+        
+        const sanitizedData = {
+            ...scheduleForm,
+            equipo_id: parseInt(scheduleForm.equipo_id),
+            tipo_mantenimiento_id: parseInt(scheduleForm.tipo_mantenimiento_id),
+            responsable_id: scheduleForm.responsable_id ? parseInt(scheduleForm.responsable_id) : null,
+            tarea_tipo_id: scheduleForm.tarea_tipo_id ? parseInt(scheduleForm.tarea_tipo_id) : null,
+            costo_estimado: parseFloat(scheduleForm.costo_estimado)
+        };
+
+        try {
+            await api.put(`/maintenance/schedule/${id}`, sanitizedData);
+            alert('Plan actualizado exitosamente');
+            setShowScheduleModal(false);
+            setIsDirty(false);
+            fetchDetail();
+        } catch (error) {
+            console.error("Error updating schedule:", error);
+            alert('Error al actualizar el plan');
+        }
+    };
+
+    const handleAddPart = async (repuestoId, cantidad) => {
+        try {
+            await api.post(`/maintenance/schedule/${id}/parts`, {
+                repuesto_id: repuestoId,
+                cantidad: cantidad
+            });
+            fetchDetail();
+        } catch (error) {
+            alert("Error al añadir repuesto");
+        }
+    };
+
+    const handleRemovePart = async (partId, repuestoId) => {
+        try {
+            await api.delete(`/maintenance/schedule/${id}/parts/${repuestoId}`);
+            fetchDetail();
+        } catch (error) {
+            alert("Error al eliminar repuesto");
         }
     };
 
@@ -190,13 +319,22 @@ const MaintenanceDetailPage = () => {
                         )}
 
                         {canEdit && (
-                            <button 
-                                onClick={handleDelete}
-                                className="p-3 bg-white dark:bg-[#1e293b] text-slate-400 hover:text-rose-500 rounded-2xl border border-slate-200 dark:border-slate-800 transition-all shadow-sm"
-                                title="Eliminar Mantenimiento"
-                            >
-                                <Trash2 className="w-5 h-5" />
-                            </button>
+                            <div className="flex gap-2">
+                                <button 
+                                    onClick={openEditScheduleModal}
+                                    className="p-3 bg-white dark:bg-[#1e293b] text-blue-500 hover:text-blue-600 rounded-2xl border border-slate-200 dark:border-slate-800 transition-all shadow-sm"
+                                    title="Editar Mantenimiento"
+                                >
+                                    <Edit className="w-5 h-5" />
+                                </button>
+                                <button 
+                                    onClick={handleDelete}
+                                    className="p-3 bg-white dark:bg-[#1e293b] text-slate-400 hover:text-rose-500 rounded-2xl border border-slate-200 dark:border-slate-800 transition-all shadow-sm"
+                                    title="Eliminar Mantenimiento"
+                                >
+                                    <Trash2 className="w-5 h-5" />
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -441,6 +579,279 @@ const MaintenanceDetailPage = () => {
                     </div>
                 </div>
             </Modal>
+
+            {/* Edit Maintenance Modal */}
+            <Modal
+                isOpen={showScheduleModal}
+                onClose={() => setShowScheduleModal(false)}
+                onSave={handleScheduleSubmit}
+                isDirty={isDirty}
+                title="Editar Plan de Mantenimiento"
+            >
+                <form onSubmit={handleScheduleSubmit} className="p-0 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="col-span-1">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Prioridad</label>
+                            <select
+                                value={scheduleForm.prioridad}
+                                onChange={(e) => handleScheduleChange('prioridad', e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
+                            >
+                                <option value="baja">Baja</option>
+                                <option value="media">Media</option>
+                                <option value="alta">Alta</option>
+                                <option value="critica">Crítica</option>
+                            </select>
+                        </div>
+                        <div className="col-span-1">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Estado</label>
+                            <select
+                                value={scheduleForm.estado || 'programado'}
+                                onChange={(e) => handleScheduleChange('estado', e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
+                            >
+                                <option value="borrador">Borrador</option>
+                                <option value="programado">Programado</option>
+                                <option value="en_ejecucion">En Ejecución</option>
+                                <option value="completado">Completado</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                        <div className="col-span-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Equipo a Intervenir</label>
+                            <div className="relative group">
+                                <input
+                                    readOnly
+                                    required
+                                    type="text"
+                                    placeholder="Haga clic para buscar equipo..."
+                                    value={scheduleForm.equipo_id ? assets.find(a => a.id == scheduleForm.equipo_id)?.nombre : ''}
+                                    onClick={() => {
+                                        setAssetSearchQuery('');
+                                        setAssetCategoryFilter('');
+                                        setAssetLocationFilter('');
+                                        setShowAssetSearch(true);
+                                    }}
+                                    className="w-full bg-slate-50 dark:bg-[#0f172a] border-2 border-dashed border-slate-200 dark:border-slate-700/50 hover:border-blue-400 dark:hover:border-blue-500 rounded-xl p-3.5 pl-10 text-sm font-bold outline-none cursor-pointer transition-all text-slate-700 dark:text-slate-200 placeholder:text-slate-400 italic"
+                                />
+                                <Search className="w-4 h-4 text-slate-400 absolute left-4 top-4 group-hover:text-blue-500 transition-colors pointer-events-none" />
+                            </div>
+                        </div>
+                        <div className="col-span-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Asunto del Servicio / Título</label>
+                            <input
+                                required
+                                type="text"
+                                placeholder="Ej: Mantenimiento Preventivo Trimestral"
+                                value={scheduleForm.asunto}
+                                onChange={(e) => handleScheduleChange('asunto', e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
+                            />
+                        </div>
+                        <div className="col-span-1">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Fecha Planeada</label>
+                            <input
+                                required
+                                type="date"
+                                value={scheduleForm.fecha_programada}
+                                onChange={(e) => handleScheduleChange('fecha_programada', e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
+                            />
+                        </div>
+                        <div className="col-span-1">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Vincular OTs Existentes</label>
+                            <select
+                                multiple
+                                value={scheduleForm.id_ots}
+                                onChange={(e) => {
+                                    const values = Array.from(e.target.selectedOptions, option => parseInt(option.value));
+                                    handleScheduleChange('id_ots', values);
+                                }}
+                                className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none h-24"
+                            >
+                                {workOrders
+                                    .filter(wo => !scheduleForm.equipo_id || wo.id_activo === parseInt(scheduleForm.equipo_id))
+                                    .map(wo => (
+                                        <option key={wo.id_ot} value={wo.id_ot}>
+                                            {wo.codigo_ot || `OT-${wo.id_ot}`} - {wo.asunto || 'Sin asunto'}
+                                        </option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+
+                        {/* Spare Parts Section */}
+                        <div className="col-span-2 border-t border-slate-100 dark:border-slate-800 pt-6">
+                            <div className="mb-4">
+                                <h4 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                                    <Wrench className="w-4 h-4 text-blue-500" />
+                                    Repuestos Requeridos
+                                </h4>
+                            </div>
+
+                            <div className="flex gap-2 mb-4">
+                                <div className="relative flex-1">
+                                    <input
+                                        readOnly
+                                        type="text"
+                                        placeholder="Seleccione repuesto..."
+                                        value={selectedPart ? `${selectedPart.nombre} (Stock: ${selectedPart.stock})` : ''}
+                                        onClick={() => {
+                                            setPartSearchQuery('');
+                                            setPartCategoryFilter('');
+                                            setPartStockFilter('all');
+                                            setPartPriceMax('');
+                                            setShowPartSearch(true);
+                                        }}
+                                        className="w-full bg-slate-50 dark:bg-[#0f172a] border-2 border-dashed border-slate-300 dark:border-slate-700/50 hover:border-blue-400 dark:hover:border-blue-500 rounded-xl p-3 pl-9 text-sm font-bold outline-none cursor-pointer transition-all text-blue-600 dark:text-blue-400 placeholder:text-slate-400 italic"
+                                    />
+                                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
+                                </div>
+                                <input
+                                    id="partQty"
+                                    type="number"
+                                    placeholder="Cant."
+                                    defaultValue={1}
+                                    className="w-20 bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-sm font-bold outline-none font-mono"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const qtyInput = document.getElementById('partQty');
+                                        const qty = parseFloat(qtyInput.value);
+                                        if (!selectedPart || !qty) return;
+                                        handleAddPart(selectedPart.id, qty);
+                                        setSelectedPart(null);
+                                        qtyInput.value = 1;
+                                    }}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-xl transition-colors shadow-lg shadow-blue-500/20 active:scale-95"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {maintenanceParts.length > 0 && (
+                                <div className="bg-slate-50 dark:bg-[#0f172a]/50 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-slate-100 dark:bg-slate-800 text-xs uppercase text-slate-500 font-bold">
+                                            <tr>
+                                                <th className="p-3">Repuesto</th>
+                                                <th className="p-3 text-center">Cant.</th>
+                                                <th className="p-3 text-right">Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                            {maintenanceParts.map(mp => (
+                                                <tr key={mp.repuesto_id || mp.id}>
+                                                    <td className="p-3 font-medium text-slate-700 dark:text-slate-300">{mp.nombre}</td>
+                                                    <td className="p-3 text-center font-bold">{mp.cantidad_estimada}</td>
+                                                    <td className="p-3 text-right">
+                                                        <button type="button" onClick={() => handleRemovePart(mp.id, mp.repuesto_id)} className="text-red-500 hover:text-red-600">
+                                                            <X className="w-4 h-4" />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="col-span-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Observaciones del Plan</label>
+                            <textarea
+                                rows="3"
+                                value={scheduleForm.observaciones}
+                                onChange={(e) => handleScheduleChange('observaciones', e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
+                            ></textarea>
+                        </div>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Asset Search Modal */}
+            {showAssetSearch && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-[#0f172a] w-full max-w-lg rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col max-h-[70vh]">
+                        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
+                            <Search className="w-5 h-5 text-blue-500" />
+                            <input
+                                autoFocus
+                                type="text"
+                                placeholder="Buscar equipo..."
+                                value={assetSearchQuery}
+                                onChange={(e) => setAssetSearchQuery(e.target.value)}
+                                className="flex-1 bg-transparent text-base font-bold outline-none placeholder:text-slate-400 dark:text-white"
+                            />
+                            <button onClick={() => setShowAssetSearch(false)} className="text-slate-400 hover:text-slate-600">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-auto p-2 space-y-1">
+                            {assets.filter(a => (a.nombre || '').toLowerCase().includes(assetSearchQuery.toLowerCase())).map(a => (
+                                <div
+                                    key={a.id}
+                                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-all"
+                                    onClick={() => {
+                                        setScheduleForm({ ...scheduleForm, equipo_id: a.id });
+                                        setShowAssetSearch(false);
+                                    }}
+                                >
+                                    <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+                                        <Settings className="w-5 h-5 text-slate-400" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-bold text-slate-800 dark:text-slate-200">{a.nombre}</p>
+                                        <p className="text-[10px] text-slate-400 uppercase font-black">{a.codigo}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Part Search Modal */}
+            {showPartSearch && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-[#0f172a] w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+                        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
+                            <Search className="w-5 h-5 text-slate-400" />
+                            <input
+                                autoFocus
+                                type="text"
+                                placeholder="Buscar repuesto..."
+                                value={partSearchQuery}
+                                onChange={(e) => setPartSearchQuery(e.target.value)}
+                                className="flex-1 bg-transparent text-lg font-bold outline-none dark:text-white"
+                            />
+                            <button onClick={() => setShowPartSearch(false)} className="text-slate-400 hover:text-slate-600">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-auto p-4 space-y-2">
+                            {inventory.filter(p => (p.nombre || '').toLowerCase().includes(partSearchQuery.toLowerCase())).map(p => (
+                                <div key={p.id} className="flex items-center gap-4 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 hover:bg-blue-50/50 cursor-pointer transition-all"
+                                    onClick={() => {
+                                        setSelectedPart(p);
+                                        setShowPartSearch(false);
+                                    }}
+                                >
+                                    <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center">
+                                        <Settings className="w-5 h-5 text-slate-400" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-bold text-slate-800 dark:text-slate-200">{p.nombre}</p>
+                                        <p className="text-xs text-slate-400">Stock: {p.stock}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
