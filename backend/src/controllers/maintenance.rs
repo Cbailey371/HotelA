@@ -135,6 +135,69 @@ pub async fn get_schedules(
     Ok(Json(dtos))
 }
 
+pub async fn get_schedule(
+    State(db): State<DatabaseConnection>,
+    Path(id): Path<i32>,
+) -> Result<impl IntoResponse, AppError> {
+    let schedule = mantenimiento_calendario::Entity::find_by_id(id)
+        .find_also_related(activos_equipos::Entity)
+        .one(&db)
+        .await?
+        .ok_or_else(|| AppError::NotFound("Schedule not found".to_string()))?;
+
+    let m_types = mantenimiento_tipo::Entity::find()
+        .all(&db)
+        .await?;
+
+    let ot = orden_trabajo::Entity::find()
+        .filter(orden_trabajo::Column::IdCalendario.eq(id))
+        .one(&db)
+        .await?;
+
+    let providers_list = proveedores::Entity::find().all(&db).await?;
+    let prov_map: std::collections::HashMap<i32, String> = providers_list.into_iter()
+        .map(|p| (p.id_proveedor, p.nombre_proveedor))
+        .collect();
+
+    let (s, e) = schedule;
+
+    let tipo_nombre = m_types.iter()
+        .find(|t| t.id_tipo_mantenimiento == s.tipo_mantenimiento_id)
+        .map(|t| t.nombre_tipo.clone())
+        .unwrap_or_else(|| "Preventivo".to_string());
+
+    let prov_name = s.proveedor_id.and_then(|pid| prov_map.get(&pid).cloned());
+
+    let dto = ScheduleDto {
+        id: s.id_mantenimiento_calendario,
+        equipo: e.map(|v| v.nombre_equipo).unwrap_or("N/A".to_string()),
+        tipo: tipo_nombre,
+        fecha: s.fecha_programada.map(|d| d.to_string()),
+        estado: s.estado.cloned().unwrap_or("programado".to_string()),
+        responsable: s.responsable_interno_email.clone().or_else(|| Some("Asignado".to_string())).take().unwrap_or_default(),
+        codigo: s.codigo_mantenimiento.clone(),
+        prioridad: s.prioridad.clone().unwrap_or("media".to_string()),
+        orden_trabajo_id: ot.as_ref().map(|o| o.id_ot),
+        tiene_ot: ot.is_some(),
+        equipo_id: s.equipo_id,
+        tipo_mantenimiento_id: s.tipo_mantenimiento_id,
+        tecnico_id: s.tecnico_id,
+        proveedor_id: s.proveedor_id,
+        costo_estimado: s.costo_estimado.map(|c| c.to_string().parse().unwrap_or(0.0)),
+        dias_anticipacion: s.dias_anticipacion,
+        tarea_tipo_id: s.tarea_tipo_id,
+        recurrente: s.recurrente,
+        frecuencia: s.frecuencia.clone(),
+        observaciones: s.observaciones.clone(),
+        responsable_id: s.responsable_id,
+        asunto: s.asunto.clone(),
+        codigo_ot: ot.as_ref().and_then(|o| o.codigo_ot.clone()),
+        proveedor_nombre: prov_name,
+    };
+
+    Ok(Json(dto))
+}
+
 pub async fn create_schedule(
     State(db): State<DatabaseConnection>,
     Json(payload): Json<CreateScheduleRequest>,

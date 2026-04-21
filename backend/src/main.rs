@@ -135,7 +135,7 @@ async fn main() {
                     .post(controllers::maintenance::create_schedule)
                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "maintenance_plan_edit")))
                 )
-                .route("/maintenance/schedule/{id}", put(controllers::maintenance::update_schedule).delete(controllers::maintenance::delete_schedule)
+                .route("/maintenance/schedule/{id}", get(controllers::maintenance::get_schedule).put(controllers::maintenance::update_schedule).delete(controllers::maintenance::delete_schedule)
                     .layer(axum::middleware::from_fn_with_state(db.clone(), |state, req, next| middleware::auth::require_permission(state, req, next, "maintenance_plan_edit")))
                 )
                 .route("/maintenance/schedule/{id}/parts", get(controllers::maintenance::get_maintenance_parts)

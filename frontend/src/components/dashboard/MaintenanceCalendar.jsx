@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const MaintenanceCalendar = ({ events }) => {
+    const navigate = useNavigate();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [view, setView] = useState('month'); // 'month', 'week', 'day'
 
@@ -123,7 +125,10 @@ const MaintenanceCalendar = ({ events }) => {
                                         </div>
                                         <div className={`mt-2 space-y-1 overflow-y-auto scrollbar-hide hover:overflow-visible ${view === 'month' ? 'max-h-[60px]' : 'max-h-full'}`}>
                                             {dayEvents.length > 0 ? dayEvents.map(ev => (
-                                                <div key={ev.id} className={`group/event relative text-[10px] px-2 py-1.5 rounded-lg font-bold border-l-4 mb-1.5 shadow-sm transition-all hover:scale-[1.02] active:scale-95
+                                                <div 
+                                                    key={ev.id} 
+                                                    onClick={() => navigate(`/maintenance/${ev.id}`)}
+                                                    className={`group/event relative text-[10px] px-2 py-1.5 rounded-lg font-bold border-l-4 mb-1.5 shadow-sm transition-all hover:scale-[1.02] active:scale-95 cursor-pointer
                                                     ${ev.priority?.toLowerCase() === 'alta' ? 'bg-red-50 text-red-700 border-red-500' :
                                                         ev.priority?.toLowerCase() === 'baja' ? 'bg-emerald-50 text-emerald-700 border-emerald-500' :
                                                             'bg-amber-50 text-amber-700 border-amber-500'}`}>

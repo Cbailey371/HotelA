@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import {
     BarChart3, Activity, Briefcase, Calendar, Plus, Clock, CheckCircle, Wrench, Filter, Settings, Play, ChevronRight, X, ClipboardList, Search, Trash2
@@ -6,6 +7,7 @@ import {
 import Modal from '../components/Modal';
 
 const MaintenancePage = () => {
+    const navigate = useNavigate();
     const [schedules, setSchedules] = useState([]);
     const [techs, setTechs] = useState([]);
     const [assets, setAssets] = useState([]);
@@ -559,7 +561,10 @@ const MaintenancePage = () => {
                                         <div className="text-xs font-black text-slate-400 mb-0.5 uppercase tracking-wider">{s.codigo || 'N/A'}</div>
                                     </td>
                                     <td className="px-8 py-5 relative group/asunto overflow-visible">
-                                        <div className="font-bold text-blue-600 dark:text-blue-400 text-sm tracking-tight cursor-help border-b border-dotted border-blue-400/30 w-fit">
+                                        <div 
+                                            onClick={() => navigate(`/maintenance/${s.id}`)}
+                                            className="font-bold text-blue-600 dark:text-blue-400 text-sm tracking-tight cursor-pointer hover:text-blue-700 dark:hover:text-blue-300 border-b border-dotted border-blue-400/30 w-fit transition-colors"
+                                        >
                                             {s.asunto || 'Sin asunto'}
                                         </div>
                                         

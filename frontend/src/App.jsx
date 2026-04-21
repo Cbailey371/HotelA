@@ -28,6 +28,7 @@ import ReportsPage from './pages/ReportsPage';
 import HolidaysPage from './pages/HolidaysPage';
 import NotificationsPage from './pages/NotificationsPage';
 import PublicCalendar from './pages/PublicCalendar';
+import MaintenanceDetailPage from './pages/MaintenanceDetailPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -114,6 +115,7 @@ function App() {
                 <Route path="assets" element={<ProtectedRoute permiso="assets_view"><AssetsPage /></ProtectedRoute>} />
                 <Route path="assets/:id" element={<ProtectedRoute permiso="assets_view"><AssetDetailPage /></ProtectedRoute>} />
                 <Route path="maintenance" element={<ProtectedRoute permiso="maintenance_plan_view"><MaintenancePage /></ProtectedRoute>} />
+                <Route path="maintenance/:id" element={<ProtectedRoute permiso="maintenance_plan_view"><MaintenanceDetailPage /></ProtectedRoute>} />
                 <Route path="maintenance/history" element={<ProtectedRoute permiso="maintenance_view"><MaintenanceHistoryPage /></ProtectedRoute>} />
                 <Route path="inventory" element={<ProtectedRoute permiso="inventory_view"><InventoryPage /></ProtectedRoute>} />
                 <Route path="providers" element={<ProtectedRoute permiso="providers_view"><ProvidersPage /></ProtectedRoute>} />
