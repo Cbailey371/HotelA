@@ -213,17 +213,16 @@ const PurchasesPage = () => {
                         <option value="PROCESADA">Procesadas</option>
                     </select>
                 </div>
+            </div>
 
-                    <div className="flex items-center ml-auto">
-                        <RecordLimitSelector 
-                            limit={limit} 
-                            onChange={setLimit} 
-                            currentPage={currentPage}
-                            totalItems={filteredRequests.length}
-                            onPageChange={setCurrentPage}
-                        />
-                    </div>
-                </div>
+            <div className="flex justify-end">
+                <RecordLimitSelector 
+                    limit={limit} 
+                    onChange={setLimit} 
+                    currentPage={currentPage}
+                    totalItems={filteredRequests.length}
+                    onPageChange={setCurrentPage}
+                />
             </div>
 
             {loading ? (
