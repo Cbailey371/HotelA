@@ -8,6 +8,7 @@ import api from '../services/api';
 import { purchaseInvoicesService } from '../services/purchaseInvoicesService';
 import { useAuth } from '../context/AuthContext';
 import Modal from '../components/Modal';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 import InvoiceForm from './InvoiceForm';
 
 const PurchasesInvoicesPage = () => {
@@ -15,12 +16,18 @@ const PurchasesInvoicesPage = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showForm, setShowForm] = useState(false);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
     const navigate = useNavigate();
     const { user } = useAuth();
 
     useEffect(() => {
         fetchInvoices();
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
 
     const fetchInvoices = async () => {
         try {
@@ -145,6 +152,13 @@ const PurchasesInvoicesPage = () => {
                 <button className="p-2 bg-slate-50 dark:bg-slate-800 text-slate-500 rounded-lg hover:bg-slate-100 transition-colors">
                     <Filter className="w-5 h-5" />
                 </button>
+                <RecordLimitSelector 
+                    limit={limit} 
+                    onChange={setLimit} 
+                    currentPage={currentPage}
+                    totalItems={filteredInvoices.length}
+                    onPageChange={setCurrentPage}
+                />
             </div>
 
             {/* Invoices Table */}
@@ -166,7 +180,7 @@ const PurchasesInvoicesPage = () => {
                                 <tr><td colSpan="6" className="px-6 py-12 text-center text-slate-400 font-bold">Cargando facturas...</td></tr>
                             ) : filteredInvoices.length === 0 ? (
                                 <tr><td colSpan="6" className="px-6 py-12 text-center text-slate-400 font-bold text-sm">No se encontraron facturas.</td></tr>
-                            ) : filteredInvoices.map((inv) => (
+                            ) : filteredInvoices.slice((currentPage - 1) * limit, currentPage * limit).map((inv) => (
                                 <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col">

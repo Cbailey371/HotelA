@@ -14,7 +14,8 @@ const ProvidersPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [paymentTermsList, setPaymentTermsList] = useState([]);
     const [isDirty, setIsDirty] = useState(false);
-    const [limit, setLimit] = useState(20);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const initialFormData = {
         nombre_proveedor: '',
@@ -125,6 +126,10 @@ const ProvidersPage = () => {
         p.nombre.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#1e293b] p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -148,7 +153,13 @@ const ProvidersPage = () => {
                     </button>
                 </div>
                 <div className="flex items-center ml-auto md:ml-0">
-                    <RecordLimitSelector limit={limit} onChange={setLimit} />
+                    <RecordLimitSelector 
+                        limit={limit} 
+                        onChange={setLimit} 
+                        currentPage={currentPage}
+                        totalItems={filtered.length}
+                        onPageChange={setCurrentPage}
+                    />
                 </div>
             </div>
 
@@ -168,7 +179,7 @@ const ProvidersPage = () => {
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
                                 <tr><td colSpan="6" className="text-center py-8">Cargando...</td></tr>
-                            ) : filtered.slice(0, limit).map((p) => (
+                            ) : filtered.slice((currentPage - 1) * limit, currentPage * limit).map((p) => (
                                 <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                     <td className="px-6 py-4">
                                         <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">

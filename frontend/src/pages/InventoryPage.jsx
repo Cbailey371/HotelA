@@ -34,7 +34,8 @@ const InventoryPage = () => {
     const [filterStatus, setFilterStatus] = useState('');
     const [isDirty, setIsDirty] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
-    const [limit, setLimit] = useState(20);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Config Data
     const [brandsList, setBrandsList] = useState([]);
@@ -69,6 +70,10 @@ const InventoryPage = () => {
         fetchParts();
         fetchConfigData();
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterCategory, filterStock, filterLocation, filterBrand, filterStatus]);
 
     const fetchConfigData = async () => {
         try {
@@ -273,7 +278,7 @@ const InventoryPage = () => {
         }
     };
 
-    const filtered = parts.filter(p => {
+    const filteredParts = parts.filter(p => {
         const matchesSearch = p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.categoria.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = filterCategory === '' || p.categoria === filterCategory;
@@ -388,7 +393,13 @@ const InventoryPage = () => {
                         <option value="inactivo">Inactivo</option>
                     </select>
                     <div className="flex items-center ml-auto">
-                        <RecordLimitSelector limit={limit} onChange={setLimit} />
+                        <RecordLimitSelector 
+                            limit={limit} 
+                            onChange={setLimit} 
+                            currentPage={currentPage}
+                            totalItems={filteredParts.length}
+                            onPageChange={setCurrentPage}
+                        />
                     </div>
                 </div>
                 <div className="overflow-x-auto w-full">
@@ -408,10 +419,10 @@ const InventoryPage = () => {
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
                                 <tr><td colSpan="8" className="text-center py-8">Cargando almacén...</td></tr>
-                            ) : filtered.length === 0 ? (
-                                <tr><td colSpan="8" className="text-center py-8 text-slate-400 font-medium">No se encontraron suministros.</td></tr>
-                            ) : filtered.slice(0, limit).map((p) => (
-                                <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                            ) : filteredParts.length === 0 ? (
+                                <tr><td colSpan="7" className="text-center py-12 text-slate-400 font-medium">No se encontraron resultados</td></tr>
+                            ) : filteredParts.slice((currentPage - 1) * limit, currentPage * limit).map((p) => (
+                                <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 group transition-all">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div

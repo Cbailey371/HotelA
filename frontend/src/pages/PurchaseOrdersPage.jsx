@@ -24,7 +24,8 @@ const PurchaseOrdersPage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [currentOrderId, setCurrentOrderId] = useState(null);
     const [isDirty, setIsDirty] = useState(false);
-    const [limit, setLimit] = useState(20);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Form State
     const [providers, setProviders] = useState([]);
@@ -311,6 +312,16 @@ const PurchaseOrdersPage = () => {
         p.codigo.toLowerCase().includes(modalSearch.toLowerCase())
     );
 
+    const [searchTerm, setSearchTerm] = useState('');
+    const filteredOrders = orders.filter(o => 
+        (o.codigo_orden?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (o.nombre_proveedor?.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
     const filteredProviders = providers.filter(p =>
         p.nombre.toLowerCase().includes(providerSearch.toLowerCase()) ||
         p.nit?.toLowerCase().includes(providerSearch.toLowerCase())
@@ -392,13 +403,23 @@ const PurchaseOrdersPage = () => {
                         <input
                             type="text"
                             placeholder="Buscar orden..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none"
                         />
                     </div>
                     <button onClick={handleOpenCreate} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2">
                         <Plus className="w-4 h-4" /> Nueva Orden
                     </button>
-                    <RecordLimitSelector limit={limit} onChange={setLimit} />
+                    <div className="flex items-center ml-auto">
+                        <RecordLimitSelector 
+                            limit={limit} 
+                            onChange={setLimit} 
+                            currentPage={currentPage}
+                            totalItems={filteredOrders.length}
+                            onPageChange={setCurrentPage}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -417,10 +438,10 @@ const PurchaseOrdersPage = () => {
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                         {loading ? (
                             <tr><td colSpan="6" className="text-center py-8">Cargando...</td></tr>
-                        ) : orders.length === 0 ? (
-                            <tr><td colSpan="6" className="text-center py-8">No hay órdenes registradas</td></tr>
-                        ) : orders.slice(0, limit).map((o) => (
-                            <tr key={o.id_orden_compra} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        ) : filteredOrders.length === 0 ? (
+                            <tr><td colSpan="8" className="text-center py-8">No se encontraron órdenes</td></tr>
+                        ) : filteredOrders.slice((currentPage - 1) * limit, currentPage * limit).map((o) => (
+                            <tr key={o.id_orden_compra} className="hover:bg-slate-50 dark:hover:bg-[#0f172a]/50 transition-colors">
                                 <td className="px-6 py-4 font-mono font-bold text-blue-600">{o.codigo_compra}</td>
                                 <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
                                     {o.nombre_proveedor || (o.id_proveedor ? `Proveedor #${o.id_proveedor}` : 'N/A')}

@@ -7,6 +7,7 @@ import QuoteForm from '../components/purchases/QuoteForm';
 import { generateQuotePDF } from '../components/purchases/generateQuotePDF';
 import { useAuth } from '../context/AuthContext';
 import Modal from '../components/Modal';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const PurchaseQuotesPage = () => {
     const { user } = useAuth();
@@ -18,6 +19,8 @@ const PurchaseQuotesPage = () => {
     const [showForm, setShowForm] = useState(false);
     const [selectedQuote, setSelectedQuote] = useState(null);
     const [sendingEmail, setSendingEmail] = useState(null);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const canCreate = user?.role === 'ADMINISTRADOR' || user?.role === 'SUPER-ADMIN' || user?.permissions?.includes('quotes_create');
     const canEdit = user?.role === 'ADMINISTRADOR' || user?.role === 'SUPER-ADMIN' || user?.permissions?.includes('quotes_edit');
@@ -150,6 +153,10 @@ const PurchaseQuotesPage = () => {
         quote.nombre_proveedor?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
     if (loading) return <div className="flex justify-center items-center h-64"><Loader className="animate-spin" /></div>;
 
     return (
@@ -181,6 +188,13 @@ const PurchaseQuotesPage = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <RecordLimitSelector 
+                    limit={limit} 
+                    onChange={setLimit} 
+                    currentPage={currentPage}
+                    totalItems={filteredQuotes.length}
+                    onPageChange={setCurrentPage}
+                />
             </div>
 
             <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow overflow-hidden border border-slate-200 dark:border-slate-800">
@@ -203,7 +217,7 @@ const PurchaseQuotesPage = () => {
                                     No se encontraron solicitudes de cotización
                                 </td>
                             </tr>
-                        ) : filteredQuotes.map((quote) => (
+                        ) : filteredQuotes.slice((currentPage - 1) * limit, currentPage * limit).map((quote) => (
                             <tr key={quote.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600 font-mono">
                                     {quote.codigo}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Plus, Edit2, Trash2, Shield, Loader2, Check, Search } from 'lucide-react';
 import Modal from '../components/Modal';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const RolesPage = () => {
     const [roles, setRoles] = useState([]);
@@ -11,6 +12,8 @@ const RolesPage = () => {
     const [editingRole, setEditingRole] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [isDirty, setIsDirty] = useState(false);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
     const [formData, setFormData] = useState({
         nombre: '',
         descripcion: '',
@@ -20,6 +23,10 @@ const RolesPage = () => {
     useEffect(() => {
         fetchData();
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -137,6 +144,15 @@ const RolesPage = () => {
                         className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 pl-9 text-sm font-bold outline-none"
                     />
                 </div>
+                <div className="flex items-center ml-auto">
+                    <RecordLimitSelector 
+                        limit={limit} 
+                        onChange={setLimit} 
+                        currentPage={currentPage}
+                        totalItems={roles.filter(r => r.nombre.toLowerCase().includes(searchTerm.toLowerCase())).length}
+                        onPageChange={setCurrentPage}
+                    />
+                </div>
             </div>
 
             {loading ? (
@@ -155,7 +171,7 @@ const RolesPage = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                {roles.filter(r => r.nombre.toLowerCase().includes(searchTerm.toLowerCase())).map((role) => (
+                                {roles.filter(r => r.nombre.toLowerCase().includes(searchTerm.toLowerCase())).slice((currentPage - 1) * limit, currentPage * limit).map((role) => (
                                     <tr key={role.id} className="hover:bg-slate-50 dark:hover:bg-[#0f172a]/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">

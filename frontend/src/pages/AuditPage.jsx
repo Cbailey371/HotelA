@@ -4,6 +4,7 @@ import {
     Shield, Search, Filter, History, User,
     Globe, Terminal, Database, ArrowRight
 } from 'lucide-react';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const AuditPage = () => {
     const [logs, setLogs] = useState([]);
@@ -14,11 +15,17 @@ const AuditPage = () => {
     const [selectedAction, setSelectedAction] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         fetchLogs();
         fetchUsers();
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, selectedUser, selectedAction, startDate, endDate]);
 
     const fetchUsers = async () => {
         try {
@@ -147,9 +154,18 @@ const AuditPage = () => {
                         onClick={fetchLogs}
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-lg shadow-blue-500/20"
                     >
-                        <Filter className="w-4 h-4" />
                         FILTRAR
                     </button>
+
+                    <div className="flex items-center ml-auto">
+                        <RecordLimitSelector 
+                            limit={limit} 
+                            onChange={setLimit} 
+                            currentPage={currentPage}
+                            totalItems={filtered.length}
+                            onPageChange={setCurrentPage}
+                        />
+                    </div>
 
                     <button onClick={() => {
                         setSelectedUser('');
@@ -181,7 +197,7 @@ const AuditPage = () => {
                                 <tr><td colSpan="5" className="text-center py-20 animate-pulse font-bold text-slate-400">Recuperando registros de seguridad...</td></tr>
                             ) : filtered.length === 0 ? (
                                 <tr><td colSpan="5" className="text-center py-20 text-slate-400">No se encontraron registros de auditoría.</td></tr>
-                            ) : filtered.map((l) => (
+                            ) : filtered.slice((currentPage - 1) * limit, currentPage * limit).map((l) => (
                                 <tr key={l.id} className="hover:bg-slate-50 dark:hover:bg-[#0f172a]/30 transition-all">
                                     <td className="px-8 py-5">
                                         <div className="flex flex-col gap-1">

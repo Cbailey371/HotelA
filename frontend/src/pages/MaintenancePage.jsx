@@ -39,7 +39,8 @@ const MaintenancePage = () => {
     const [scheduleSearch, setScheduleSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [priorityFilter, setPriorityFilter] = useState('all');
-    const [limit, setLimit] = useState(20);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Asset Search States
     const [showAssetSearch, setShowAssetSearch] = useState(false);
@@ -82,6 +83,10 @@ const MaintenancePage = () => {
     useEffect(() => {
         fetchAllData();
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [scheduleSearch, statusFilter, priorityFilter]);
 
     const fetchAllData = async () => {
         setLoading(true);
@@ -444,6 +449,19 @@ const MaintenancePage = () => {
         setShowExecuteModal(true);
     };
 
+    const filteredSchedules = schedules.filter(s => {
+        // Exclude completed and cancelled from active maintenance (Active view)
+        if (s.estado === 'completado' || s.estado === 'cancelado') return false;
+
+        const matchesSearch = (s.equipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
+            (s.tipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
+            (s.asunto || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
+            (s.codigo || '').toLowerCase().includes(scheduleSearch.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || s.estado === statusFilter;
+        const matchesPriority = priorityFilter === 'all' || (s.prioridad || '').toLowerCase() === priorityFilter;
+        return matchesSearch && matchesStatus && matchesPriority;
+    });
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -514,7 +532,13 @@ const MaintenancePage = () => {
                             <option value="media">Media</option>
                             <option value="alta">Alta</option>
                         </select>
-                        <RecordLimitSelector limit={limit} onChange={setLimit} />
+                        <RecordLimitSelector 
+                            limit={limit} 
+                            onChange={setLimit} 
+                            currentPage={currentPage}
+                            totalItems={filteredSchedules.length}
+                            onPageChange={setCurrentPage}
+                        />
                     </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -540,31 +564,9 @@ const MaintenancePage = () => {
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
                                 <tr><td colSpan="7" className="text-center py-20 animate-pulse font-bold text-slate-400">Consultando base de mantenimiento...</td></tr>
-                            ) : schedules.filter(s => {
-                                // Exclude completed and cancelled from active maintenance
-                                if (s.estado === 'completado' || s.estado === 'cancelado') return false;
-
-                                const matchesSearch = (s.equipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
-                                    (s.tipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
-                                    (s.asunto || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
-                                    (s.codigo || '').toLowerCase().includes(scheduleSearch.toLowerCase());
-                                const matchesStatus = statusFilter === 'all' || s.estado === statusFilter;
-                                const matchesPriority = priorityFilter === 'all' || (s.prioridad || '').toLowerCase() === priorityFilter;
-                                return matchesSearch && matchesStatus && matchesPriority;
-                            }).length === 0 ? (
+                            ) : filteredSchedules.length === 0 ? (
                                 <tr><td colSpan="7" className="text-center py-20 text-slate-400 font-bold">No se encontraron servicios que coincidan con los filtros.</td></tr>
-                            ) : schedules.filter(s => {
-                                // Exclude completed and cancelled from active maintenance
-                                if (s.estado === 'completado' || s.estado === 'cancelado') return false;
-
-                                const matchesSearch = (s.equipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
-                                    (s.tipo || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
-                                    (s.asunto || '').toLowerCase().includes(scheduleSearch.toLowerCase()) ||
-                                    (s.codigo || '').toLowerCase().includes(scheduleSearch.toLowerCase());
-                                const matchesStatus = statusFilter === 'all' || s.estado === statusFilter;
-                                const matchesPriority = priorityFilter === 'all' || (s.prioridad || '').toLowerCase() === priorityFilter;
-                                return matchesSearch && matchesStatus && matchesPriority;
-                            }).slice(0, limit).map((s) => (
+                            ) : filteredSchedules.slice((currentPage - 1) * limit, currentPage * limit).map((s) => (
                                 <tr key={s.id} className={`group hover:bg-slate-50 dark:hover:bg-[#0f172a]/30 transition-all ${selectedIds.includes(s.id) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
                                     <td className="px-4 py-5">
                                         <input

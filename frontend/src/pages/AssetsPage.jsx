@@ -27,12 +27,17 @@ const AssetsPage = () => {
     const [filterStatus, setFilterStatus] = useState('');
     const [filterBrand, setFilterBrand] = useState('');
     const [filterLocation, setFilterLocation] = useState('');
-    const [limit, setLimit] = useState(20);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         fetchAssets();
         fetchConfig();
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterCategory, filterStatus, filterBrand, filterLocation]);
 
     const fetchAssets = async () => {
         try {
@@ -236,7 +241,13 @@ const AssetsPage = () => {
                 )}
 
                 <div className="ml-auto flex items-center gap-4">
-                    <RecordLimitSelector limit={limit} onChange={setLimit} />
+                    <RecordLimitSelector 
+                        limit={limit} 
+                        onChange={setLimit} 
+                        currentPage={currentPage}
+                        totalItems={filteredAssets.length}
+                        onPageChange={setCurrentPage}
+                    />
                 </div>
             </div>
 
@@ -263,7 +274,7 @@ const AssetsPage = () => {
                                 <tr><td colSpan="10" className="text-center py-8 text-slate-500">Cargando inventario...</td></tr>
                             ) : filteredAssets.length === 0 ? (
                                 <tr><td colSpan="10" className="text-center py-8 text-slate-500">No se encontraron activos.</td></tr>
-                            ) : filteredAssets.slice(0, limit).map((asset) => (
+                            ) : filteredAssets.slice((currentPage - 1) * limit, currentPage * limit).map((asset) => (
                                 <tr
                                     key={asset.id}
                                     onClick={(e) => {

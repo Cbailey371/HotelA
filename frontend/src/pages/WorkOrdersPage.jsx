@@ -57,7 +57,8 @@ const WorkOrdersPage = () => {
     // Asset Search States
     const [showAssetSearch, setShowAssetSearch] = useState(false);
     const [assetSearchQuery, setAssetSearchQuery] = useState('');
-    const [limit, setLimit] = useState(20);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
     const [assetCategoryFilter, setAssetCategoryFilter] = useState('');
     const [assetLocationFilter, setAssetLocationFilter] = useState('');
     const [showAdvancedAssetFilters, setShowAdvancedAssetFilters] = useState(false);
@@ -88,6 +89,10 @@ const WorkOrdersPage = () => {
     useEffect(() => {
         fetchData();
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterStatus, filterPriority]);
 
     const fetchData = async (silent = false) => {
         try {
@@ -520,7 +525,13 @@ const WorkOrdersPage = () => {
                         <option value="critica">Crítica</option>
                     </select>
 
-                    <RecordLimitSelector limit={limit} onChange={setLimit} />
+                    <RecordLimitSelector 
+                        limit={limit} 
+                        onChange={setLimit} 
+                        currentPage={currentPage}
+                        totalItems={filteredOrders.length}
+                        onPageChange={setCurrentPage}
+                    />
                 </div>
             </div>
 
@@ -552,7 +563,7 @@ const WorkOrdersPage = () => {
                                         </div>
                                     </td>
                                 </tr>
-                            ) : filteredOrders.slice(0, limit).map((order) => (
+                            ) : filteredOrders.slice((currentPage - 1) * limit, currentPage * limit).map((order) => (
                                 <tr 
                                     key={order.id_ot} 
                                     onClick={() => navigate(`/work-orders/${order.id_ot}`)}

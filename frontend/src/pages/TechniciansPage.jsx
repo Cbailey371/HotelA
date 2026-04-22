@@ -13,7 +13,8 @@ const TechniciansPage = () => {
     const [isDirty, setIsDirty] = useState(false);
     const [editingTech, setEditingTech] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [limit, setLimit] = useState(20);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const initialFormData = {
         nombre: '',
@@ -31,6 +32,10 @@ const TechniciansPage = () => {
     useEffect(() => {
         fetchData();
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
 
     const fetchData = async () => {
         try {
@@ -109,6 +114,13 @@ const TechniciansPage = () => {
         }
     };
 
+    const filteredTechnicians = technicians.filter(t =>
+        t.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (t.especialidad || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (t.codigo || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#1e293b] p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -150,7 +162,13 @@ const TechniciansPage = () => {
                         <option value="active">Activos</option>
                         <option value="inactive">Inactivos</option>
                     </select>
-                    <RecordLimitSelector limit={limit} onChange={setLimit} />
+                    <RecordLimitSelector 
+                        limit={limit} 
+                        onChange={setLimit} 
+                        currentPage={currentPage}
+                        totalItems={filteredTechnicians.length}
+                        onPageChange={setCurrentPage}
+                    />
                 </div>
             </div>
 
@@ -172,12 +190,7 @@ const TechniciansPage = () => {
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
                                 <tr><td colSpan="7" className="text-center py-10">Cargando...</td></tr>
-                            ) : technicians.filter(t =>
-                                t.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                t.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                (t.especialidad || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                (t.codigo || '').toLowerCase().includes(searchTerm.toLowerCase())
-                            ).slice(0, limit).map((tech) => (
+                            ) : filteredTechnicians.slice((currentPage - 1) * limit, currentPage * limit).map((tech) => (
                                 <tr key={tech.id} className="hover:bg-slate-50 dark:hover:bg-[#0f172a]/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-300">

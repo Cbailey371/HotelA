@@ -28,11 +28,16 @@ const MaintenanceHistoryPage = () => {
     const [scheduleSearch, setScheduleSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all'); // In history, "all" means completed or cancelled
     const [priorityFilter, setPriorityFilter] = useState('all');
-    const [limit, setLimit] = useState(20);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         fetchAllData();
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [scheduleSearch, statusFilter, priorityFilter]);
 
     const fetchAllData = async () => {
         setLoading(true);
@@ -175,7 +180,13 @@ const MaintenanceHistoryPage = () => {
                             <option value="media">Media</option>
                             <option value="alta">Alta</option>
                         </select>
-                        <RecordLimitSelector limit={limit} onChange={setLimit} />
+                        <RecordLimitSelector 
+                            limit={limit} 
+                            onChange={setLimit} 
+                            currentPage={currentPage}
+                            totalItems={filteredSchedules.length}
+                            onPageChange={setCurrentPage}
+                        />
                     </div>
                 </div>
 
@@ -196,7 +207,7 @@ const MaintenanceHistoryPage = () => {
                                 <tr><td colSpan="6" className="text-center py-20 animate-pulse font-bold text-slate-400">Consultando historial...</td></tr>
                             ) : filteredSchedules.length === 0 ? (
                                 <tr><td colSpan="6" className="text-center py-20 text-slate-400 font-bold">No hay registros en el historial con estos filtros.</td></tr>
-                            ) : filteredSchedules.slice(0, limit).map((s) => (
+                            ) : filteredSchedules.slice((currentPage - 1) * limit, currentPage * limit).map((s) => (
                                 <tr key={s.id} className="group hover:bg-slate-50 dark:hover:bg-[#0f172a]/30 transition-all">
                                     <td className="px-8 py-5">
                                         <div className="text-xs font-black text-slate-400 mb-0.5 uppercase tracking-wider">{s.codigo || 'N/A'}</div>

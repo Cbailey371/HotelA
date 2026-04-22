@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import holidaysService from '../services/holidays';
 import { Calendar, Plus, Trash2, Edit, Save, X, RefreshCw } from 'lucide-react';
 import Modal from '../components/Modal';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const HolidaysPage = () => {
     const [holidays, setHolidays] = useState([]);
@@ -15,9 +16,15 @@ const HolidaysPage = () => {
         es_fijo: true
     });
     const [isDirty, setIsDirty] = useState(false);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         fetchHolidays();
+    }, [year]);
+
+    useEffect(() => {
+        setCurrentPage(1);
     }, [year]);
 
     const fetchHolidays = async () => {
@@ -144,6 +151,13 @@ const HolidaysPage = () => {
                     >
                         <Plus className="w-4 h-4" /> Nuevo Feriado
                     </button>
+                    <RecordLimitSelector 
+                        limit={limit} 
+                        onChange={setLimit} 
+                        currentPage={currentPage}
+                        totalItems={holidays.length}
+                        onPageChange={setCurrentPage}
+                    />
                 </div>
             </div>
 
@@ -164,7 +178,7 @@ const HolidaysPage = () => {
                                 <tr><td colSpan="4" className="text-center py-10 animate-pulse text-sm font-bold text-slate-400">Cargando...</td></tr>
                             ) : holidays.length === 0 ? (
                                 <tr><td colSpan="4" className="text-center py-10 text-slate-400 font-bold">No hay feriados registrados para {year}.</td></tr>
-                            ) : holidays.map((h) => (
+                            ) : holidays.slice((currentPage - 1) * limit, currentPage * limit).map((h) => (
                                 <tr key={h.id} className="group hover:bg-slate-50 dark:hover:bg-[#0f172a]/30 transition-all">
                                     <td className="px-8 py-4 font-bold text-slate-700 dark:text-slate-200">
                                         {h.fecha}

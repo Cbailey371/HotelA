@@ -3,6 +3,7 @@ import api from '../services/api';
 import { Plus, Search, Filter, Eye, CheckCircle, XCircle, FileText, Loader2, ShoppingCart, Building2, ChevronRight } from 'lucide-react';
 import { providerService } from '../services/providerService';
 import Modal from '../components/Modal';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const PurchasesPage = () => {
     const [requests, setRequests] = useState([]);
@@ -14,6 +15,8 @@ const PurchasesPage = () => {
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Provider Selection State
     const [showProviderModal, setShowProviderModal] = useState(false);
@@ -31,6 +34,10 @@ const PurchasesPage = () => {
     useEffect(() => {
         fetchRequests();
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, statusFilter]);
 
     const fetchRequests = async () => {
         setLoading(true);
@@ -206,6 +213,17 @@ const PurchasesPage = () => {
                         <option value="PROCESADA">Procesadas</option>
                     </select>
                 </div>
+
+                    <div className="flex items-center ml-auto">
+                        <RecordLimitSelector 
+                            limit={limit} 
+                            onChange={setLimit} 
+                            currentPage={currentPage}
+                            totalItems={filteredRequests.length}
+                            onPageChange={setCurrentPage}
+                        />
+                    </div>
+                </div>
             </div>
 
             {loading ? (
@@ -225,7 +243,7 @@ const PurchasesPage = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                {filteredRequests.map(r => (
+                                {filteredRequests.slice((currentPage - 1) * limit, currentPage * limit).map(r => (
                                     <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-[#0f172a]/50">
                                         <td className="px-6 py-4 font-mono text-xs text-slate-500">#{r.id}</td>
                                         <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">{r.fecha_solicitud}</td>

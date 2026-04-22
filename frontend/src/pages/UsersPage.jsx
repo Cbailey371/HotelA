@@ -30,12 +30,17 @@ const UsersPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterRole, setFilterRole] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
-    const [limit, setLimit] = useState(20);
+    const [limit, setLimit] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         fetchUsers();
         fetchRoles();
     }, []);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterRole, filterStatus]);
 
     const fetchRoles = async () => {
         try {
@@ -207,7 +212,13 @@ const UsersPage = () => {
                     </select>
                 </div>
                 <div className="flex items-center ml-auto">
-                    <RecordLimitSelector limit={limit} onChange={setLimit} />
+                    <RecordLimitSelector 
+                        limit={limit} 
+                        onChange={setLimit} 
+                        currentPage={currentPage}
+                        totalItems={filteredUsers.length}
+                        onPageChange={setCurrentPage}
+                    />
                 </div>
             </div>
 
@@ -230,7 +241,7 @@ const UsersPage = () => {
                                 <tr><td colSpan="5" className="text-center py-8 text-red-500 font-medium">{error}</td></tr>
                             ) : filteredUsers.length === 0 ? (
                                 <tr><td colSpan="5" className="text-center py-8 text-slate-500 italic">No se encontraron usuarios</td></tr>
-                            ) : filteredUsers.slice(0, limit).map((user) => (
+                            ) : filteredUsers.slice((currentPage - 1) * limit, currentPage * limit).map((user) => (
                                 <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
