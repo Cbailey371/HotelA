@@ -5,6 +5,7 @@ import {
     BarChart3, Activity, Briefcase, Calendar, Plus, Clock, CheckCircle, Wrench, Filter, Settings, Play, ChevronRight, X, ClipboardList, Search, Trash2
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const MaintenancePage = () => {
     const navigate = useNavigate();
@@ -38,6 +39,7 @@ const MaintenancePage = () => {
     const [scheduleSearch, setScheduleSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [priorityFilter, setPriorityFilter] = useState('all');
+    const [limit, setLimit] = useState(20);
 
     // Asset Search States
     const [showAssetSearch, setShowAssetSearch] = useState(false);
@@ -481,7 +483,7 @@ const MaintenancePage = () => {
                         <h3 className="text-lg font-black text-slate-800 dark:text-white tracking-tight uppercase">Próximas Actividades</h3>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 p-4 bg-slate-50 dark:bg-[#0f172a]/50 rounded-2xl border border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-2 duration-200">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 p-4 bg-slate-50 dark:bg-[#0f172a]/50 rounded-2xl border border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-2 duration-200">
                         <div className="relative">
                             <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400 pointer-events-none" />
                             <input
@@ -512,6 +514,7 @@ const MaintenancePage = () => {
                             <option value="media">Media</option>
                             <option value="alta">Alta</option>
                         </select>
+                        <RecordLimitSelector limit={limit} onChange={setLimit} />
                     </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -561,7 +564,7 @@ const MaintenancePage = () => {
                                 const matchesStatus = statusFilter === 'all' || s.estado === statusFilter;
                                 const matchesPriority = priorityFilter === 'all' || (s.prioridad || '').toLowerCase() === priorityFilter;
                                 return matchesSearch && matchesStatus && matchesPriority;
-                            }).map((s) => (
+                            }).slice(0, limit).map((s) => (
                                 <tr key={s.id} className={`group hover:bg-slate-50 dark:hover:bg-[#0f172a]/30 transition-all ${selectedIds.includes(s.id) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`}>
                                     <td className="px-4 py-5">
                                         <input

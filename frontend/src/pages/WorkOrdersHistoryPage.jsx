@@ -15,6 +15,7 @@ import Modal from '../components/Modal';
 import { locationService } from '../services/locationService';
 import { pdfGenerator } from '../utils/pdfGenerator';
 import api from '../services/api';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const WorkOrdersHistoryPage = () => {
     const { user } = useAuth();
@@ -51,6 +52,7 @@ const WorkOrdersHistoryPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [filterPriority, setFilterPriority] = useState('all');
+    const [limit, setLimit] = useState(20);
 
     // Asset Search States
     const [showAssetSearch, setShowAssetSearch] = useState(false);
@@ -525,6 +527,8 @@ const WorkOrdersHistoryPage = () => {
                         <option value="alta">Alta</option>
                         <option value="critica">Crítica</option>
                     </select>
+
+                    <RecordLimitSelector limit={limit} onChange={setLimit} />
                 </div>
             </div>
 
@@ -556,7 +560,7 @@ const WorkOrdersHistoryPage = () => {
                                         </div>
                                     </td>
                                 </tr>
-                            ) : filteredOrders.map((order) => (
+                            ) : filteredOrders.slice(0, limit).map((order) => (
                                 <tr 
                                     key={order.id_ot} 
                                     onClick={() => navigate(`/work-orders/${order.id_ot}`)}

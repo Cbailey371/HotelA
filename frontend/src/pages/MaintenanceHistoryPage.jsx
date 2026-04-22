@@ -5,6 +5,7 @@ import {
     BarChart3, Activity, Briefcase, Calendar, Plus, Clock, CheckCircle, Wrench, Filter, Settings, Play, ChevronRight, X, ClipboardList, Search, Trash2, Archive
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const MaintenanceHistoryPage = () => {
     const navigate = useNavigate();
@@ -27,6 +28,7 @@ const MaintenanceHistoryPage = () => {
     const [scheduleSearch, setScheduleSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all'); // In history, "all" means completed or cancelled
     const [priorityFilter, setPriorityFilter] = useState('all');
+    const [limit, setLimit] = useState(20);
 
     useEffect(() => {
         fetchAllData();
@@ -143,7 +145,7 @@ const MaintenanceHistoryPage = () => {
             {/* List */}
             <div className="bg-white dark:bg-[#1e293b] rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                 <div className="p-6 border-b border-slate-100 dark:border-slate-800">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-slate-50 dark:bg-[#0f172a]/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-50 dark:bg-[#0f172a]/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <div className="relative">
                             <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400 pointer-events-none" />
                             <input
@@ -173,6 +175,7 @@ const MaintenanceHistoryPage = () => {
                             <option value="media">Media</option>
                             <option value="alta">Alta</option>
                         </select>
+                        <RecordLimitSelector limit={limit} onChange={setLimit} />
                     </div>
                 </div>
 
@@ -193,7 +196,7 @@ const MaintenanceHistoryPage = () => {
                                 <tr><td colSpan="6" className="text-center py-20 animate-pulse font-bold text-slate-400">Consultando historial...</td></tr>
                             ) : filteredSchedules.length === 0 ? (
                                 <tr><td colSpan="6" className="text-center py-20 text-slate-400 font-bold">No hay registros en el historial con estos filtros.</td></tr>
-                            ) : filteredSchedules.map((s) => (
+                            ) : filteredSchedules.slice(0, limit).map((s) => (
                                 <tr key={s.id} className="group hover:bg-slate-50 dark:hover:bg-[#0f172a]/30 transition-all">
                                     <td className="px-8 py-5">
                                         <div className="text-xs font-black text-slate-400 mb-0.5 uppercase tracking-wider">{s.codigo || 'N/A'}</div>

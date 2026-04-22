@@ -3,6 +3,7 @@ import { Plus, Search, Edit2, Trash2, UserPlus, UserCheck, UserX, Briefcase, Hel
 import { technicianService } from '../services/technicianService';
 import { providerService } from '../services/providerService';
 import Modal from '../components/Modal';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const TechniciansPage = () => {
     const [technicians, setTechnicians] = useState([]);
@@ -12,6 +13,7 @@ const TechniciansPage = () => {
     const [isDirty, setIsDirty] = useState(false);
     const [editingTech, setEditingTech] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [limit, setLimit] = useState(20);
 
     const initialFormData = {
         nombre: '',
@@ -148,6 +150,7 @@ const TechniciansPage = () => {
                         <option value="active">Activos</option>
                         <option value="inactive">Inactivos</option>
                     </select>
+                    <RecordLimitSelector limit={limit} onChange={setLimit} />
                 </div>
             </div>
 
@@ -174,7 +177,7 @@ const TechniciansPage = () => {
                                 t.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                 (t.especialidad || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                                 (t.codigo || '').toLowerCase().includes(searchTerm.toLowerCase())
-                            ).map((tech) => (
+                            ).slice(0, limit).map((tech) => (
                                 <tr key={tech.id} className="hover:bg-slate-50 dark:hover:bg-[#0f172a]/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-300">

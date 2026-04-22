@@ -3,6 +3,7 @@ import api from '../services/api';
 import { Plus, Search, Edit2, Trash2, Shield, Mail, User } from 'lucide-react';
 import { generateCode } from '../utils/codeGenerator';
 import Modal from '../components/Modal';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const UsersPage = () => {
     const [users, setUsers] = useState([]);
@@ -29,6 +30,7 @@ const UsersPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterRole, setFilterRole] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
+    const [limit, setLimit] = useState(20);
 
     useEffect(() => {
         fetchUsers();
@@ -204,6 +206,9 @@ const UsersPage = () => {
                         <option value="inactivo">Inactivo</option>
                     </select>
                 </div>
+                <div className="flex items-center ml-auto">
+                    <RecordLimitSelector limit={limit} onChange={setLimit} />
+                </div>
             </div>
 
             <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
@@ -220,12 +225,12 @@ const UsersPage = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
-                                <tr><td colSpan="4" className="text-center py-8 text-slate-500 font-medium">Cargando usuarios...</td></tr>
+                                <tr><td colSpan="5" className="text-center py-8 text-slate-500 font-medium">Cargando usuarios...</td></tr>
                             ) : error ? (
-                                <tr><td colSpan="4" className="text-center py-8 text-red-500 font-medium">{error}</td></tr>
+                                <tr><td colSpan="5" className="text-center py-8 text-red-500 font-medium">{error}</td></tr>
                             ) : filteredUsers.length === 0 ? (
                                 <tr><td colSpan="5" className="text-center py-8 text-slate-500 italic">No se encontraron usuarios</td></tr>
-                            ) : filteredUsers.map((user) => (
+                            ) : filteredUsers.slice(0, limit).map((user) => (
                                 <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">

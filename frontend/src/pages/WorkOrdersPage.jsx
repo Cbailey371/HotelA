@@ -16,6 +16,7 @@ import { locationService } from '../services/locationService';
 import { pdfGenerator } from '../utils/pdfGenerator';
 import api from '../services/api';
 import MaintenanceSelectorModal from '../components/MaintenanceSelectorModal';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const WorkOrdersPage = () => {
     const { user } = useAuth();
@@ -56,6 +57,7 @@ const WorkOrdersPage = () => {
     // Asset Search States
     const [showAssetSearch, setShowAssetSearch] = useState(false);
     const [assetSearchQuery, setAssetSearchQuery] = useState('');
+    const [limit, setLimit] = useState(20);
     const [assetCategoryFilter, setAssetCategoryFilter] = useState('');
     const [assetLocationFilter, setAssetLocationFilter] = useState('');
     const [showAdvancedAssetFilters, setShowAdvancedAssetFilters] = useState(false);
@@ -517,6 +519,8 @@ const WorkOrdersPage = () => {
                         <option value="alta">Alta</option>
                         <option value="critica">Crítica</option>
                     </select>
+
+                    <RecordLimitSelector limit={limit} onChange={setLimit} />
                 </div>
             </div>
 
@@ -548,7 +552,7 @@ const WorkOrdersPage = () => {
                                         </div>
                                     </td>
                                 </tr>
-                            ) : filteredOrders.map((order) => (
+                            ) : filteredOrders.slice(0, limit).map((order) => (
                                 <tr 
                                     key={order.id_ot} 
                                     onClick={() => navigate(`/work-orders/${order.id_ot}`)}

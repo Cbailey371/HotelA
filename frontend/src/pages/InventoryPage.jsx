@@ -12,6 +12,7 @@ import { assetService } from '../services/assetService';
 import BulkImportModal from '../components/BulkImportModal';
 import Modal from '../components/Modal';
 import { useAuth } from '../context/AuthContext';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const InventoryPage = () => {
     const { user } = useAuth();
@@ -33,6 +34,7 @@ const InventoryPage = () => {
     const [filterStatus, setFilterStatus] = useState('');
     const [isDirty, setIsDirty] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
+    const [limit, setLimit] = useState(20);
 
     // Config Data
     const [brandsList, setBrandsList] = useState([]);
@@ -385,6 +387,9 @@ const InventoryPage = () => {
                         <option value="activo">Activo</option>
                         <option value="inactivo">Inactivo</option>
                     </select>
+                    <div className="flex items-center ml-auto">
+                        <RecordLimitSelector limit={limit} onChange={setLimit} />
+                    </div>
                 </div>
                 <div className="overflow-x-auto w-full">
                     <table className="w-full text-left">
@@ -402,10 +407,10 @@ const InventoryPage = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
-                                <tr><td colSpan="6" className="text-center py-8">Cargando almacén...</td></tr>
+                                <tr><td colSpan="8" className="text-center py-8">Cargando almacén...</td></tr>
                             ) : filtered.length === 0 ? (
-                                <tr><td colSpan="6" className="text-center py-8 text-slate-400 font-medium">No se encontraron suministros.</td></tr>
-                            ) : filtered.map((p) => (
+                                <tr><td colSpan="8" className="text-center py-8 text-slate-400 font-medium">No se encontraron suministros.</td></tr>
+                            ) : filtered.slice(0, limit).map((p) => (
                                 <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">

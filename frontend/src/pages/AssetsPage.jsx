@@ -5,6 +5,7 @@ import api from '../services/api';
 import { assetService } from '../services/assetService';
 import AssetFormModal from '../components/AssetFormModal';
 import BulkImportModal from '../components/BulkImportModal';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const AssetsPage = () => {
     const navigate = useNavigate();
@@ -26,6 +27,7 @@ const AssetsPage = () => {
     const [filterStatus, setFilterStatus] = useState('');
     const [filterBrand, setFilterBrand] = useState('');
     const [filterLocation, setFilterLocation] = useState('');
+    const [limit, setLimit] = useState(20);
 
     useEffect(() => {
         fetchAssets();
@@ -224,15 +226,18 @@ const AssetsPage = () => {
                     <option value="inactivo">Inactivo</option>
                     <option value="baja">De Baja</option>
                 </select>
-
                 {(filterCategory || filterStatus || filterBrand || filterLocation || searchTerm) && (
                     <button
                         onClick={clearFilters}
-                        className="ml-auto text-sm text-red-500 hover:text-red-600 font-medium flex items-center gap-1 transition-colors"
+                        className="text-sm text-red-500 hover:text-red-600 font-medium flex items-center gap-1 transition-colors"
                     >
                         <X className="w-3.5 h-3.5" /> Limpiar Filtros
                     </button>
                 )}
+
+                <div className="ml-auto flex items-center gap-4">
+                    <RecordLimitSelector limit={limit} onChange={setLimit} />
+                </div>
             </div>
 
             {/* Table */}
@@ -255,10 +260,10 @@ const AssetsPage = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
-                                <tr><td colSpan="7" className="text-center py-8 text-slate-500">Cargando inventario...</td></tr>
+                                <tr><td colSpan="10" className="text-center py-8 text-slate-500">Cargando inventario...</td></tr>
                             ) : filteredAssets.length === 0 ? (
-                                <tr><td colSpan="7" className="text-center py-8 text-slate-500">No se encontraron activos.</td></tr>
-                            ) : filteredAssets.map((asset) => (
+                                <tr><td colSpan="10" className="text-center py-8 text-slate-500">No se encontraron activos.</td></tr>
+                            ) : filteredAssets.slice(0, limit).map((asset) => (
                                 <tr
                                     key={asset.id}
                                     onClick={(e) => {

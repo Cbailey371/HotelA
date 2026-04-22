@@ -4,6 +4,7 @@ import { providerService } from '../services/providerService';
 import { paymentTermsService } from '../services/paymentTermsService';
 
 import Modal from '../components/Modal';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 
 const ProvidersPage = () => {
     const [providers, setProviders] = useState([]);
@@ -13,6 +14,7 @@ const ProvidersPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [paymentTermsList, setPaymentTermsList] = useState([]);
     const [isDirty, setIsDirty] = useState(false);
+    const [limit, setLimit] = useState(20);
 
     const initialFormData = {
         nombre_proveedor: '',
@@ -141,9 +143,11 @@ const ProvidersPage = () => {
                             className="bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-800 dark:text-slate-300 focus:outline-none focus:border-blue-500"
                         />
                     </div>
-                    <button onClick={openCreateModal} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
                         <Plus className="w-4 h-4" /> Nuevo Proveedor
                     </button>
+                </div>
+                <div className="flex items-center ml-auto md:ml-0">
+                    <RecordLimitSelector limit={limit} onChange={setLimit} />
                 </div>
             </div>
 
@@ -163,7 +167,7 @@ const ProvidersPage = () => {
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {loading ? (
                                 <tr><td colSpan="6" className="text-center py-8">Cargando...</td></tr>
-                            ) : filtered.map((p) => (
+                            ) : filtered.slice(0, limit).map((p) => (
                                 <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                     <td className="px-6 py-4">
                                         <span className="font-mono text-xs font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">

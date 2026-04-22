@@ -7,6 +7,7 @@ import {
     Mail, Loader
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import RecordLimitSelector from '../components/RecordLimitSelector';
 import { pdfGenerator } from '../utils/pdfGenerator';
 import { purchaseService } from '../services/purchaseService';
 import { providerService } from '../services/providerService';
@@ -23,6 +24,7 @@ const PurchaseOrdersPage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [currentOrderId, setCurrentOrderId] = useState(null);
     const [isDirty, setIsDirty] = useState(false);
+    const [limit, setLimit] = useState(20);
 
     // Form State
     const [providers, setProviders] = useState([]);
@@ -396,6 +398,7 @@ const PurchaseOrdersPage = () => {
                     <button onClick={handleOpenCreate} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2">
                         <Plus className="w-4 h-4" /> Nueva Orden
                     </button>
+                    <RecordLimitSelector limit={limit} onChange={setLimit} />
                 </div>
             </div>
 
@@ -416,7 +419,7 @@ const PurchaseOrdersPage = () => {
                             <tr><td colSpan="6" className="text-center py-8">Cargando...</td></tr>
                         ) : orders.length === 0 ? (
                             <tr><td colSpan="6" className="text-center py-8">No hay órdenes registradas</td></tr>
-                        ) : orders.map((o) => (
+                        ) : orders.slice(0, limit).map((o) => (
                             <tr key={o.id_orden_compra} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                 <td className="px-6 py-4 font-mono font-bold text-blue-600">{o.codigo_compra}</td>
                                 <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-200">
