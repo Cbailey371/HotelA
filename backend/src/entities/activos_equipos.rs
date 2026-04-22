@@ -44,6 +44,8 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::activo_componentes::Entity")]
+    ActivoComponentes,
     #[sea_orm(has_many = "super::activos_documentos::Entity")]
     ActivosDocumentos,
     #[sea_orm(has_many = "super::historial_repuestos::Entity")]
@@ -70,6 +72,12 @@ pub enum Relation {
         on_delete = "NoAction"
     )]
     Usuarios,
+}
+
+impl Related<super::activo_componentes::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ActivoComponentes.def()
+    }
 }
 
 impl Related<super::activos_documentos::Entity> for Entity {
@@ -120,6 +128,15 @@ impl Related<super::activos_repuestos::Entity> for Entity {
     }
     fn via() -> Option<RelationDef> {
         Some(super::repuestos_equipos::Relation::ActivosEquipos.def().rev())
+    }
+}
+
+impl Related<super::componentes_estandar::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::activo_componentes::Relation::ComponentesEstandar.def()
+    }
+    fn via() -> Option<RelationDef> {
+        Some(super::activo_componentes::Relation::ActivosEquipos.def().rev())
     }
 }
 

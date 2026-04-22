@@ -912,9 +912,16 @@ const WorkOrdersPage = () => {
                                         }}
                                     >
                                         <option value="">-- No aplica --</option>
-                                        {standardComponents.map(c => (
-                                            <option key={c.id} value={c.id}>{c.nombre}</option>
-                                        ))}
+                                        {standardComponents
+                                            .filter(c => {
+                                                if (!formData.id_activo) return true;
+                                                const asset = assets.find(a => a.id == formData.id_activo);
+                                                return asset?.componentes_vinculados?.includes(c.id);
+                                            })
+                                            .map(c => (
+                                                <option key={c.id} value={c.id}>{c.nombre}</option>
+                                            ))
+                                        }
                                     </select>
                                 </div>
                             </div>

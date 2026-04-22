@@ -44,6 +44,7 @@ pub struct CreateAssetRequest {
     pub garantia_meses: Option<i32>,
     pub observaciones: Option<String>,
     pub documentos: Option<Vec<AddDocumentRequest>>,
+    pub componentes_vinculados: Option<Vec<i32>>,
 }
 
 #[derive(Deserialize)]
@@ -75,6 +76,7 @@ pub struct UpdateAssetRequest {
     pub garantia_meses: Option<i32>,
     pub observaciones: Option<String>,
     pub _documentos: Option<Vec<AddDocumentRequest>>,
+    pub componentes_vinculados: Option<Vec<i32>>,
 }
 
 #[derive(Serialize)]
@@ -113,6 +115,7 @@ pub struct AssetDto {
     pub repuestos: Vec<SparePartHistoryItem>,
     pub documentos: Vec<DocumentoDto>,
     pub proximo_servicio: Option<String>,
+    pub componentes_vinculados: Vec<i32>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -215,6 +218,28 @@ pub async fn create_asset(
         .all(&db)
         .await?;
 
+    if let Some(comps) = payload.componentes_vinculados {
+        if !comps.is_empty() {
+             use crate::entities::activo_componentes;
+             let active_comps: Vec<_> = comps.into_iter().map(|c| {
+                 activo_componentes::ActiveModel {
+                     id_activo: Set(asset.id_equipo),
+                     id_componente: Set(c),
+                     ..Default::default()
+                 }
+             }).collect();
+             activo_componentes::Entity::insert_many(active_comps).exec(&db).await?;
+        }
+    }
+
+    let componentes_vinculados = crate::entities::activo_componentes::Entity::find()
+        .filter(crate::entities::activo_componentes::Column::IdActivo.eq(asset.id_equipo))
+        .all(&db)
+        .await?
+        .into_iter()
+        .map(|c| c.id_componente)
+        .collect();
+
     let proveedor_nombre = if let Some(p_id) = asset.proveedor_id {
         crate::entities::proveedores::Entity::find_by_id(p_id)
             .one(&db)
@@ -224,10 +249,10 @@ pub async fn create_asset(
         None
     };
 
-    Ok(Json(map_asset_to_dto_full(asset, vec![], vec![], documentos, None, proveedor_nombre)))
+    Ok(Json(map_asset_to_dto_full(asset, vec![], vec![], documentos, None, proveedor_nombre, componentes_vinculados)))
 }
 
-fn map_asset_to_dto(a: activos_equipos::Model, historial: Vec<MaintenanceHistoryItem>, repuestos: Vec<SparePartHistoryItem>, proveedor_nombre: Option<String>) -> AssetDto {
+fn map_asset_to_dto(a: activos_equipos::Model, historial: Vec<MaintenanceHistoryItem>, repuestos: Vec<SparePartHistoryItem>, proveedor_nombre: Option<String>, componentes_vinculados: Vec<i32>) -> AssetDto {
     AssetDto {
         id: a.id_equipo,
         codigo: a.codigo_equipo.clone(),
@@ -263,6 +288,7 @@ fn map_asset_to_dto(a: activos_equipos::Model, historial: Vec<MaintenanceHistory
         repuestos,
         documentos: vec![],
         proximo_servicio: None,
+        componentes_vinculados,
     }
 }
 
@@ -272,7 +298,8 @@ fn map_asset_to_dto_full(
     repuestos: Vec<SparePartHistoryItem>,
     documentos: Vec<activos_documentos::Model>,
     proximo_servicio: Option<String>,
-    proveedor_nombre: Option<String>
+    proveedor_nombre: Option<String>,
+    componentes_vinculados: Vec<i32>
 ) -> AssetDto {
     AssetDto {
         id: a.id_equipo,
@@ -314,6 +341,7 @@ fn map_asset_to_dto_full(
             created_at: d.created_at.map(|dt| dt.to_rfc3339()),
         }).collect(),
         proximo_servicio,
+        componentes_vinculados,
     }
 }
 
@@ -327,8 +355,15 @@ pub async fn get_assets(
         .all(&db)
         .await?;
 
+    let activo_comps = crate::entities::activo_componentes::Entity::find().all(&db).await?;
+    let mut comps_map: std::collections::HashMap<i32, Vec<i32>> = std::collections::HashMap::new();
+    for ac in activo_comps {
+        comps_map.entry(ac.id_activo).or_default().push(ac.id_componente);
+    }
+
     let dtos: Vec<AssetDto> = assets.into_iter().map(|(a, p)| {
-        map_asset_to_dto(a, vec![], vec![], p.map(|prov| prov.nombre_proveedor))
+        let cv = comps_map.get(&a.id_equipo).cloned().unwrap_or_default();
+        map_asset_to_dto(a, vec![], vec![], p.map(|prov| prov.nombre_proveedor), cv)
     }).collect();
 
     Ok(Json(dtos))
@@ -405,7 +440,15 @@ pub async fn get_asset_by_id(
 
     tracing::info!("Documents fetched (count: {}), mapping to DTO", documentos.len());
 
-    Ok(Json(map_asset_to_dto_full(asset, historial, repuestos, documentos, proximo_servicio, proveedor_nombre)))
+    let componentes_vinculados = crate::entities::activo_componentes::Entity::find()
+        .filter(crate::entities::activo_componentes::Column::IdActivo.eq(id))
+        .all(&db)
+        .await?
+        .into_iter()
+        .map(|c| c.id_componente)
+        .collect();
+
+    Ok(Json(map_asset_to_dto_full(asset, historial, repuestos, documentos, proximo_servicio, proveedor_nombre, componentes_vinculados)))
 }
 
 pub async fn update_asset(
@@ -475,7 +518,34 @@ pub async fn update_asset(
         .all(&db)
         .await?;
 
-    Ok(Json(map_asset_to_dto_full(updated, vec![], vec![], documentos, None, proveedor_nombre)))
+    if let Some(comps) = payload.componentes_vinculados {
+        use crate::entities::activo_componentes;
+        activo_componentes::Entity::delete_many()
+            .filter(activo_componentes::Column::IdActivo.eq(id))
+            .exec(&db)
+            .await?;
+        
+        if !comps.is_empty() {
+             let active_comps: Vec<_> = comps.into_iter().map(|c| {
+                 activo_componentes::ActiveModel {
+                     id_activo: Set(id),
+                     id_componente: Set(c),
+                     ..Default::default()
+                 }
+             }).collect();
+             activo_componentes::Entity::insert_many(active_comps).exec(&db).await?;
+        }
+    }
+
+    let componentes_vinculados = crate::entities::activo_componentes::Entity::find()
+        .filter(crate::entities::activo_componentes::Column::IdActivo.eq(id))
+        .all(&db)
+        .await?
+        .into_iter()
+        .map(|c| c.id_componente)
+        .collect();
+
+    Ok(Json(map_asset_to_dto_full(updated, vec![], vec![], documentos, None, proveedor_nombre, componentes_vinculados)))
 }
 
 pub async fn delete_asset(

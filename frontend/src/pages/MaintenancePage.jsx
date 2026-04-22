@@ -792,9 +792,16 @@ const MaintenancePage = () => {
                                     className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
                                 >
                                     <option value="">-- No aplica --</option>
-                                    {standardComponents.map(c => (
-                                        <option key={c.id} value={c.id}>{c.nombre}</option>
-                                    ))}
+                                    {standardComponents
+                                        .filter(c => {
+                                            if (!scheduleForm.equipo_id) return true;
+                                            const asset = assets.find(a => a.id == scheduleForm.equipo_id);
+                                            return asset?.componentes_vinculados?.includes(c.id);
+                                        })
+                                        .map(c => (
+                                            <option key={c.id} value={c.id}>{c.nombre}</option>
+                                        ))
+                                    }
                                 </select>
                             </div>
                         </div>

@@ -23,6 +23,7 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
     const [typesList, setTypesList] = useState([]);
     const [locationsList, setLocationsList] = useState([]);
     const [brandsList, setBrandsList] = useState([]);
+    const [standardComponents, setStandardComponents] = useState([]);
 
     const initialFormState = {
         codigo_equipo: '',
@@ -53,7 +54,8 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
         vida_util_unidad: 'meses',
         garantia_valor: '',
         garantia_unidad: 'meses',
-        observaciones: ''
+        observaciones: '',
+        componentes_vinculados: []
     };
     const [formData, setFormData] = useState(initialFormState);
 
@@ -89,16 +91,18 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
 
     const fetchConfig = async () => {
         try {
-            const [catsRes, typesRes, locsRes, brandsRes] = await Promise.all([
+            const [catsRes, typesRes, locsRes, brandsRes, compsRes] = await Promise.all([
                 axios.get('/api/asset-config/categories'),
                 axios.get('/api/asset-config/types'),
                 axios.get('/api/asset-config/locations'),
-                axios.get('/api/settings/brands')
+                axios.get('/api/settings/brands'),
+                axios.get('/api/asset-config/standard-components')
             ]);
             setCategoriesList(catsRes.data);
             setTypesList(typesRes.data);
             setLocationsList(locsRes.data);
             setBrandsList(brandsRes.data);
+            setStandardComponents(compsRes.data);
         } catch (error) {
             console.error("Error fetching config", error);
         }
@@ -145,7 +149,8 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
             garantia_valor: garantia.valor,
             garantia_unidad: garantia.unidad,
             observaciones: asset.observaciones || '',
-            documentos: asset.documentos || []
+            documentos: asset.documentos || [],
+            componentes_vinculados: asset.componentes_vinculados || []
         });
     };
 
@@ -573,6 +578,44 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
                                     className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none resize-none custom-scrollbar"
                                 />
                             </div>
+
+                            <div className="col-span-2">
+                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block uppercase">Componentes del Activo</label>
+                                <div className="bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-4 max-h-48 overflow-y-auto custom-scrollbar">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {standardComponents.map(comp => (
+                                            <label key={comp.id} className="flex items-center gap-2 cursor-pointer group">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.componentes_vinculados.includes(comp.id)}
+                                                    onChange={(e) => {
+                                                        const checked = e.target.checked;
+                                                        setFormData(prev => {
+                                                            const arr = [...prev.componentes_vinculados];
+                                                            if (checked) {
+                                                                arr.push(comp.id);
+                                                            } else {
+                                                                const idx = arr.indexOf(comp.id);
+                                                                if (idx > -1) arr.splice(idx, 1);
+                                                            }
+                                                            return { ...prev, componentes_vinculados: arr };
+                                                        });
+                                                        setIsDirty(true);
+                                                    }}
+                                                    className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                                                />
+                                                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 select-none">
+                                                    {comp.nombre}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    {standardComponents.length === 0 && (
+                                        <p className="text-sm text-slate-500 text-center italic">No hay componentes estándar configurados en el sistema.</p>
+                                    )}
+                                </div>
+                            </div>
+                            
                             <div className="col-span-2">
                                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block uppercase">Ubicación Detallada</label>
                                 <input name="ubicacion_detallada" value={formData.ubicacion_detallada} onChange={handleInputChange} placeholder="ej. Ala Norte, Pasillo 4, Rack B" className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-blue-500 outline-none" />

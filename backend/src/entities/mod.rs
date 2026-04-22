@@ -2,6 +2,7 @@
 
 pub mod prelude;
 
+pub mod activo_componentes;
 pub mod activos_documentos;
 pub mod activos_equipos;
 pub mod activos_repuestos;

@@ -706,9 +706,17 @@ const WorkOrderDetailPage = () => {
                                 onChange={(e) => setEditFormData({...editFormData, componente_id: e.target.value})}
                             >
                                 <option value="">-- No aplica --</option>
-                                {standardComponents.map(c => (
-                                    <option key={c.id} value={c.id}>{c.nombre}</option>
-                                ))}
+                                {standardComponents
+                                    .filter(c => {
+                                        const assetId = editFormData.id_activo || order?.id_activo;
+                                        if (!assetId) return true;
+                                        const asset = assets.find(a => a.id == assetId);
+                                        return asset?.componentes_vinculados?.includes(c.id);
+                                    })
+                                    .map(c => (
+                                        <option key={c.id} value={c.id}>{c.nombre}</option>
+                                    ))
+                                }
                             </select>
                         </div>
                         
