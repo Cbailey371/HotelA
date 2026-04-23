@@ -83,6 +83,7 @@ pub struct WorkOrderDto {
     pub id_usuario: Option<i32>,
     pub nombre_usuario: Option<String>,
     pub nombre_componente: Option<String>,
+    pub componente_id: Option<i32>,
     pub componentes_ids: Vec<i32>,
 }
 
@@ -294,6 +295,7 @@ pub async fn get_work_order(
         id_usuario: ot.id_usuario,
         nombre_usuario,
         nombre_componente,
+        componente_id: ot.componente_id,
         componentes_ids: ot.componentes_ids.and_then(|v| serde_json::from_str(&v).ok()).unwrap_or_default(),
     };
 
@@ -427,6 +429,7 @@ pub async fn get_work_orders(
             id_usuario: ot.id_usuario,
             nombre_usuario,
             nombre_componente,
+            componente_id: ot.componente_id,
             componentes_ids: ot.componentes_ids.and_then(|v| serde_json::from_str(&v).ok()).unwrap_or_default(),
         }
     }).collect();

@@ -156,6 +156,7 @@ pub async fn get_schedules(
             proveedor_nombre: prov_name,
             ots_vinculadas: my_ots,
             nombre_componente: comp_name,
+            componente_id: s.componente_id,
             componentes_ids: s.componentes_ids.and_then(|v| serde_json::from_str(&v).ok()).unwrap_or_default(),
         }
     }).collect();
@@ -232,6 +233,7 @@ pub async fn get_schedule(
         proveedor_nombre: prov_name,
         ots_vinculadas,
         nombre_componente: comp_name,
+        componente_id: s.componente_id,
         componentes_ids: s.componentes_ids.and_then(|v| serde_json::from_str(&v).ok()).unwrap_or_default(),
     };
 
@@ -803,6 +805,7 @@ pub async fn get_public_schedules(
             ots_vinculadas: Vec::new(),
             componente_id: s.componente_id,
             nombre_componente: s.componente_id.and_then(|cid| comp_map.get(&cid).cloned()),
+            componentes_ids: s.componentes_ids.and_then(|v| serde_json::from_str(&v).ok()).unwrap_or_default(),
         }
     }).collect();
 
