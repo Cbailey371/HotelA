@@ -5,6 +5,7 @@ import Modal from './Modal';
 import DatePicker from './DatePicker';
 import { useAuth } from '../context/AuthContext';
 import ProviderSearchModal from './ProviderSearchModal';
+import MultiSelect from './MultiSelect';
 
 const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
     const { user } = useAuth();
@@ -581,39 +582,64 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
 
                             <div className="col-span-2">
                                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block uppercase">Componentes del Activo</label>
-                                <div className="bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-4 max-h-48 overflow-y-auto custom-scrollbar">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {standardComponents.map(comp => (
-                                            <label key={comp.id} className="flex items-center gap-2 cursor-pointer group">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={formData.componentes_vinculados.includes(comp.id)}
+                                {(() => {
+                                    const tipo = (formData.tipo_activo || '').toLowerCase();
+                                    const cat = (formData.categoria || '').toLowerCase();
+                                    const isHabitacion = tipo === 'habitacion' || tipo === 'habitación' || cat === 'habitaciones';
+                                    
+                                    if (isHabitacion) {
+                                        return (
+                                            <div className="bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-4">
+                                                <MultiSelect 
+                                                    placeholder="Buscar y seleccionar componentes..."
+                                                    options={standardComponents}
+                                                    value={formData.componentes_vinculados || []}
                                                     onChange={(e) => {
-                                                        const checked = e.target.checked;
-                                                        setFormData(prev => {
-                                                            const arr = [...prev.componentes_vinculados];
-                                                            if (checked) {
-                                                                arr.push(comp.id);
-                                                            } else {
-                                                                const idx = arr.indexOf(comp.id);
-                                                                if (idx > -1) arr.splice(idx, 1);
-                                                            }
-                                                            return { ...prev, componentes_vinculados: arr };
-                                                        });
+                                                        setFormData(prev => ({ ...prev, componentes_vinculados: e.target.value }));
                                                         setIsDirty(true);
                                                     }}
-                                                    className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
                                                 />
-                                                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 select-none">
-                                                    {comp.nombre}
-                                                </span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                    {standardComponents.length === 0 && (
-                                        <p className="text-sm text-slate-500 text-center italic">No hay componentes estándar configurados en el sistema.</p>
-                                    )}
-                                </div>
+                                                <p className="text-[10px] text-slate-500 mt-2 italic">* Selección múltiple activa para módulos de habitación</p>
+                                            </div>
+                                        );
+                                    }
+
+                                    return (
+                                        <div className="bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-4 max-h-48 overflow-y-auto custom-scrollbar">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                {standardComponents.map(comp => (
+                                                    <label key={comp.id} className="flex items-center gap-2 cursor-pointer group">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={formData.componentes_vinculados.includes(comp.id)}
+                                                            onChange={(e) => {
+                                                                const checked = e.target.checked;
+                                                                setFormData(prev => {
+                                                                    const arr = [...prev.componentes_vinculados];
+                                                                    if (checked) {
+                                                                        arr.push(comp.id);
+                                                                    } else {
+                                                                        const idx = arr.indexOf(comp.id);
+                                                                        if (idx > -1) arr.splice(idx, 1);
+                                                                    }
+                                                                    return { ...prev, componentes_vinculados: arr };
+                                                                });
+                                                                setIsDirty(true);
+                                                            }}
+                                                            className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                                                        />
+                                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 select-none">
+                                                            {comp.nombre}
+                                                        </span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                            {standardComponents.length === 0 && (
+                                                <p className="text-sm text-slate-500 text-center italic">No hay componentes estándar configurados en el sistema.</p>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
                             </div>
                             
                             <div className="col-span-2">
