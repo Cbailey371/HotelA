@@ -11,24 +11,30 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
         name: 'Andros Asset Management',
-        short_name: 'Andros',
-        description: 'Sistema de Gestión de Activos y Mantenimiento',
-        theme_color: '#ffffff',
+        short_name: 'Andros Asset',
+        description: 'Sistema Profesional de Gestión de Activos y Mantenimiento Hotelero',
+        theme_color: '#2563eb',
+        background_color: '#f8fafc',
+        display: 'standalone',
+        orientation: 'portrait',
         icons: [
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
             src: 'pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           }
         ]
       },
       workbox: {
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024 // 5MB
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}']
       }
     })
   ],
