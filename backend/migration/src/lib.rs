@@ -71,6 +71,7 @@ mod m20260330_130000_fix_roles_and_user_assignments;
 mod m20260420_000000_add_asunto_mantenimiento;
 mod m20260421_142417_add_componentes_estandar_table;
 mod m20260422_000000_create_activo_componentes_table;
+mod m20260423_000000_add_multi_componentes;
 
 pub struct Migrator;
 
@@ -148,6 +149,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260420_000000_add_asunto_mantenimiento::Migration),
             Box::new(m20260421_142417_add_componentes_estandar_table::Migration),
             Box::new(m20260422_000000_create_activo_componentes_table::Migration),
+            Box::new(m20260423_000000_add_multi_componentes::Migration),
         ]
     }
 }

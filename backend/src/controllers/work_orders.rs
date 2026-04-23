@@ -23,6 +23,7 @@ pub struct CreateWorkOrderRequest {
     pub terminos_pago: Option<String>,
     pub foto_dano: Option<String>,
     pub componente_id: Option<i32>,
+    pub componentes_ids: Option<Vec<i32>>,
 }
 
 #[derive(Deserialize)]
@@ -44,6 +45,7 @@ pub struct UpdateWorkOrderRequest {
     pub foto_dano: Option<String>,
     pub estado: Option<String>,
     pub componente_id: Option<Option<i32>>,
+    pub componentes_ids: Option<Vec<i32>>,
 }
 
 #[derive(Serialize)]
@@ -80,8 +82,8 @@ pub struct WorkOrderDto {
     pub id_calendarios: Vec<i32>, // List of IDs for easy hydration
     pub id_usuario: Option<i32>,
     pub nombre_usuario: Option<String>,
-    pub componente_id: Option<i32>,
     pub nombre_componente: Option<String>,
+    pub componentes_ids: Vec<i32>,
 }
 
 #[derive(Serialize, Clone)]
@@ -127,6 +129,7 @@ pub async fn create_work_order(
         foto_dano: Set(payload.foto_dano),
         id_usuario: Set(Some(claims.user_id)),
         componente_id: Set(payload.componente_id),
+        componentes_ids: Set(payload.componentes_ids.map(|v| serde_json::to_string(&v).unwrap_or_default())),
         ..Default::default()
     };
 
@@ -290,8 +293,8 @@ pub async fn get_work_order(
         mantenimientos: linked,
         id_usuario: ot.id_usuario,
         nombre_usuario,
-        componente_id: ot.componente_id,
         nombre_componente,
+        componentes_ids: ot.componentes_ids.and_then(|v| serde_json::from_str(&v).ok()).unwrap_or_default(),
     };
 
     Ok(Json(dto))
@@ -423,8 +426,8 @@ pub async fn get_work_orders(
             mantenimientos: linked,
             id_usuario: ot.id_usuario,
             nombre_usuario,
-            componente_id: ot.componente_id,
             nombre_componente,
+            componentes_ids: ot.componentes_ids.and_then(|v| serde_json::from_str(&v).ok()).unwrap_or_default(),
         }
     }).collect();
 
@@ -549,6 +552,9 @@ pub async fn update_work_order(
 
     if let Some(componente_id_opt) = payload.componente_id {
         ot_active.componente_id = Set(componente_id_opt);
+    }
+    if let Some(v) = payload.componentes_ids {
+        ot_active.componentes_ids = Set(Some(serde_json::to_string(&v).unwrap_or_default()));
     }
 
     if let Some(comentario) = payload.comentario_final {

@@ -15,6 +15,7 @@ import { locationService } from '../services/locationService';
 import api from '../services/api';
 import Modal from '../components/Modal';
 import MaintenanceSelectorModal from '../components/MaintenanceSelectorModal';
+import MultiSelect from '../components/MultiSelect';
 
 const WorkOrderDetailPage = () => {
     const { id } = useParams();
@@ -187,7 +188,8 @@ const WorkOrderDetailPage = () => {
             terminos_pago: order.terminos_pago || '',
             observaciones: order.observaciones || '',
             id_calendarios: order.id_calendarios || [],
-            componente_id: order.componente_id || ''
+            componente_id: order.componente_id || '',
+            componentes_ids: order.componentes_ids || []
         });
         setSelectedMaintenanceIds(order.id_calendarios || []);
         setShowEditModal(true);
@@ -217,7 +219,8 @@ const WorkOrderDetailPage = () => {
                 id_proveedor: editFormData.id_proveedor ? parseInt(editFormData.id_proveedor) : null,
                 costo_estimado: parseFloat(editFormData.costo_estimado) || 0,
                 id_calendarios: editFormData.id_calendarios || [],
-                componente_id: editFormData.componente_id ? parseInt(editFormData.componente_id) : null
+                componente_id: editFormData.componente_id ? parseInt(editFormData.componente_id) : null,
+                componentes_ids: editFormData.componentes_ids || []
             });
             setShowEditModal(false);
             fetchOrderDetail();
@@ -427,7 +430,21 @@ const WorkOrderDetailPage = () => {
                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Código</span>
                                             <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{assets.find(a => a.id == order.id_activo)?.codigo_administrativo || assets.find(a => a.id == order.id_activo)?.codigo_equipo || 'S/N'}</span>
                                         </div>
-                                        {order.componente_id ? (
+                                        {order.componentes_ids && order.componentes_ids.length > 0 ? (
+                                            <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 col-span-2">
+                                                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block mb-1">Partes / Componentes Seleccionados</span>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {order.componentes_ids.map(cid => {
+                                                        const comp = standardComponents.find(c => c.id == cid);
+                                                        return (
+                                                            <span key={cid} className="bg-white dark:bg-indigo-900/40 px-2 py-1 rounded-lg text-xs font-bold text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                                                {comp?.nombre || `ID: ${cid}`}
+                                                            </span>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ) : order.componente_id ? (
                                             <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
                                                 <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block mb-1">Parte / Componente</span>
                                                 <span className="font-bold text-indigo-700 dark:text-indigo-300">
@@ -700,24 +717,25 @@ const WorkOrderDetailPage = () => {
 
                         <div>
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Componente Específico (Opcional)</label>
-                            <select 
-                                className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-sm font-bold outline-none"
-                                value={editFormData.componente_id}
-                                onChange={(e) => setEditFormData({...editFormData, componente_id: e.target.value})}
-                            >
-                                <option value="">-- No aplica --</option>
-                                {standardComponents
-                                    .filter(c => {
-                                        const assetId = editFormData.id_activo || order?.id_activo;
-                                        if (!assetId) return true;
-                                        const asset = assets.find(a => a.id == assetId);
-                                        return asset?.componentes_vinculados?.includes(c.id);
-                                    })
-                                    .map(c => (
-                                        <option key={c.id} value={c.id}>{c.nombre}</option>
-                                    ))
-                                }
-                            </select>
+                            <MultiSelect 
+                                placeholder="Seleccionar componentes..."
+                                options={standardComponents.filter(c => {
+                                    const assetId = editFormData.id_activo || order?.id_activo;
+                                    if (!assetId) return true;
+                                    const asset = assets.find(a => a.id == assetId);
+                                    return asset?.componentes_vinculados?.includes(c.id);
+                                })}
+                                value={editFormData.componentes_ids || []}
+                                onChange={(e) => setEditFormData({...editFormData, componentes_ids: e.target.value})}
+                                disabled={(() => {
+                                    const assetId = editFormData.id_activo || order?.id_activo;
+                                    const asset = assets.find(a => a.id == assetId);
+                                    if (!asset) return true;
+                                    const tipo = asset.tipo_activo?.toLowerCase() || '';
+                                    const cat = asset.categoria?.toLowerCase() || '';
+                                    return !(tipo === 'habitacion' || tipo === 'habitación' || cat === 'habitaciones');
+                                })()}
+                            />
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4">

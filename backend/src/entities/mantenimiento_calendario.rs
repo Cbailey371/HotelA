@@ -33,6 +33,8 @@ pub struct Model {
     pub orden_trabajo_id: Option<i32>,
     pub asunto: Option<String>,
     pub componente_id: Option<i32>,
+    #[sea_orm(column_type = "Text", nullable)]
+    pub componentes_ids: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

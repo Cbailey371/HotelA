@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import Modal from '../components/Modal';
 import RecordLimitSelector from '../components/RecordLimitSelector';
+import MultiSelect from '../components/MultiSelect';
 
 const MaintenancePage = () => {
     const navigate = useNavigate();
@@ -69,7 +70,8 @@ const MaintenancePage = () => {
         minutos: '00',
         periodo: 'AM',
         id_ots: [],
-        componente_id: ''
+        componente_id: '',
+        componentes_ids: []
     });
 
     const [executeForm, setExecuteForm] = useState({
@@ -401,6 +403,7 @@ const MaintenancePage = () => {
                 estado: schedule.estado,
                 id_ots: schedule.ots_vinculadas?.map(ot => ot.id) || [],
                 componente_id: schedule.componente_id || '',
+                componentes_ids: schedule.componentes_ids || [],
                 hora, minutos, periodo
             });
             await fetchMaintenanceParts(schedule.id);
@@ -598,6 +601,21 @@ const MaintenancePage = () => {
                                                     <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase mb-0.5">ACTIVO / EQUIPO</div>
                                                     <div className="text-xs font-bold">{s.equipo}</div>
                                                 </div>
+                                                {s.componentes_ids && s.componentes_ids.length > 0 && (
+                                                    <div>
+                                                        <div className="text-[10px] font-black tracking-widest text-emerald-400 uppercase mb-1">COMPONENTES</div>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {s.componentes_ids.map(cid => {
+                                                                const comp = standardComponents.find(c => c.id == cid);
+                                                                return (
+                                                                    <span key={cid} className="px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 text-[9px] font-black rounded border border-emerald-500/20 uppercase">
+                                                                        {comp?.nombre || `ID: ${cid}`}
+                                                                    </span>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase mb-0.5">CÓDIGO MNT</div>
@@ -791,23 +809,33 @@ const MaintenancePage = () => {
                             </div>
                             <div>
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Componente Específico (Opcional)</label>
-                                <select
-                                    value={scheduleForm.componente_id}
-                                    onChange={(e) => handleScheduleChange('componente_id', e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
-                                >
-                                    <option value="">-- No aplica --</option>
-                                    {standardComponents
-                                        .filter(c => {
-                                            if (!scheduleForm.equipo_id) return true;
-                                            const asset = assets.find(a => a.id == scheduleForm.equipo_id);
-                                            return asset?.componentes_vinculados?.includes(c.id);
-                                        })
-                                        .map(c => (
-                                            <option key={c.id} value={c.id}>{c.nombre}</option>
-                                        ))
+                                <MultiSelect
+                                    placeholder="Seleccionar componentes..."
+                                    options={standardComponents.filter(c => {
+                                        if (!scheduleForm.equipo_id) return true;
+                                        const asset = assets.find(a => a.id == scheduleForm.equipo_id);
+                                        return asset?.componentes_vinculados?.includes(c.id);
+                                    })}
+                                    value={scheduleForm.componentes_ids || []}
+                                    onChange={(e) => handleScheduleChange('componentes_ids', e.target.value)}
+                                    disabled={!scheduleForm.equipo_id || (() => {
+                                        const asset = assets.find(a => a.id == scheduleForm.equipo_id);
+                                        if (!asset) return true;
+                                        const tipo = asset.tipo_activo?.toLowerCase() || '';
+                                        const cat = asset.categoria?.toLowerCase() || '';
+                                        return !(tipo === 'habitacion' || tipo === 'habitación' || cat === 'habitaciones');
+                                    })()}
+                                />
+                                {scheduleForm.equipo_id && (() => {
+                                    const asset = assets.find(a => a.id == scheduleForm.equipo_id);
+                                    if (!asset) return null;
+                                    const tipo = asset.tipo_activo?.toLowerCase() || '';
+                                    const cat = asset.categoria?.toLowerCase() || '';
+                                    if (!(tipo === 'habitacion' || tipo === 'habitación' || cat === 'habitaciones')) {
+                                        return <p className="text-[9px] text-amber-500 font-bold mt-1 uppercase italic">Solo disponible para Habitaciones</p>;
                                     }
-                                </select>
+                                    return null;
+                                })()}
                             </div>
                         </div>
                         <div className="col-span-1">

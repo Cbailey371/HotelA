@@ -28,6 +28,7 @@ pub struct CreateScheduleRequest {
     pub asunto: Option<String>,
     pub id_ots: Option<Vec<i32>>,
     pub componente_id: Option<i32>,
+    pub componentes_ids: Option<Vec<i32>>,
 }
 
 #[derive(Serialize)]
@@ -59,6 +60,7 @@ pub struct ScheduleDto {
     pub ots_vinculadas: Vec<LinkedOtDto>,
     pub componente_id: Option<i32>,
     pub nombre_componente: Option<String>,
+    pub componentes_ids: Vec<i32>,
 }
 
 #[derive(Serialize, Clone)]
@@ -153,8 +155,8 @@ pub async fn get_schedules(
             codigo_ot: first_ot.map(|v| v.codigo.clone()),
             proveedor_nombre: prov_name,
             ots_vinculadas: my_ots,
-            componente_id: s.componente_id,
             nombre_componente: comp_name,
+            componentes_ids: s.componentes_ids.and_then(|v| serde_json::from_str(&v).ok()).unwrap_or_default(),
         }
     }).collect();
 
@@ -229,8 +231,8 @@ pub async fn get_schedule(
         codigo_ot: first_ot.as_ref().map(|v| v.codigo.clone()),
         proveedor_nombre: prov_name,
         ots_vinculadas,
-        componente_id: s.componente_id,
         nombre_componente: comp_name,
+        componentes_ids: s.componentes_ids.and_then(|v| serde_json::from_str(&v).ok()).unwrap_or_default(),
     };
 
     Ok(Json(dto))
@@ -266,6 +268,7 @@ pub async fn create_schedule(
         responsable_interno_email: Set(payload.responsable_interno_email),
         asunto: Set(payload.asunto),
         componente_id: Set(payload.componente_id),
+        componentes_ids: Set(payload.componentes_ids.map(|v| serde_json::to_string(&v).unwrap_or_default())),
         ..Default::default()
     };
 
@@ -317,6 +320,7 @@ async fn create_ot_from_maintenance_manual(db: &DatabaseConnection, mnt: &manten
         tipo_ot: Set("Preventiva".to_string()),
         asunto: Set(mnt.asunto.clone()),
         componente_id: Set(mnt.componente_id),
+        componentes_ids: Set(mnt.componentes_ids.clone()),
         ..Default::default()
     };
 
@@ -345,6 +349,7 @@ pub struct UpdateScheduleRequest {
     pub asunto: Option<String>,
     pub id_ots: Option<Vec<i32>>,
     pub componente_id: Option<i32>,
+    pub componentes_ids: Option<Vec<i32>>,
 }
 
 pub async fn update_schedule(
@@ -383,6 +388,7 @@ pub async fn update_schedule(
     if let Some(v) = payload.estado { schedule_active.estado = Set(Some(v)); }
     if let Some(v) = payload.asunto { schedule_active.asunto = Set(Some(v)); }
     if let Some(v) = payload.componente_id { schedule_active.componente_id = Set(Some(v)); }
+    if let Some(v) = payload.componentes_ids { schedule_active.componentes_ids = Set(Some(serde_json::to_string(&v).unwrap_or_default())); }
 
     schedule_active.update(&db).await?;
 
@@ -556,6 +562,7 @@ pub async fn execute_maintenance(
                 recurrente: Set(true),
                 responsable_interno_email: Set(schedule.responsable_interno_email.clone()),
                 asunto: Set(schedule.asunto.clone()),
+                componentes_ids: Set(schedule.componentes_ids.clone()),
                 ..Default::default()
             };
             next_schedule.insert(&txn).await?;

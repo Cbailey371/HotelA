@@ -23,6 +23,7 @@ const MaintenanceHistoryPage = () => {
     const [editingId, setEditingId] = useState(null);
     const [maintenanceParts, setMaintenanceParts] = useState([]);
     const [isDirty, setIsDirty] = useState(false);
+    const [standardComponents, setStandardComponents] = useState([]);
 
     // Main List Filters
     const [scheduleSearch, setScheduleSearch] = useState('');
@@ -42,7 +43,7 @@ const MaintenanceHistoryPage = () => {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [sRes, tRes, aRes, tyRes, pRes, ttRes, iRes, uRes] = await Promise.all([
+            const [sRes, tRes, aRes, tyRes, pRes, ttRes, iRes, uRes, cRes] = await Promise.all([
                 api.get('/maintenance/schedule'),
                 api.get('/technicians'),
                 api.get('/assets'),
@@ -50,7 +51,8 @@ const MaintenanceHistoryPage = () => {
                 api.get('/providers'),
                 api.get('/asset-config/maintenance-tasks'),
                 api.get('/inventory'),
-                api.get('/users')
+                api.get('/users'),
+                api.get('/asset-config/standard-components')
             ]);
             setSchedules(sRes.data);
             setTechs(tRes.data);
@@ -60,6 +62,7 @@ const MaintenanceHistoryPage = () => {
             setTaskTypes(ttRes.data || []);
             setInventory(iRes?.data || []);
             setUsers(uRes?.data || []);
+            setStandardComponents(cRes.data || []);
         } catch (error) {
             console.error("Error fetching history data", error);
         } finally {
@@ -231,6 +234,21 @@ const MaintenanceHistoryPage = () => {
                                                     <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase mb-0.5">ACTIVO / EQUIPO</div>
                                                     <div className="text-xs font-bold">{s.equipo}</div>
                                                 </div>
+                                                {s.componentes_ids && s.componentes_ids.length > 0 && (
+                                                    <div>
+                                                        <div className="text-[10px] font-black tracking-widest text-emerald-400 uppercase mb-1">COMPONENTES</div>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {s.componentes_ids.map(cid => {
+                                                                const comp = standardComponents.find(c => c.id == cid);
+                                                                return (
+                                                                    <span key={cid} className="px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 text-[9px] font-black rounded border border-emerald-500/20 uppercase">
+                                                                        {comp?.nombre || `ID: ${cid}`}
+                                                                    </span>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
                                                         <div className="text-[10px] font-black tracking-widest text-blue-400 uppercase mb-0.5">CÓDIGO MNT</div>

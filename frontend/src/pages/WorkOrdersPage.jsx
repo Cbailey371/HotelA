@@ -17,6 +17,7 @@ import { pdfGenerator } from '../utils/pdfGenerator';
 import api from '../services/api';
 import MaintenanceSelectorModal from '../components/MaintenanceSelectorModal';
 import RecordLimitSelector from '../components/RecordLimitSelector';
+import MultiSelect from '../components/MultiSelect';
 
 const WorkOrdersPage = () => {
     const { user } = useAuth();
@@ -82,7 +83,8 @@ const WorkOrdersPage = () => {
         costo_estimado: '',
         terminos_pago: '',
         foto_dano: null,
-        componente_id: ''
+        componente_id: '',
+        componentes_ids: []
     });
     const [uploading, setUploading] = useState(false);
 
@@ -297,7 +299,8 @@ const WorkOrdersPage = () => {
             costo_estimado: (order.costo_estimado !== null && order.costo_estimado !== undefined) ? order.costo_estimado.toString() : '',
             terminos_pago: order.terminos_pago || '',
             foto_dano: order.foto_dano,
-            componente_id: order.componente_id || ''
+            componente_id: order.componente_id || '',
+            componentes_ids: order.componentes_ids || []
         });
         setShowModal(true);
         setIsDirty(false);
@@ -918,26 +921,36 @@ const WorkOrdersPage = () => {
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Componente Específico (Opcional)</label>
-                                    <select
-                                        className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
-                                        value={formData.componente_id}
+                                    <MultiSelect
+                                        placeholder="Seleccionar componentes..."
+                                        options={standardComponents.filter(c => {
+                                            if (!formData.id_activo) return true;
+                                            const asset = assets.find(a => a.id == formData.id_activo);
+                                            return asset?.componentes_vinculados?.includes(c.id);
+                                        })}
+                                        value={formData.componentes_ids || []}
                                         onChange={(e) => {
-                                            setFormData({ ...formData, componente_id: e.target.value });
+                                            setFormData({ ...formData, componentes_ids: e.target.value });
                                             setIsDirty(true);
                                         }}
-                                    >
-                                        <option value="">-- No aplica --</option>
-                                        {standardComponents
-                                            .filter(c => {
-                                                if (!formData.id_activo) return true;
-                                                const asset = assets.find(a => a.id == formData.id_activo);
-                                                return asset?.componentes_vinculados?.includes(c.id);
-                                            })
-                                            .map(c => (
-                                                <option key={c.id} value={c.id}>{c.nombre}</option>
-                                            ))
+                                        disabled={!formData.id_activo || (() => {
+                                            const asset = assets.find(a => a.id == formData.id_activo);
+                                            if (!asset) return true;
+                                            const tipo = asset.tipo_activo?.toLowerCase() || '';
+                                            const cat = asset.categoria?.toLowerCase() || '';
+                                            return !(tipo === 'habitacion' || tipo === 'habitación' || cat === 'habitaciones');
+                                        })()}
+                                    />
+                                    {formData.id_activo && (() => {
+                                        const asset = assets.find(a => a.id == formData.id_activo);
+                                        if (!asset) return null;
+                                        const tipo = asset.tipo_activo?.toLowerCase() || '';
+                                        const cat = asset.categoria?.toLowerCase() || '';
+                                        if (!(tipo === 'habitacion' || tipo === 'habitación' || cat === 'habitaciones')) {
+                                            return <p className="text-[9px] text-amber-500 font-bold mt-1 uppercase italic">Solo disponible para Habitaciones</p>;
                                         }
-                                    </select>
+                                        return null;
+                                    })()}
                                 </div>
                             </div>
 
