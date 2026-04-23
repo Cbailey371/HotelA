@@ -100,3 +100,14 @@ Esta funcionalidad permite imprimir etiquetas para pegar en los equipos.
 2.  Busque la opción **"Imprimir Etiqueta QR"**.
 3.  Se generará una vista previa con el código QR que vincula directamente a la ficha del activo en el sistema.
 4.  Pulse **"Imprimir"** para generar la etiqueta física.
+
+### 1.5. Gestión de Componentes (Módulo Habitaciones)
+
+Para activos clasificados como **Tipo: Habitación** o **Categoría: Habitaciones**, el sistema activa una funcionalidad avanzada de inventario detallado.
+
+-   **Visibilidad**: La sección "Componentes del Activo" solo es visible para unidades habitacionales.
+-   **Multi-Selección con Búsqueda**: En lugar de una lista fija, dispondrá de un buscador para seleccionar múltiples elementos estándar (ej. Inodoro, Cama King, Lámpara mesa de noche, etc.).
+-   **Inventario Específico**: Esto permite que cada habitación tenga registrado su equipamiento interno exacto, lo cual es vital para la generación de Órdenes de Trabajo precisas en el mantenimiento preventivo y correctivo.
+
+> [!TIP]
+> Puede buscar componentes por nombre o categoría dentro del selector para agilizar el registro de habitaciones con equipamientos complejos.

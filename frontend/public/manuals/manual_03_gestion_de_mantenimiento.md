@@ -29,6 +29,7 @@ La base del preventivo es la programación recurrente.
         -   *Recurrente*: Diaria, Semanal, Mensual, Anual.
     -   **Asignado a**: Técnico interno o Proveedor externo.
     -   **Fecha de Inicio**: Cuándo debe ejecutarse la primera vez.
+    -   **Componente Específico (Opcional)**: En activos tipo Habitación, este campo permite seleccionar mediante búsqueda uno o varios componentes internos (ej. Ducha, Aire Acondicionado) para que el técnico sepa exactamente qué intervenir.
 
 El sistema generará automáticamente las proyecciones futuras en el calendario.
 
@@ -54,6 +55,7 @@ La Orden de Trabajo (OT) es el documento formal que autoriza y registra la ejecu
 1.  En el Calendario, haga clic en una tarea programada pendiente.
 2.  Seleccione **"Generar Orden de Trabajo"**.
 3.  El sistema creará una OT oficial (ej. `OT-2024-0056`) y cambiará el estado de la tarea a "En Proceso".
+4.  **Detalles de Componentes**: Si la OT es para una habitación y tiene componentes vinculados, estos aparecerán resaltados en el detalle de la orden para guiar al técnico.
 
 ### 2.2. Ejecución y Cierre de OT
 El técnico realiza el trabajo y debe reportarlo en el sistema.
