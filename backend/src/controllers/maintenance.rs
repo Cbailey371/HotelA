@@ -885,6 +885,7 @@ pub async fn get_pending_schedules(
             ots_vinculadas: Vec::new(),
             componente_id: s.componente_id,
             nombre_componente: s.componente_id.and_then(|cid| comp_map.get(&cid).cloned()),
+            componentes_ids: s.componentes_ids.and_then(|v| serde_json::from_str(&v).ok()).unwrap_or_default(),
         }
     }).collect();
 
