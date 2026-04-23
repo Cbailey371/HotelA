@@ -19,6 +19,7 @@ const AssetDetailPage = () => {
     const [isUnauthorized, setIsUnauthorized] = useState(false);
     const [activeTab, setActiveTab] = useState('info');
     const [uploading, setUploading] = useState(false);
+    const [standardComponents, setStandardComponents] = useState([]);
 
     // Actions State
     const [showMenu, setShowMenu] = useState(false);
@@ -28,7 +29,17 @@ const AssetDetailPage = () => {
 
     useEffect(() => {
         fetchAssetDetail();
+        fetchStandardComponents();
     }, [id]);
+
+    const fetchStandardComponents = async () => {
+        try {
+            const res = await api.get('/asset-config/standard-components');
+            setStandardComponents(res.data);
+        } catch (error) {
+            console.error("Error fetching standard components", error);
+        }
+    };
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -271,6 +282,13 @@ const AssetDetailPage = () => {
         );
     };
 
+    const isRoom = () => {
+        if (!asset) return false;
+        const tipo = asset.tipo_activo?.toLowerCase() || '';
+        const cat = asset.categoria?.toLowerCase() || '';
+        return tipo === 'habitacion' || tipo === 'habitación' || cat === 'habitaciones';
+    };
+
     return (
         <div className="max-w-7xl mx-auto space-y-6">
             {/* Top Navigation */}
@@ -441,7 +459,8 @@ const AssetDetailPage = () => {
                         { id: 'info', label: 'Detalles' },
                         { id: 'history', label: 'Historial', icon: Clock },
                         { id: 'parts', label: 'Repuestos', icon: Package },
-                        { id: 'docs', label: 'Manuales', icon: FileText }
+                        { id: 'docs', label: 'Manuales', icon: FileText },
+                        ...(isRoom() ? [{ id: 'components', label: 'Componentes', icon: Package }] : [])
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -578,6 +597,47 @@ const AssetDetailPage = () => {
                                             </p>
                                         </div>
                                     ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'components' && (
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {standardComponents.map(comp => {
+                                    const isLinked = asset.componentes_vinculados?.includes(comp.id);
+                                    return (
+                                        <div 
+                                            key={comp.id} 
+                                            className={`flex items-center gap-4 p-5 rounded-2xl border transition-all ${
+                                                isLinked 
+                                                ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30' 
+                                                : 'bg-slate-50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-800 opacity-60'
+                                            }`}
+                                        >
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                                                isLinked ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'
+                                            }`}>
+                                                {isLinked ? <ShieldCheck className="w-5 h-5" /> : <Package className="w-4 h-4" />}
+                                            </div>
+                                            <div className="flex-1">
+                                                <h5 className={`font-bold text-sm ${isLinked ? 'text-slate-800 dark:text-white' : 'text-slate-500'}`}>
+                                                    {comp.nombre}
+                                                </h5>
+                                                {isLinked ? (
+                                                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Presente</span>
+                                                ) : (
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">Auditando</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            {standardComponents.length === 0 && (
+                                <div className="text-center py-12 text-slate-400 italic">
+                                    No hay componentes estándar configurados.
                                 </div>
                             )}
                         </div>
