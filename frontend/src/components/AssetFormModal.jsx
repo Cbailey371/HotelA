@@ -589,7 +589,13 @@ const AssetFormModal = ({ isOpen, onClose, onSaved, assetId, initialData }) => {
 
                                     return (
                                         <div className="col-span-2">
-                                            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block uppercase">Componentes del Activo</label>
+                                            <div className="flex justify-between items-end mb-2">
+                                                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 block uppercase">Componentes del Activo</label>
+                                                <div className="flex gap-3">
+                                                    <button type="button" onClick={() => { setFormData(prev => ({ ...prev, componentes_vinculados: standardComponents.map(c => c.id) })); setIsDirty(true); }} className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline font-medium">Seleccionar Todo</button>
+                                                    <button type="button" onClick={() => { setFormData(prev => ({ ...prev, componentes_vinculados: [] })); setIsDirty(true); }} className="text-[10px] text-slate-500 dark:text-slate-400 hover:underline font-medium">Deseleccionar Todo</button>
+                                                </div>
+                                            </div>
                                             <div className="bg-slate-50 dark:bg-[#0f172a] border border-slate-300 dark:border-slate-700 rounded-lg p-4">
                                                 <MultiSelect 
                                                     placeholder="Buscar y seleccionar componentes..."
