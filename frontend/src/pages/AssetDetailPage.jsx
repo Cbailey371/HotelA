@@ -158,6 +158,34 @@ const AssetDetailPage = () => {
             });
         }
 
+        // Componentes (Solo para habitaciones)
+        const tipo = asset.tipo_activo?.toLowerCase() || '';
+        const cat = asset.categoria?.toLowerCase() || '';
+        const isHabitacion = tipo === 'habitacion' || tipo === 'habitación' || cat === 'habitaciones';
+
+        if (isHabitacion && asset.componentes_vinculados && asset.componentes_vinculados.length > 0) {
+            doc.text("Componentes del Activo", 14, doc.lastAutoTable.finalY + 15);
+
+            const selectedComps = standardComponents
+                .filter(comp => asset.componentes_vinculados.includes(comp.id))
+                .map(comp => comp.nombre);
+
+            const compRows = [];
+            for (let i = 0; i < selectedComps.length; i += 2) {
+                const c1 = selectedComps[i];
+                const c2 = selectedComps[i + 1] || '';
+                compRows.push([c1, 'Presente', c2, c2 ? 'Presente' : '']);
+            }
+
+            autoTable(doc, {
+                startY: doc.lastAutoTable.finalY + 20,
+                head: [['Componente', 'Estado', 'Componente', 'Estado']],
+                body: compRows,
+                theme: 'grid',
+                headStyles: { fillColor: [71, 85, 105] }
+            });
+        }
+
         doc.save(`Ficha_Tecnica_${asset.codigo}.pdf`);
     };
 
