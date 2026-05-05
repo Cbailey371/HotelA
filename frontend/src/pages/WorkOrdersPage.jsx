@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { workOrderService } from '../services/workOrderService';
 import { assetService } from '../services/assetService';
@@ -22,6 +22,7 @@ import MultiSelect from '../components/MultiSelect';
 const WorkOrdersPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     // Data State
     const [orders, setOrders] = useState([]);
     const [assets, setAssets] = useState([]);
@@ -91,6 +92,37 @@ const WorkOrdersPage = () => {
     useEffect(() => {
         fetchData();
     }, []);
+
+    useEffect(() => {
+        if (location.state?.prefillFromMaintenance && pendingSchedules.length > 0) {
+            const maintenanceId = location.state.prefillFromMaintenance;
+            
+            const selectedItem = pendingSchedules.find(s => s.id === maintenanceId);
+            if (selectedItem) {
+                setFormData(prev => ({
+                    ...prev,
+                    tipo_ot: 'activo',
+                    id_calendario: maintenanceId,
+                    id_calendarios: [maintenanceId],
+                    id_activo: selectedItem.equipo_id,
+                    id_tipo_mantenimiento: selectedItem.tipo_mantenimiento_id,
+                    id_tecnico: selectedItem.tecnico_id || '',
+                    id_proveedor: selectedItem.proveedor_id || '',
+                    prioridad: selectedItem.prioridad || 'media',
+                    asunto: selectedItem.asunto || '',
+                    observaciones: selectedItem.codigo ? `Plan de Mantenimiento: ${selectedItem.codigo}` : `Plan de Mantenimiento ID: ${selectedItem.id}`,
+                    costo_estimado: selectedItem.costo_estimado || '',
+                    terminos_pago: selectedItem.terminos_pago || '',
+                    componente_id: selectedItem.componente_id || ''
+                }));
+                setSelectedMaintenanceIds([maintenanceId]);
+                setShowModal(true);
+                
+                // Limpiar el estado para evitar que se abra de nuevo al recargar o navegar atrás
+                navigate(location.pathname, { replace: true, state: {} });
+            }
+        }
+    }, [location.state, pendingSchedules]);
 
     useEffect(() => {
         setCurrentPage(1);

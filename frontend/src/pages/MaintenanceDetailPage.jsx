@@ -346,12 +346,20 @@ const MaintenanceDetailPage = () => {
                         </button>
                         
                         {schedule.estado === 'programado' && canEdit && (
-                            <button 
-                                onClick={() => setShowExecuteModal(true)}
-                                className="flex-1 sm:flex-none bg-blue-600 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
-                            >
-                                <Play className="w-4 h-4" /> Ejecutar Mantenimiento
-                            </button>
+                            <div className="flex gap-2 w-full sm:w-auto">
+                                <button 
+                                    onClick={() => navigate('/work-orders', { state: { prefillFromMaintenance: schedule.id } })}
+                                    className="flex-1 sm:flex-none bg-indigo-600 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Plus className="w-4 h-4" /> Crear OT
+                                </button>
+                                <button 
+                                    onClick={() => setShowExecuteModal(true)}
+                                    className="flex-1 sm:flex-none bg-blue-600 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Play className="w-4 h-4" /> Ejecutar Mantenimiento
+                                </button>
+                            </div>
                         )}
 
                         {canEdit && (

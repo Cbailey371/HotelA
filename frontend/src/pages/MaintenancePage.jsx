@@ -290,24 +290,12 @@ const MaintenancePage = () => {
         }
     };
 
-    const handleCreateWorkOrder = async (schedule) => {
-        if (!confirm('¿Generar Orden de Trabajo para este mantenimiento?')) return;
-        try {
-            const payload = {
-                id_calendario: schedule.id,
-                id_activo: schedule.equipo_id,
-                id_tipo_mantenimiento: schedule.tipo_mantenimiento_id,
-                id_tecnico: schedule.tecnico_id, // Can be null
-                id_proveedor: schedule.proveedor_id,
-                fecha_programada: schedule.fecha || new Date().toISOString().split('T')[0],
-                prioridad: schedule.prioridad,
-                observaciones: schedule.codigo ? `Plan de Mantenimiento: ${schedule.codigo}` : `Plan de Mantenimiento ID: ${schedule.id}`
-            };
-            await api.post('/work-orders', payload);
-            alert('Orden de Trabajo generada exitosamente');
-            fetchAllData();
-        } catch (error) {
-        }
+    const handleCreateWorkOrder = (schedule) => {
+        navigate('/work-orders', { 
+            state: { 
+                prefillFromMaintenance: schedule.id 
+            } 
+        });
     };
 
     const handleBulkCreateWorkOrder = async () => {
