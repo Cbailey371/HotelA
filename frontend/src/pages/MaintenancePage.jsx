@@ -203,6 +203,19 @@ const MaintenancePage = () => {
             else if (sanitizedData[field] !== null) sanitizedData[field] = parseFloat(sanitizedData[field]);
         });
 
+        // Auto-include selected user's email in responsable_interno_email
+        if (sanitizedData.responsable_id) {
+            const selectedUser = users.find(u => u.id === sanitizedData.responsable_id);
+            if (selectedUser && selectedUser.email) {
+                let currentEmails = sanitizedData.responsable_interno_email || '';
+                if (!currentEmails.includes(selectedUser.email)) {
+                    sanitizedData.responsable_interno_email = currentEmails 
+                        ? `${selectedUser.email}, ${currentEmails}` 
+                        : selectedUser.email;
+                }
+            }
+        }
+
         // Append time to observations
         const timeStr = `${scheduleForm.hora}:${scheduleForm.minutos} ${scheduleForm.periodo}`;
         const obs = sanitizedData.observaciones || '';
@@ -934,30 +947,29 @@ const MaintenancePage = () => {
                             </select>
                         </div>
                         <div className="col-span-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Responsable Interno (Email o Usuario)</label>
-                            <div className="flex gap-2">
-                                <select
-                                    value={scheduleForm.responsable_id}
-                                    onChange={(e) => {
-                                        handleScheduleChange('responsable_id', e.target.value);
-                                        handleScheduleChange('responsable_interno_email', '');
-                                    }}
-                                    className="flex-1 bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
-                                >
-                                    <option value="">Opcional: Seleccione usuario...</option>
-                                    {Array.isArray(users) && users.map(u => <option key={u.id} value={u.id}>{u.nombre} {u.apellido}</option>)}
-                                </select>
-                                <input
-                                    type="email"
-                                    placeholder="O escriba un email..."
-                                    value={scheduleForm.responsable_interno_email}
-                                    onChange={(e) => {
-                                        handleScheduleChange('responsable_interno_email', e.target.value);
-                                        handleScheduleChange('responsable_id', '');
-                                    }}
-                                    className="flex-1 bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none"
-                                />
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">RESPONSABLE INTERNO (EMAIL O USUARIO)</label>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <div className="flex-1">
+                                    <select
+                                        value={scheduleForm.responsable_id || ''}
+                                        onChange={(e) => handleScheduleChange('responsable_id', e.target.value)}
+                                        className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                    >
+                                        <option value="">Ninguno</option>
+                                        {Array.isArray(users) && users.map(u => <option key={u.id} value={u.id}>{u.nombre} {u.apellido}</option>)}
+                                    </select>
+                                </div>
+                                <div className="flex-1">
+                                    <input
+                                        type="text"
+                                        placeholder="O escriba un email..."
+                                        value={scheduleForm.responsable_interno_email || ''}
+                                        onChange={(e) => handleScheduleChange('responsable_interno_email', e.target.value)}
+                                        className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                    />
+                                </div>
                             </div>
+                            <p className="text-[10px] text-slate-400 mt-2 font-medium">Puede seleccionar un usuario y/o escribir uno o varios correos separados por coma.</p>
                         </div>
                         <div className="col-span-2 flex items-center gap-3 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100 dark:border-blue-800">
                             <input
