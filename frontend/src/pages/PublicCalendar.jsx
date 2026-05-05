@@ -74,6 +74,138 @@ const PublicCalendar = () => {
             day.getFullYear() === today.getFullYear();
     };
 
+    const renderWeekView = () => {
+        const startOfWeek = new Date(currentDate);
+        startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+            const day = new Date(startOfWeek);
+            day.setDate(startOfWeek.getDate() + i);
+            const dateStr = day.toLocaleDateString('en-CA');
+            const dayEvents = events.filter(e => e.fecha === dateStr);
+
+            days.push(
+                <div key={i} className={`min-h-[400px] p-4 border-r border-slate-100 dark:border-slate-800 flex flex-col hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all ${isToday(day) ? 'bg-blue-50/30 dark:bg-blue-900/20' : ''}`}>
+                    <div className="text-center mb-6">
+                        <div className="text-[10px] font-black text-slate-400 uppercase mb-1">{day.toLocaleDateString('es-ES', { weekday: 'short' })}</div>
+                        <div className={`text-xl font-black mx-auto w-10 h-10 flex items-center justify-center rounded-full ${isToday(day) ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-900 dark:text-white'}`}>
+                            {day.getDate()}
+                        </div>
+                    </div>
+                    <div className="space-y-3">
+                        {dayEvents.map(e => (
+                            <div key={e.id} className="group/event relative">
+                                <div className={`p-3 rounded-2xl text-[9px] font-bold border leading-tight transition-all shadow-sm cursor-help hover:scale-[1.02] ${
+                                    e.prioridad?.toLowerCase() === 'alta' ? 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400' : 
+                                    'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400'
+                                }`}>
+                                    <div className="font-black mb-1 truncate">{e.asunto || e.equipo}</div>
+                                    <div className="text-[8px] opacity-60 flex items-center gap-1"><MapPin className="w-2.5 h-2.5" /> {e.equipo}</div>
+                                </div>
+
+                                {/* Tooltip */}
+                                <div className="absolute z-[100] invisible group-hover/event:visible opacity-0 group-hover/event:opacity-100 transition-all duration-200 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-700 w-64 pointer-events-none left-1/2 -translate-x-1/2 bottom-full mb-3 whitespace-normal">
+                                    <div className="space-y-2">
+                                        <div className="text-[9px] font-black text-blue-400 uppercase tracking-widest">DETALLES</div>
+                                        <div className="text-xs font-bold leading-tight">{e.asunto || 'Sin asunto'}</div>
+                                        <div className="text-[10px] font-medium text-slate-300">{e.equipo}</div>
+                                        {e.codigo_ot && <div className="text-[9px] font-black text-purple-400 uppercase pt-1">OT: {e.codigo_ot}</div>}
+                                    </div>
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="grid grid-cols-7 bg-white dark:bg-[#0f172a] rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl">
+                {days}
+            </div>
+        );
+    };
+
+    const renderDayView = () => {
+        const dateStr = currentDate.toLocaleDateString('en-CA');
+        const dayEvents = events.filter(e => e.fecha === dateStr);
+
+        return (
+            <div className="bg-white dark:bg-[#0f172a] rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl p-8 min-h-[500px]">
+                <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-100 dark:border-slate-800">
+                    <div className="w-20 h-20 bg-blue-600 rounded-3xl flex flex-col items-center justify-center text-white shadow-xl shadow-blue-500/20">
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-80">{currentDate.toLocaleDateString('es-ES', { weekday: 'short' })}</span>
+                        <span className="text-3xl font-black">{currentDate.getDate()}</span>
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-black uppercase tracking-tight text-slate-900 dark:text-white">
+                            {currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+                        </h3>
+                        <p className="text-slate-500 font-bold uppercase tracking-widest text-xs flex items-center gap-2 mt-1">
+                            <Activity className="w-4 h-4 text-blue-500" />
+                            {dayEvents.length} Tareas programadas
+                        </p>
+                    </div>
+                </div>
+
+                {dayEvents.length === 0 ? (
+                    <div className="py-20 text-center opacity-30 flex flex-col items-center">
+                        <CalendarRange className="w-20 h-20 mb-4 text-slate-400" />
+                        <p className="font-black uppercase tracking-widest text-slate-500">No hay tareas para este día</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {dayEvents.map(e => (
+                            <div key={e.id} className={`p-6 rounded-3xl border transition-all hover:scale-[1.01] hover:shadow-lg ${
+                                e.prioridad?.toLowerCase() === 'alta' 
+                                    ? 'bg-rose-50 border-rose-200 dark:bg-rose-500/5 dark:border-rose-500/20' 
+                                    : 'bg-slate-50 border-slate-200 dark:bg-slate-900 dark:border-slate-800'
+                            }`}>
+                                <div className="flex justify-between items-start mb-4">
+                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                        e.prioridad?.toLowerCase() === 'alta' ? 'bg-rose-500 text-white' : 'bg-blue-500 text-white'
+                                    }`}>{e.prioridad || 'Normal'}</span>
+                                    <span className="text-[10px] font-black text-slate-400">{e.codigo || `MNT-${e.id}`}</span>
+                                </div>
+                                <h4 className="text-lg font-black mb-1 text-slate-800 dark:text-white leading-tight">{e.asunto || e.equipo}</h4>
+                                <p className="text-xs text-slate-500 font-bold mb-6">{e.equipo}</p>
+                                
+                                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                                    <div>
+                                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Proveedor / Técnico</div>
+                                        <div className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{e.proveedor_nombre || 'Mantenimiento Interno'}</div>
+                                    </div>
+                                    {e.codigo_ot && (
+                                        <div>
+                                            <div className="text-[9px] font-black text-purple-400 uppercase tracking-widest mb-1">Orden de Trabajo</div>
+                                            <div className="text-xs font-black text-purple-600 dark:text-purple-400">{e.codigo_ot}</div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    const getHeaderText = () => {
+        if (view === 'month') {
+            return currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+        } else if (view === 'week') {
+            const start = new Date(currentDate);
+            start.setDate(currentDate.getDate() - currentDate.getDay());
+            const end = new Date(start);
+            end.setDate(start.getDate() + 6);
+            return `${start.getDate()} - ${end.getDate()} ${end.toLocaleDateString('es-ES', { month: 'short' })} ${end.getFullYear()}`;
+        } else {
+            return currentDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+    };
+
     const renderMonthView = () => {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
@@ -164,6 +296,7 @@ const PublicCalendar = () => {
         );
     };
 
+
     const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD format safe for local date
 
     return (
@@ -211,7 +344,7 @@ const PublicCalendar = () => {
 
                     <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                         <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors text-slate-500"><ChevronLeft className="w-5 h-5" /></button>
-                        <span className="text-sm font-black text-slate-900 dark:text-white min-w-[140px] text-center uppercase tracking-tighter">{currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}</span>
+                        <span className="text-sm font-black text-slate-900 dark:text-white min-w-[160px] text-center uppercase tracking-tighter">{getHeaderText()}</span>
                         <button onClick={() => navigate(1)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors text-slate-500"><ChevronRight className="w-5 h-5" /></button>
                     </div>
 
@@ -267,12 +400,8 @@ const PublicCalendar = () => {
                     ) : (
                         <div className="animate-in fade-in duration-500">
                             {view === 'month' && renderMonthView()}
-                            {view !== 'month' && (
-                                <div className="h-[600px] flex flex-col items-center justify-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 italic text-slate-400">
-                                    <CalendarRange className="w-12 h-12 mb-4 opacity-20" />
-                                    <span className="text-sm font-black uppercase">Vista {view} en desarrollo</span>
-                                </div>
-                            )}
+                            {view === 'week' && renderWeekView()}
+                            {view === 'day' && renderDayView()}
                         </div>
                     )}
                 </div>
