@@ -706,7 +706,11 @@ const MaintenanceDetailPage = () => {
                                     />
                                 </div>
                             </div>
-                            <p className="text-[10px] text-slate-400 mt-2 font-medium">Puede seleccionar un usuario y/o escribir uno o varios correos separados por coma.</p>
+                            <p className="text-[10px] text-slate-400 mt-2 font-medium">
+                                Puede seleccionar un usuario y/o escribir uno o varios correos separados por coma.
+                                <br />
+                                <strong>Ejemplo:</strong> mantenimiento@hotel.com, supervisor@hotel.com
+                            </p>
                         </div>
                         <div className="col-span-1">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Vincular OTs Existentes</label>

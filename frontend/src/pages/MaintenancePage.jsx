@@ -904,6 +904,11 @@ const MaintenancePage = () => {
                                     </select>
                                 </div>
                             </div>
+                            <p className="text-[10px] text-slate-400 mt-2 font-medium">
+                                Puede seleccionar un usuario y/o escribir uno o varios correos separados por coma.
+                                <br />
+                                <strong>Ejemplo:</strong> mantenimiento@hotel.com, supervisor@hotel.com
+                            </p>
                         </div>
                         <div className="col-span-1">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Costo Estimado ($)</label>
@@ -969,7 +974,11 @@ const MaintenancePage = () => {
                                     />
                                 </div>
                             </div>
-                            <p className="text-[10px] text-slate-400 mt-2 font-medium">Puede seleccionar un usuario y/o escribir uno o varios correos separados por coma.</p>
+                            <p className="text-[10px] text-slate-400 mt-2 font-medium">
+                                Puede seleccionar un usuario y/o escribir uno o varios correos separados por coma.
+                                <br />
+                                <strong>Ejemplo:</strong> mantenimiento@hotel.com, supervisor@hotel.com
+                            </p>
                         </div>
                         <div className="col-span-2 flex items-center gap-3 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100 dark:border-blue-800">
                             <input
