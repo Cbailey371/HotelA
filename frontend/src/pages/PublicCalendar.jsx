@@ -86,10 +86,10 @@ const PublicCalendar = () => {
             const dayEvents = events.filter(e => e.fecha === dateStr);
 
             days.push(
-                <div key={i} className={`min-h-[400px] p-4 border-r border-slate-100 dark:border-slate-800 flex flex-col hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all ${isToday(day) ? 'bg-blue-50/30 dark:bg-blue-900/20' : ''}`}>
-                    <div className="text-center mb-6">
-                        <div className="text-[10px] font-black text-slate-400 uppercase mb-1">{day.toLocaleDateString('es-ES', { weekday: 'short' })}</div>
-                        <div className={`text-xl font-black mx-auto w-10 h-10 flex items-center justify-center rounded-full ${isToday(day) ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-900 dark:text-white'}`}>
+                <div key={i} className={`min-h-[650px] p-4 border-r border-slate-100 dark:border-slate-800 flex flex-col hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all ${isToday(day) ? 'bg-blue-50/30 dark:bg-blue-900/20' : ''}`}>
+                    <div className="text-center mb-8">
+                        <div className="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">{day.toLocaleDateString('es-ES', { weekday: 'long' })}</div>
+                        <div className={`text-2xl font-black mx-auto w-12 h-12 flex items-center justify-center rounded-2xl ${isToday(day) ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/40 rotate-3' : 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800'}`}>
                             {day.getDate()}
                         </div>
                     </div>
@@ -133,11 +133,11 @@ const PublicCalendar = () => {
         const dayEvents = events.filter(e => e.fecha === dateStr);
 
         return (
-            <div className="bg-white dark:bg-[#0f172a] rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl p-8 min-h-[500px]">
-                <div className="flex items-center gap-6 mb-8 pb-8 border-b border-slate-100 dark:border-slate-800">
-                    <div className="w-20 h-20 bg-blue-600 rounded-3xl flex flex-col items-center justify-center text-white shadow-xl shadow-blue-500/20">
-                        <span className="text-[10px] font-black uppercase tracking-widest opacity-80">{currentDate.toLocaleDateString('es-ES', { weekday: 'short' })}</span>
-                        <span className="text-3xl font-black">{currentDate.getDate()}</span>
+            <div className="bg-white dark:bg-[#0f172a] rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl p-8 min-h-[750px]">
+                <div className="flex items-center gap-8 mb-10 pb-10 border-b border-slate-100 dark:border-slate-800">
+                    <div className="w-24 h-24 bg-blue-600 rounded-[2rem] flex flex-col items-center justify-center text-white shadow-2xl shadow-blue-500/30 rotate-3">
+                        <span className="text-[11px] font-black uppercase tracking-widest opacity-80">{currentDate.toLocaleDateString('es-ES', { weekday: 'long' })}</span>
+                        <span className="text-4xl font-black">{currentDate.getDate()}</span>
                     </div>
                     <div>
                         <h3 className="text-2xl font-black uppercase tracking-tight text-slate-900 dark:text-white">
@@ -223,8 +223,8 @@ const PublicCalendar = () => {
             const dayEvents = events.filter(e => e.fecha === dateStr);
 
             days.push(
-                <div key={d} className={`min-h-[140px] p-2 border-r border-b border-slate-100 dark:border-slate-800 flex flex-col group/day relative transition-all hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:z-50 ${isToday(date) ? 'bg-blue-50/30 dark:bg-blue-900/20' : ''}`}>
-                    <div className="flex justify-between items-center mb-1">
+                <div key={d} className={`min-h-[160px] p-2 border-r border-b border-slate-100 dark:border-slate-800 flex flex-col group/day relative transition-all hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:z-50 ${isToday(date) ? 'bg-blue-50/30 dark:bg-blue-900/20' : ''}`}>
+                    <div className="flex justify-between items-center mb-2">
                         <span className={`text-xs font-black ${isToday(date) ? 'bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center' : 'text-slate-400'}`}>
                             {d}
                         </span>
@@ -396,7 +396,7 @@ const PublicCalendar = () => {
 
                 <div className="lg:col-span-3">
                     {loading && events.length === 0 ? (
-                        <div className="h-[600px] flex items-center justify-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 animate-pulse font-black text-slate-400 uppercase tracking-widest">Sincronizando...</div>
+                        <div className="h-[750px] flex items-center justify-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 animate-pulse font-black text-slate-400 uppercase tracking-widest">Sincronizando...</div>
                     ) : (
                         <div className="animate-in fade-in duration-500">
                             {view === 'month' && renderMonthView()}
