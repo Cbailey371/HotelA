@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import Modal from '../components/Modal';
+import WorkOrderSelectorModal from '../components/WorkOrderSelectorModal';
 
 const MaintenanceDetailPage = () => {
     const { id } = useParams();
@@ -54,6 +55,16 @@ const MaintenanceDetailPage = () => {
         observaciones: '',
         id_ots: []
     });
+
+    const [isWOModalOpen, setIsWOModalOpen] = useState(false);
+
+    const handleToggleWO = (woId) => {
+        const currentIds = scheduleForm.id_ots || [];
+        const newIds = currentIds.includes(woId)
+            ? currentIds.filter(id => id !== woId)
+            : [...currentIds, woId];
+        handleScheduleChange('id_ots', newIds);
+    };
 
     // Masters for edit modal
     const [taskTypes, setTaskTypes] = useState([]);
@@ -714,24 +725,42 @@ const MaintenanceDetailPage = () => {
                         </div>
                         <div className="col-span-1">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Vincular OTs Existentes</label>
-                            <select
-                                multiple
-                                value={scheduleForm.id_ots}
-                                onChange={(e) => {
-                                    const values = Array.from(e.target.selectedOptions, option => parseInt(option.value));
-                                    handleScheduleChange('id_ots', values);
-                                }}
-                                className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none h-24"
+                            <button
+                                type="button"
+                                onClick={() => setIsWOModalOpen(true)}
+                                className="w-full flex items-center justify-between bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none hover:border-indigo-400 transition-all text-left"
                             >
-                                {workOrders
-                                    .filter(wo => !scheduleForm.equipo_id || wo.id_activo === parseInt(scheduleForm.equipo_id))
-                                    .map(wo => (
-                                        <option key={wo.id_ot} value={wo.id_ot}>
-                                            {wo.codigo_ot || `OT-${wo.id_ot}`} - {wo.asunto || 'Sin asunto'}
-                                        </option>
-                                    ))
-                                }
-                            </select>
+                                <span className="flex items-center gap-2">
+                                    <ClipboardList className="w-4 h-4 text-indigo-500" />
+                                    {scheduleForm.id_ots?.length > 0 
+                                        ? `${scheduleForm.id_ots.length} OTs vinculadas` 
+                                        : "Seleccionar OTs..."}
+                                </span>
+                                <Plus className="w-4 h-4 text-slate-400" />
+                            </button>
+                            {scheduleForm.id_ots?.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-1">
+                                    {scheduleForm.id_ots.map(id => {
+                                        const wo = workOrders.find(w => w.id_ot === id);
+                                        if (!wo) return null;
+                                        return (
+                                            <span key={id} className="inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded-lg text-[10px] font-bold border border-indigo-100 dark:border-indigo-800">
+                                                {wo.codigo_ot || `OT-${id}`}
+                                                <button 
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleToggleWO(id);
+                                                    }}
+                                                    className="hover:text-red-500 transition-colors"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
 
                         {/* Spare Parts Section */}
@@ -906,6 +935,15 @@ const MaintenanceDetailPage = () => {
                     </div>
                 </div>
             )}
+
+            <WorkOrderSelectorModal 
+                isOpen={isWOModalOpen}
+                onClose={() => setIsWOModalOpen(false)}
+                workOrders={workOrders.filter(wo => !scheduleForm.equipo_id || wo.id_activo === parseInt(scheduleForm.equipo_id))}
+                selectedIds={scheduleForm.id_ots || []}
+                onToggle={handleToggleWO}
+                onConfirm={() => setIsWOModalOpen(false)}
+            />
         </div>
     );
 };
