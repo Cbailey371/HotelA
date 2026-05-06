@@ -184,9 +184,7 @@ const WorkOrdersPage = () => {
             id_tecnico: primary.tecnico_id || '',
             id_proveedor: primary.proveedor_id || '',
             prioridad: primary.prioridad || 'media',
-            observaciones: selectedItems.length === 1
-                ? (primary.codigo ? `Plan de Mantenimiento: ${primary.codigo}` : `Plan de Mantenimiento ID: ${primary.id}`)
-                : `Orden de Trabajo Múltiple (${selectedItems.length} mantenimientos vinculados).\nItems: ${selectedItems.map(s => s.codigo || s.id).join(', ')}`,
+            observaciones: '',
                 costo_estimado: primary.costo_estimado || '',
                 terminos_pago: primary.terminos_pago || '',
                 componente_id: primary.componente_id || ''

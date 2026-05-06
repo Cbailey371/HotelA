@@ -131,6 +131,15 @@ export const pdfGenerator = {
         
         let instructions = workOrder.observaciones || '';
         
+        // Remove redundant auto-generated lines if we have maintenance details
+        if (workOrder.mantenimientos && workOrder.mantenimientos.length > 0) {
+            instructions = instructions.split('\n')
+                .filter(line => !line.trim().startsWith('Plan de Mantenimiento:') && 
+                                !line.trim().startsWith('Plan de Mantenimiento ID:') &&
+                                !line.trim().startsWith('Orden de Trabajo Múltiple'))
+                .join('\n').trim();
+        }
+        
         if (workOrder.mantenimientos && workOrder.mantenimientos.length > 0) {
             const maintenanceInfos = workOrder.mantenimientos.map(m => 
                 `Plan de mantenimiento ${m.codigo || m.id} y el Asunto del Servicio / Título: ${m.asunto || 'Sin asunto'}`
