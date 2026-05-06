@@ -104,6 +104,9 @@ export const pdfGenerator = {
         }
 
         // Responsable Info
+        const scheduledDate = workOrder.mantenimientos?.[0]?.fecha || 
+                             (workOrder.id_calendario ? 'Ver Cronograma' : 'Inmediata');
+
         const responsableTableY = doc.lastAutoTable.finalY + 8;
         autoTable(doc, {
             startY: responsableTableY,
@@ -111,7 +114,7 @@ export const pdfGenerator = {
             body: [
                 [`Dirigido a: ${workOrder.nombre_tecnico ? `TÉCNICO: ${workOrder.nombre_tecnico}` : (workOrder.nombre_proveedor ? `PROVEEDOR: ${workOrder.nombre_proveedor}` : 'PERSONAL INTERNO')}`],
                 [`Prioridad: ${workOrder.prioridad?.toUpperCase() || 'NORMAL'}`],
-                [`Fecha Programada: ${workOrder.id_calendario ? 'Ver Cronograma' : 'Inmediata'}`],
+                [`Fecha Programada: ${scheduledDate}`],
                 [`Condición de Pago: ${workOrder.terminos_pago || 'N/A'}`],
                 [`Presupuesto Estimado: ${formatMoney(workOrder.mantenimiento_costo_estimado !== null && workOrder.mantenimiento_costo_estimado !== undefined ? workOrder.mantenimiento_costo_estimado : (workOrder.costo_estimado || 0))}`],
             ],
@@ -125,7 +128,22 @@ export const pdfGenerator = {
         doc.text('DESCRIPCIÓN DEL TRABAJO / OBSERVACIONES:', 14, doc.lastAutoTable.finalY + 12);
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
-        const splitObs = doc.splitTextToSize(workOrder.observaciones || 'Realizar mantenimiento según protocolo estándar.', 182);
+        
+        let instructions = workOrder.observaciones || '';
+        
+        if (workOrder.mantenimientos && workOrder.mantenimientos.length > 0) {
+            const maintenanceInfos = workOrder.mantenimientos.map(m => 
+                `Plan de mantenimiento ${m.codigo || m.id} y el Asunto del Servicio / Título: ${m.asunto || 'Sin asunto'}`
+            ).join('\n');
+            
+            instructions = instructions 
+                ? `${instructions}\n\n${maintenanceInfos}`
+                : maintenanceInfos;
+        } else if (!instructions) {
+            instructions = 'Realizar mantenimiento según protocolo estándar.';
+        }
+
+        const splitObs = doc.splitTextToSize(instructions, 182);
         doc.text(splitObs, 14, doc.lastAutoTable.finalY + 18);
 
         // Space for execution notes

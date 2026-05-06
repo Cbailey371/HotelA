@@ -44,10 +44,10 @@ export const NAV_GROUPS = [
         icon: Wrench,
         items: [
             { icon: ClipboardList, label: 'Portal de Solicitudes', path: '/portal', permiso: 'acceso_portal' },
-            { icon: ClipboardList, label: 'Órdenes de Trabajo', path: '/work-orders', permiso: 'work_orders_view' },
-            { icon: Archive, label: 'Historial de OTs', path: '/work-orders/history', anyPermisos: ['work_orders_history', 'acceso_portal'] },
             { icon: Calendar, label: 'Planes de Mantenimiento', path: '/maintenance', permiso: 'maintenance_plan_view' },
             { icon: Archive, label: 'Historial de Mantenimiento', path: '/maintenance/history', permiso: 'maintenance_view' },
+            { icon: ClipboardList, label: 'Órdenes de Trabajo', path: '/work-orders', permiso: 'work_orders_view' },
+            { icon: Archive, label: 'Historial de OTs', path: '/work-orders/history', anyPermisos: ['work_orders_history', 'acceso_portal'] },
         ]
     },
     {

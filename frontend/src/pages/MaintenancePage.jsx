@@ -902,11 +902,6 @@ const MaintenancePage = () => {
                                     </select>
                                 </div>
                             </div>
-                            <p className="text-[10px] text-slate-400 mt-2 font-medium">
-                                Puede seleccionar un usuario y/o escribir uno o varios correos separados por coma.
-                                <br />
-                                <strong>Ejemplo:</strong> mantenimiento@hotel.com, supervisor@hotel.com
-                            </p>
                         </div>
                         <div className="col-span-1">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block">Costo Estimado ($)</label>
@@ -970,13 +965,18 @@ const MaintenancePage = () => {
                                         onChange={(e) => handleScheduleChange('responsable_interno_email', e.target.value)}
                                         className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                                     />
+                                    <div className="mt-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3 rounded-xl animate-in fade-in slide-in-from-top-1 duration-300 shadow-sm">
+                                        <p className="text-[10px] text-blue-700 dark:text-blue-300 font-black leading-relaxed flex items-start gap-2">
+                                            <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                                            <span>
+                                                Puede seleccionar un usuario y/o escribir uno o varios correos separados por coma.
+                                                <br />
+                                                <span className="text-blue-500 dark:text-blue-400 font-bold">Ejemplo: mantenimiento@hotel.com, supervisor@hotel.com</span>
+                                            </span>
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                            <p className="text-[10px] text-slate-400 mt-2 font-medium">
-                                Puede seleccionar un usuario y/o escribir uno o varios correos separados por coma.
-                                <br />
-                                <strong>Ejemplo:</strong> mantenimiento@hotel.com, supervisor@hotel.com
-                            </p>
                         </div>
                         <div className="col-span-2 flex items-center gap-3 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100 dark:border-blue-800">
                             <input
