@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
     ArrowLeft, Calendar, Clock, CheckCircle, AlertTriangle, User, 
-    Settings, Printer, FileText, Building, ClipboardList, Info, 
+    Settings, FileText, Building, ClipboardList, Info, 
     Trash2, Edit, X, Mail, Upload, Loader2, MessageSquare, 
     Maximize2, ExternalLink, MapPin, Tag, Wrench, Activity,
     Play, ChevronRight, Plus, Filter, Search
@@ -338,12 +338,7 @@ const MaintenanceDetailPage = () => {
                     </div>
                     
                     <div className="flex items-center gap-3">
-                        <button 
-                            onClick={() => window.print()}
-                            className="flex-1 sm:flex-none bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-300 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-800 hover:border-blue-500/50 hover:text-blue-500 transition-all shadow-sm flex items-center justify-center gap-2"
-                        >
-                            <Printer className="w-4 h-4" /> Imprimir
-                        </button>
+
                         
                         {schedule.estado === 'programado' && canEdit && (
                             <div className="flex gap-2 w-full sm:w-auto">
