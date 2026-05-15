@@ -198,32 +198,4 @@ pub async fn delete_provider(
     Ok(Json("Provider deleted".to_string()))
 }
 
-pub async fn fix_missing_codes(
-    State(db): State<DatabaseConnection>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
-    use sea_orm::EntityTrait;
-    use sea_orm::QueryFilter;
-    use sea_orm::ColumnTrait;
-    use sea_orm::ActiveModelTrait;
-
-    let providers = proveedores::Entity::find()
-        .filter(proveedores::Column::CodigoProveedor.is_null())
-        .all(&db)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    let mut count = 0;
-    for provider in providers {
-        let next_code = crate::utils::code_generator::generate_next_code(&db, "proveedores", "codigo_proveedor", "PRO-")
-            .await
-            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-        let id = provider.id_proveedor;
-        let mut am: proveedores::ActiveModel = provider.into();
-        am.codigo_proveedor = Set(Some(next_code));
-        am.update(&db).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-        count += 1;
-    }
-
-    Ok(Json(format!("Updated {} providers with new codes", count)))
 }
