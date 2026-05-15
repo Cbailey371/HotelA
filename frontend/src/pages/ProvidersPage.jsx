@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Building2, Phone, Mail, MapPin, Tag } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Building2, Phone, Mail, MapPin, Tag, RefreshCw } from 'lucide-react';
 import { providerService } from '../services/providerService';
 import { paymentTermsService } from '../services/paymentTermsService';
 
@@ -150,6 +150,24 @@ const ProvidersPage = () => {
                             className="bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-800 dark:text-slate-300 focus:outline-none focus:border-blue-500"
                         />
                     </div>
+                    <button 
+                        onClick={async () => {
+                            if(window.confirm('¿Desea generar códigos automáticos para todos los proveedores que no tienen uno?')) {
+                                try {
+                                    await api.post('/providers/fix-codes');
+                                    fetchProviders();
+                                    alert('Códigos generados correctamente');
+                                } catch (error) {
+                                    console.error(error);
+                                    alert('Error al generar códigos');
+                                }
+                            }
+                        }}
+                        className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                        title="Generar códigos faltantes"
+                    >
+                        <RefreshCw className="w-4 h-4" /> Normalizar Códigos
+                    </button>
                     <button onClick={openCreateModal} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
                         <Plus className="w-4 h-4" /> Nuevo Proveedor
                     </button>
@@ -227,10 +245,7 @@ const ProvidersPage = () => {
             >
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Código (Ej: PRO-001)</label>
-                            <input name="codigo_proveedor" value={formData.codigo_proveedor} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none font-mono" placeholder="PRO-XXX" />
-                        </div>
+
                         <div>
                             <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Nombre Empresa</label>
                             <input required name="nombre_proveedor" value={formData.nombre_proveedor} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />

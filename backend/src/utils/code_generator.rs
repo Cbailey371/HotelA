@@ -12,8 +12,29 @@ where C: ConnectionTrait,
     // matches: prefix followed by digits only
     // substring: extracts digits after prefix
     // cast: converts to integer for numerical max
+    // Query to find the first available hole in the sequence, or the next value after MAX.
+    // 1. Check if 1 is available
+    // 2. Find the smallest n+1 that doesn't exist
     let sql = format!(
-        "SELECT MAX(CAST(SUBSTRING({}, LENGTH('{}') + 1) AS INTEGER)) FROM {} WHERE {} ~ ('^' || '{}' || '[0-9]+$')",
+        "SELECT CASE 
+            WHEN NOT EXISTS (SELECT 1 FROM {} WHERE {} = '{}' || '001') THEN 1
+            ELSE (
+                SELECT MIN(t1.val + 1)
+                FROM (
+                    SELECT CAST(SUBSTRING({}, LENGTH('{}') + 1) AS INTEGER) AS val 
+                    FROM {} 
+                    WHERE {} ~ ('^' || '{}' || '[0-9]+$')
+                ) t1
+                LEFT JOIN (
+                    SELECT CAST(SUBSTRING({}, LENGTH('{}') + 1) AS INTEGER) AS val 
+                    FROM {} 
+                    WHERE {} ~ ('^' || '{}' || '[0-9]+$')
+                ) t2 ON t1.val + 1 = t2.val
+                WHERE t2.val IS NULL
+            )
+        END as next_val",
+        table, column, prefix,
+        column, prefix, table, column, prefix,
         column, prefix, table, column, prefix
     );
 
@@ -21,29 +42,9 @@ where C: ConnectionTrait,
 
     match db.query_one(stmt).await? {
         Some(res) => {
-            // Try to get the MAX value. It might be NULL if no matching rows found.
-            let _max_val: Option<i32> = res.try_get("", "max").ok(); 
-            // Note: sea_orm query_one returns raw Row. The column name for aggregate might be tricky.
-            // Actually, for raw query, we often alias it. Let's alias it as "max_val".
-            
-            // Re-constructing SQL with alias for safety
-             let sql = format!(
-                "SELECT MAX(CAST(SUBSTRING({}, LENGTH('{}') + 1) AS INTEGER)) as max_val FROM {} WHERE {} ~ ('^' || '{}' || '[0-9]+$')",
-                column, prefix, table, column, prefix
-            );
-            let stmt = Statement::from_string(DatabaseBackend::Postgres, sql);
-             match db.query_one(stmt).await? {
-                Some(res) => {
-                     let max_val: Option<i32> = res.try_get("", "max_val").unwrap_or(None);
-                     let next_num = max_val.unwrap_or(0) + 1;
-                     Ok(format!("{}{:03}", prefix, next_num))
-                },
-                None => Ok(format!("{}{:03}", prefix, 1))
-             }
+            let next_num: i32 = res.try_get("", "next_val").unwrap_or(1);
+            Ok(format!("{}{:03}", prefix, next_num))
         },
-        None => {
-             // Should not happen for aggregate query (returns 1 row with null), but safe fallback
-             Ok(format!("{}{:03}", prefix, 1))
-        }
+        None => Ok(format!("{}{:03}", prefix, 1))
     }
 }
