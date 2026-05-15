@@ -197,5 +197,3 @@ pub async fn delete_provider(
         
     Ok(Json("Provider deleted".to_string()))
 }
-
-}
