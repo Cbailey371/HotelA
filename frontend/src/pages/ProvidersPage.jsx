@@ -31,6 +31,7 @@ const ProvidersPage = () => {
         sitio_web: '',
         metodos_pago_aceptados: '',
         observaciones: '',
+        codigo_proveedor: '',
         estado: 'activo'
     };
     const [formData, setFormData] = useState(initialFormData);
@@ -89,6 +90,7 @@ const ProvidersPage = () => {
             sitio_web: provider.sitio_web || '',
             metodos_pago_aceptados: provider.metodos_pago_aceptados || '',
             observaciones: provider.observaciones || '',
+            codigo_proveedor: provider.codigo || '',
             estado: provider.estado || 'activo'
         });
         setIsDirty(false);
@@ -225,7 +227,10 @@ const ProvidersPage = () => {
             >
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Code generation is now automatic in backend */}
+                        <div>
+                            <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Código (Ej: PRO-001)</label>
+                            <input name="codigo_proveedor" value={formData.codigo_proveedor} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none font-mono" placeholder="PRO-XXX" />
+                        </div>
                         <div>
                             <label className="text-xs font-bold uppercase text-slate-500 block mb-1">Nombre Empresa</label>
                             <input required name="nombre_proveedor" value={formData.nombre_proveedor} onChange={handleInputChange} className="w-full bg-slate-100 dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 outline-none" />

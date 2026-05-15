@@ -76,9 +76,18 @@ pub async fn create_provider(
     State(db): State<DatabaseConnection>,
     Json(payload): Json<ProviderRequest>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    // Generate sequential code
-    let next_code = crate::utils::code_generator::generate_next_code(&db, "proveedores", "codigo_proveedor", "POR-").await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    // Determine the provider code
+    let final_code = if let Some(ref code) = payload.codigo_proveedor {
+        if !code.trim().is_empty() {
+            code.clone()
+        } else {
+            crate::utils::code_generator::generate_next_code(&db, "proveedores", "codigo_proveedor", "PRO-").await
+                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        }
+    } else {
+        crate::utils::code_generator::generate_next_code(&db, "proveedores", "codigo_proveedor", "PRO-").await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+    };
 
     let new_provider = proveedores::ActiveModel {
         nombre_proveedor: Set(payload.nombre_proveedor),
@@ -90,7 +99,7 @@ pub async fn create_provider(
         pais: Set(payload.pais),
         estado: Set(payload.estado.or(Some("activo".to_string()))),
 
-        codigo_proveedor: Set(Some(next_code)),
+        codigo_proveedor: Set(Some(final_code)),
         rut_o_ruc: Set(payload.rut_o_ruc),
         ciudad: Set(payload.ciudad),
         sitio_web: Set(payload.sitio_web),
